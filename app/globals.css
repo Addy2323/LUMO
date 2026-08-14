@@ -1,0 +1,681 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   Lumo design tokens — 3-Role System
+   1. Structural: Navy-900 (#12213A) for dark sidebars, footers, headers
+   2. Brand/Action: Brand-500 (#D9631E), Brand-600 (#B84F14) for CTAs & badges
+   3. Neutral Base: Cream-50 (#FBF6EF), Cream-100 (#F3EAD9) for page & cards
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* 1. Lumo Brand Colours */
+  --lumo-orange: #F97316;
+  --lumo-orange-hover: #EA580C;
+  --lumo-orange-light: #FFF1E8;
+  --lumo-orange-soft: #FFEDD5;
+
+  --lumo-navy: #10213D;
+  --lumo-navy-dark: #0B1F3A;
+  --lumo-navy-deep: #061326;
+
+  /* 2. Customer Marketplace Surfaces */
+  --surface-page: #FFF9F2;
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F8FAFC;
+  --surface-trust: #EAF1F8;
+  --surface-orange-soft: #FFF7ED;
+
+  /* 3. Text Colours */
+  --text-primary: #0B1F3A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+  --text-brand: #F97316;
+
+  /* 4. Trust and Status Colours */
+  --trust-blue: #164E8C;
+  --trust-blue-light: #E8F1FA;
+  --trust-teal: #0F9D8A;
+  --success: #158F69;
+  --success-light: #E8F7F1;
+  --warning: #F59E0B;
+  --warning-light: #FFF7E0;
+  --error: #DC2626;
+  --error-light: #FEECEC;
+  --info: #2563EB;
+  --info-light: #EAF2FF;
+
+  /* 5. Borders and Controls */
+  --border-default: #D9E2EC;
+  --border-subtle: #E8EDF3;
+  --border-strong: #B8C4D2;
+  --focus-ring: #F97316;
+  --overlay: rgba(6, 19, 38, 0.55);
+
+  /* 6. Dashboard Dark Theme Tokens */
+  --dashboard-bg: #061326;
+  --dashboard-surface: #0B1F3A;
+  --dashboard-surface-raised: #102B4E;
+  --dashboard-border: #233B5A;
+  --dashboard-text: #F8FAFC;
+  --dashboard-muted: #94A3B8;
+
+  /* Backward compatibility alias bindings */
+  --slate-950: #061326;
+  --slate-900: #0B1F3A;
+  --slate-800: #10213D;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748B;
+  --slate-400: #94A3B8;
+  --slate-200: #D9E2EC;
+  --slate-100: #EAF1F8;
+  --slate-50: #F8FAFC;
+
+  --navy-900: #0B1F3A;
+  --navy-700: #10213D;
+  --navy-200: #94A3B8;
+
+  --brand-500: #F97316;
+  --brand-600: #EA580C;
+
+  --surface-0: var(--surface-page);
+  --surface-1: var(--surface-primary);
+  --surface-2: var(--surface-secondary);
+
+  --brand-panel: #0B1F3A;
+  --brand-panel-foreground: #FFFFFF;
+  --brand-panel-muted: #94A3B8;
+  --brand-panel-subtle: #10213D;
+
+  /* shadcn semantic mapping */
+  --background: var(--surface-page);
+  --foreground: var(--text-primary);
+  --card: var(--surface-primary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-primary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--lumo-orange);
+  --primary-foreground: #FFFFFF;
+  --secondary: #F8FAFC;
+  --secondary-foreground: #0B1F3A;
+  --muted: #F8FAFC;
+  --muted-foreground: var(--text-secondary);
+  --accent: #FFF7ED;
+  --accent-foreground: var(--lumo-orange-hover);
+  --destructive: var(--error);
+  --destructive-foreground: #FFFFFF;
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--lumo-orange);
+
+  --chart-1: #F97316;
+  --chart-2: #164E8C;
+  --chart-3: #0F9D8A;
+  --chart-4: #F59E0B;
+  --chart-5: #0B1F3A;
+
+  --radius: 0.75rem;
+  --radius-button: 0.625rem;
+  --radius-input: 0.625rem;
+  --radius-card: 0.875rem;
+  --radius-modal: 1rem;
+
+  --sidebar: #061326;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #F97316;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #0B1F3A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #233B5A;
+  --sidebar-ring: #F97316;
+}
+
+.dark,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --navy-900: #090d16;
+  --navy-700: #0d1527;
+  --navy-200: #94a3b8;
+
+  --surface-page: #090d16;
+  --surface-primary: #0d1527;
+  --surface-secondary: #12213a;
+  --surface-trust: #162b4d;
+  --surface-0: #090d16;
+  --surface-1: #0d1527;
+  --surface-2: #12213a;
+
+  --text-primary: #fbf6ef;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-default: #1e2b3e;
+  --border-subtle: #1e3352;
+  --border-strong: #334155;
+
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+
+  --background: #090d16;
+  --foreground: #fbf6ef;
+  --card: #0d1527;
+  --card-foreground: #fbf6ef;
+  --popover: #0d1527;
+  --popover-foreground: #fbf6ef;
+
+  --sidebar: #090d16;
+  --sidebar-foreground: #fbf6ef;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0d1527;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1e2b3e;
+}
+
+[data-theme='light-blue'] {
+  color-scheme: light;
+
+  --navy-900: #0b1f3a;
+  --navy-700: #164e8c;
+  --navy-200: #64748b;
+
+  --surface-page: #ebf3fa;
+  --surface-primary: #f0f6fc;
+  --surface-secondary: #e2eefa;
+  --surface-trust: #d8e7f5;
+  --surface-0: #ebf3fa;
+  --surface-1: #f0f6fc;
+  --surface-2: #e2eefa;
+
+  --text-primary: #0b1f3a;
+  --text-secondary: #164e8c;
+  --text-muted: #475569;
+  --border-default: #cbd5e1;
+  --border-subtle: #e2e8f0;
+  --border-strong: #94a3b8;
+
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+
+  --background: #ebf3fa;
+  --foreground: #0b1f3a;
+  --card: #f0f6fc;
+  --card-foreground: #0b1f3a;
+  --popover: #f0f6fc;
+  --popover-foreground: #0b1f3a;
+
+  --sidebar: #f0f6fc;
+  --sidebar-foreground: #0b1f3a;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2eefa;
+  --sidebar-accent-foreground: #0b1f3a;
+  --sidebar-border: #cbd5e1;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --navy-900: #0f172a;
+  --navy-700: #334155;
+  --navy-200: #64748b;
+
+  --surface-page: #f4f7fa;
+  --surface-primary: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-trust: #e2e8f0;
+  --surface-0: #f4f7fa;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-default: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-strong: #cbd5e1;
+
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+
+  --background: #f4f7fa;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f8fafc;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme='light']) {
+    color-scheme: dark;
+
+    --navy-900: #0a1324;
+    --navy-700: #12213a;
+    --navy-200: #94a3b8;
+
+    --surface-0: #0d1527;
+    --surface-1: #12213a;
+    --surface-2: #1e3352;
+    --text-primary: #fbf6ef;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-subtle: #1e3352;
+    --border-strong: #334155;
+
+    --brand-500: #e06925;
+    --brand-600: #f57c00;
+    --primary-400: #e06925;
+    --primary-600: #f57c00;
+    --primary-50: #2d1a00;
+    --primary-100: #4a2c00;
+    --primary-800: #ffe0b2;
+    --primary-900: #fff5eb;
+
+    --sidebar: #0a1324;
+    --sidebar-foreground: #fbf6ef;
+    --sidebar-primary: #e06925;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #12213a;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #1e3352;
+    --sidebar-ring: #e06925;
+  }
+}
+
+@theme inline {
+  --color-lumo-orange: var(--lumo-orange);
+  --color-lumo-orange-hover: var(--lumo-orange-hover);
+  --color-lumo-orange-light: var(--lumo-orange-light);
+  --color-lumo-orange-soft: var(--lumo-orange-soft);
+
+  --color-lumo-navy: var(--lumo-navy);
+  --color-lumo-navy-dark: var(--lumo-navy-dark);
+  --color-lumo-navy-deep: var(--lumo-navy-deep);
+
+  --color-surface-page: var(--surface-page);
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-trust: var(--surface-trust);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-brand: var(--text-brand);
+
+  --color-trust-blue: var(--trust-blue);
+  --color-trust-blue-light: var(--trust-blue-light);
+  --color-trust-teal: var(--trust-teal);
+
+  --color-dashboard-bg: var(--dashboard-bg);
+  --color-dashboard-surface: var(--dashboard-surface);
+  --color-dashboard-surface-raised: var(--dashboard-surface-raised);
+  --color-dashboard-border: var(--dashboard-border);
+  --color-dashboard-text: var(--dashboard-text);
+  --color-dashboard-muted: var(--dashboard-muted);
+
+  --color-slate-950: #061326;
+  --color-slate-900: #0B1F3A;
+  --color-slate-800: #10213D;
+  --color-slate-700: #334155;
+  --color-slate-500: #64748b;
+  --color-slate-200: #D9E2EC;
+  --color-slate-50: #F8FAFC;
+
+  --color-navy-900: var(--navy-900);
+  --color-navy-700: var(--navy-700);
+  --color-navy-200: var(--navy-200);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-cream-50: var(--surface-page);
+  --color-cream-100: var(--surface-trust);
+
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-400: var(--primary-400);
+  --color-primary-600: var(--primary-600);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  --color-success: var(--success-400);
+  --color-success-subtle: var(--success-50);
+  --color-success-strong: var(--success-800);
+  --color-warning: var(--warning-400);
+  --color-warning-subtle: var(--warning-50);
+  --color-warning-strong: var(--warning-800);
+  --color-danger: var(--danger-400);
+  --color-danger-subtle: var(--danger-50);
+  --color-danger-strong: var(--danger-800);
+  --color-info: var(--info-400);
+  --color-info-subtle: var(--info-50);
+  --color-info-strong: var(--info-800);
+
+  --color-brand-panel: var(--brand-panel);
+  --color-brand-panel-foreground: var(--brand-panel-foreground);
+  --color-brand-panel-muted: var(--brand-panel-muted);
+  --color-brand-panel-subtle: var(--brand-panel-subtle);
+
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-border-strong: var(--border-strong);
+
+  /* shadcn tokens */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  --font-sans: var(--font-outfit), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), var(--font-jakarta), sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans text-sm antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+  /* Tabular figures for money, TIN/VRN, and quantities */
+  .tnum,
+  [data-tabular-nums="true"] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom scrollbars & enterprise SaaS UI utilities */
+@layer utilities {
+  .bg-glass {
+    background: rgba(18, 33, 58, 0.75);
+    backdrop-filter: blur(12px);
+  }
+  .bg-glass-light {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+  }
+  .border-glow-orange {
+    box-shadow: 0 0 15px -3px rgba(217, 99, 30, 0.3);
+  }
+  .card-hover-lift {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* ==========================================================================
+   Lumo Motion System — Premium Animation Tokens
+   ========================================================================== */
+
+:root {
+  --motion-fast: 150ms;
+  --motion-standard: 200ms;
+  --motion-page: 300ms;
+  --motion-entrance: 600ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lumo-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes lumo-pulse-halo {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.animate-shake {
+  animation: lumo-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-pulse-halo {
+  animation: lumo-pulse-halo 1.2s ease-out infinite;
+}
+
+/* Keyframes */
+@keyframes lumo-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lumo-fade-up-sm {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lumo-fade-up-lg {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lumo-scale-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes lumo-badge-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* Utility classes — entrance animations */
+.animate-fade-in {
+  animation: lumo-fade-in var(--motion-entrance) var(--motion-ease) both;
+}
+.animate-fade-up-sm {
+  animation: lumo-fade-up-sm var(--motion-entrance) var(--motion-ease) both;
+}
+.animate-fade-up-lg {
+  animation: lumo-fade-up-lg var(--motion-entrance) var(--motion-ease) both;
+}
+.animate-scale-in {
+  animation: lumo-scale-in var(--motion-standard) var(--motion-ease) both;
+}
+.cart-badge-pop {
+  animation: lumo-badge-pop var(--motion-standard) var(--motion-ease);
+}
+
+/* Stagger delays */
+.delay-1 { animation-delay: 100ms; }
+.delay-2 { animation-delay: 200ms; }
+.delay-3 { animation-delay: 300ms; }
+.delay-4 { animation-delay: 400ms; }
+.delay-5 { animation-delay: 500ms; }
+
+/* Nav link — animated orange underline (grows left→right) */
+.nav-link-animated {
+  position: relative;
+}
+.nav-link-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: var(--brand-500, #e06925);
+  border-radius: 1px;
+  transition: width var(--motion-standard) var(--motion-ease);
+}
+.nav-link-animated:hover::after,
+.nav-link-animated[aria-current="page"]::after {
+  width: 100%;
+}
+
+/* Button — premium hover lift (restrained) */
+.btn-premium {
+  transition:
+    transform var(--motion-fast) var(--motion-ease),
+    filter var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
+}
+.btn-premium:hover:not(:disabled):not([aria-busy="true"]) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -4px rgba(217, 99, 30, 0.35);
+}
+.btn-premium:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(1);
+}
+/* Disable hover lift on touch-only devices */
+@media (hover: none) {
+  .btn-premium:hover {
+    transform: none;
+    filter: none;
+    box-shadow: none;
+  }
+}
+
+/* Header — scroll shadow */
+.header-scrolled {
+  box-shadow: 0 1px 12px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* Locale transition fade on main content */
+.locale-transition {
+  transition: opacity var(--motion-page) var(--motion-ease);
+}
+.locale-transitioning {
+  opacity: 0.78;
+}
+
+/* ==========================================================================
+   Accessibility — scoped reduced-motion
+   Only disables Lumo's custom animations; keeps essential UI indicators.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-up-sm,
+  .animate-fade-up-lg,
+  .animate-scale-in,
+  .cart-badge-pop {
+    animation: none !important;
+  }
+
+  .btn-premium,
+  .nav-link-animated::after {
+    transition-duration: 0.01ms !important;
+  }
+
+  .locale-transition {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Existing — flyToCart
+   ========================================================================== */
+
+@keyframes flyToCart {
+  0% {
+    top: var(--start-y);
+    left: var(--start-x);
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -120%) scale(1.3) rotate(15deg);
+    opacity: 0.9;
+  }
+  100% {
+    top: var(--target-y);
+    left: var(--target-x);
+    transform: translate(-50%, -50%) scale(0.15) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.animate-fly-to-cart {
+  animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Hide Next.js Dev Toast & Dev Overlay elements on mobile so they don't block bottom nav */
+@media (max-width: 768px) {
+  [data-nextjs-toast],
+  [data-nextjs-dev-overlay],
+  nextjs-portal {
+    display: none !important;
+  }
+}
+

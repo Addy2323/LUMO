@@ -1,0 +1,1590 @@
+// LUMO Digital Commerce Platform - PostgreSQL Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum Role {
+  BUYER
+  CUSTOMER
+  SUPPLIER
+  SALES
+  LOGISTICS
+  AGENT
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING_PHONE_VERIFICATION
+  ACTIVE
+  SUSPENDED
+}
+
+enum OtpPurpose {
+  PHONE_REGISTRATION
+  PASSWORD_RESET
+}
+
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  MORE_INFORMATION_REQUIRED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PartnerStatus {
+  PENDING_ACTIVATION
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum ApplicationType {
+  SUPPLIER
+  LOGISTICS
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  CANCELLED
+  REVERSED
+  REFUNDED
+}
+
+enum EscrowStatus {
+  INITIATED
+  HELD
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum FreightMode {
+  AIR
+  SEA
+}
+
+enum SourcingStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  QUOTED
+  ACCEPTED
+  FULFILLED
+  REJECTED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ProductStatus {
+  IMPORTED
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum SourceType {
+  DEMO
+  CSV_IMPORT
+  EXCEL_IMPORT
+  MANUAL
+  LUMO_AGENT
+  LUMO_SUPPLIER
+  MANUFACTURER
+  WHOLESALER
+  MARKETPLACE_REFERENCE
+}
+
+enum ImportStatus {
+  PROCESSING
+  COMPLETED
+  COMPLETED_WITH_ERRORS
+  FAILED
+}
+
+enum ImportRowStatus {
+  PENDING
+  IMPORTED
+  SKIPPED
+  FAILED
+}
+
+// ──────────────────────────────────────────────
+// Core User, Auth & Sessions
+// ──────────────────────────────────────────────
+
+model User {
+  id                      String        @id @default(uuid())
+  email                   String        @unique
+  passwordHash            String?
+  name                    String
+  role                    Role          @default(BUYER)
+  phone                   String?
+  companyName             String?
+  kycStatus               KycStatus     @default(PENDING)
+  phoneVerifiedAt         DateTime?
+  accountStatus           AccountStatus @default(PENDING_PHONE_VERIFICATION)
+  authenticationHoldUntil DateTime?
+  lastSuccessfulLoginAt   DateTime?
+  passwordChangedAt       DateTime?
+  securityReviewRequired  Boolean       @default(false)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  sessions                   Session[]
+  passwordResets             PasswordResetToken[]
+  otpChallenges              OtpChallenge[]
+  passwordResetAuths        PasswordResetAuthorization[]
+  webAuthnCredentials       WebAuthnCredential[]
+  webAuthnChallenges        WebAuthnChallenge[]
+  securityEvents            AuthSecurityEvent[]
+  orders                     Order[]
+  sourcingRequests           SourcingRequest[]
+  disputes                   Dispute[]
+  supplierProfile            Supplier?
+  productImports             ProductImport[]
+  addresses                  Address[]
+  wishlist                   WishlistItem[]
+  cartItems                  CartItem[]
+  auditLogs                  AuditLog[]
+  escrowBuyer                EscrowLedger[]               @relation("EscrowBuyer")
+  escrowSupplier             EscrowLedger[]               @relation("EscrowSupplier")
+  applications               PartnerApplication[]         @relation("ApplicantUser")
+  assignedReviews            PartnerApplication[]         @relation("AssignedReviewer")
+  consentRecords             ConsentRecord[]
+  rfqs                       RFQ[]
+  supplierQuotations         SupplierQuotation[]
+
+  @@map("users")
+}
+
+// ──────────────────────────────────────────────
+// Onboarding & Partner Applications
+// ──────────────────────────────────────────────
+
+model PartnerApplication {
+  id                 String            @id @default(uuid())
+  version            Int               @default(1)
+  userId             String
+  applicationType    ApplicationType
+  status             ApplicationStatus @default(DRAFT)
+  currentStep        Int               @default(1)
+  draftData          Json?
+  submissionDate     DateTime?
+  assignedReviewerId String?
+  decisionDate       DateTime?
+  decisionReason     String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  user               User                       @relation("ApplicantUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedReviewer   User?                      @relation("AssignedReviewer", fields: [assignedReviewerId], references: [id])
+  supplierProfile    SupplierProfile?
+  logisticsProfile   LogisticsProfile?
+  documents          ApplicationDocument[]
+  reviewNotes        ApplicationReviewNote[]
+  messages           ApplicationMessage[]
+  statusHistory      ApplicationStatusHistory[]
+  verificationChecks VerificationCheck[]
+  consentRecords     ConsentRecord[]
+
+  @@map("partner_applications")
+}
+
+model SupplierProfile {
+  id                       String        @id @default(uuid())
+  applicationId            String        @unique
+  userId                   String        @unique
+  registeredName           String
+  tradingName              String?
+  registrationNumber       String
+  tinNumber                String
+  countryOfRegistration    String        @default("Tanzania")
+  businessAddress          String
+  website                  String?
+  marketplaceProfile       String?
+  contactPerson            String
+  contactPosition          String
+  yearEstablished          Int?
+  employeeCount            String?
+  supplierType             String
+  mainCategories           String[]
+  productDescription       String
+  brandsSupplied           String[]      @default([])
+  manufacturingStatus      String?
+  moq                      Int           @default(1)
+  monthlyCapacity          String?
+  countriesServed          String[]      @default([])
+  shippingOrigin           String?
+  warehouseLocation        String?
+  inventoryAvailability    String?
+  orderProcessingTime      String?
+  supportedShippingMethods String[]      @default([])
+  returnPolicy             String?
+  warrantyArrangements     String?
+  qualityControlProcess    String?
+  inspectionAvailable      Boolean       @default(false)
+  incoterms                String[]      @default([])
+  supportedCurrencies      String[]      @default(["TZS", "USD"])
+  partnerStatus            PartnerStatus @default(PENDING_ACTIVATION)
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_profiles")
+}
+
+model LogisticsProfile {
+  id                    String        @id @default(uuid())
+  applicationId         String        @unique
+  userId                String        @unique
+  companyName           String
+  tradingName           String?
+  registrationNumber    String
+  tinNumber             String
+  countryOfRegistration String        @default("Tanzania")
+  officeAddress         String
+  website               String?
+  contactPerson         String
+  contactPosition       String
+  yearsInOperation      Int?
+  employeeCount         String?
+  servicesOffered       String[]
+  countriesOfOperation  String[]      @default([])
+  portsServed           String[]      @default([])
+  airportsServed        String[]      @default([])
+  tanzaniaRegions       String[]      @default([])
+  warehouseLocations    String[]      @default([])
+  fleetSize             Int?
+  vehicleTypes          String[]      @default([])
+  shipmentCapacity      String?
+  avgDeliveryTimes      String?
+  trackingCapabilities  String?
+  podCapabilities       String?
+  apiIntegration        Boolean       @default(false)
+  supportedCargoTypes   String[]      @default([])
+  restrictedCargo       String[]      @default([])
+  rateStructure         String?
+  minShipmentReq        String?
+  paymentTerms          String?
+  insuranceCoverage     String?
+  claimsProcedure       String?
+  slas                  String?
+  supportedCurrencies   String[]      @default(["TZS", "USD"])
+  supportAvailability   String?
+  escalationContacts    String?
+  operatingHours        String?
+  partnerStatus         PartnerStatus @default(PENDING_ACTIVATION)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("logistics_profiles")
+}
+
+model ApplicationDocument {
+  id               String   @id @default(uuid())
+  applicationId    String
+  documentCategory String // e.g. "BUSINESS_LICENSE", "TIN_CERTIFICATE", "DIRECTOR_ID"
+  fileName         String
+  originalName     String
+  fileSize         Int
+  mimeType         String
+  storageKey       String // Private storage key path
+  fileHash         String? // SHA-256 checksum for integrity
+  verifiedStatus   Boolean  @default(false)
+  rejectionReason  String?
+  uploadedAt       DateTime @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_documents")
+}
+
+model ApplicationReviewNote {
+  id            String   @id @default(uuid())
+  applicationId String
+  authorId      String
+  authorName    String
+  noteText      String
+  createdAt     DateTime @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_review_notes")
+}
+
+model ApplicationMessage {
+  id            String   @id @default(uuid())
+  applicationId String
+  senderId      String
+  senderName    String
+  senderRole    Role
+  message       String
+  createdAt     DateTime @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_messages")
+}
+
+model ApplicationStatusHistory {
+  id             String            @id @default(uuid())
+  applicationId  String
+  previousStatus ApplicationStatus
+  newStatus      ApplicationStatus
+  changedById    String
+  changedByName  String
+  reason         String?
+  createdAt      DateTime          @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_status_history")
+}
+
+model VerificationCheck {
+  id            String   @id @default(uuid())
+  applicationId String
+  checkType     String // e.g. "TIN_VERIFICATION", "ID_CHECK", "DOC_AUTHENTICITY"
+  verifiedBy    String
+  passed        Boolean  @default(true)
+  notes         String?
+  checkedAt     DateTime @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("verification_checks")
+}
+
+model ConsentRecord {
+  id             String   @id @default(uuid())
+  userId         String
+  applicationId  String?
+  consentType    String // "TERMS_OF_SERVICE", "PRIVACY_POLICY", "PARTNER_AGREEMENT"
+  termsVersion   String   @default("1.0")
+  privacyVersion String   @default("1.0")
+  ipAddress      String?
+  userAgent      String?
+  consentedAt    DateTime @default(now())
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application PartnerApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@map("consent_records")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  sessionToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model OtpCode {
+  id                String   @id @default(uuid())
+  identifier        String // Phone or Email
+  hashedCode        String
+  purpose           String   @default("LOGIN_OR_REGISTER") // "LOGIN", "REGISTER", "RESET"
+  attempts          Int      @default(0)
+  resendAvailableAt DateTime
+  expiresAt         DateTime
+  createdAt         DateTime @default(now())
+
+  @@index([identifier])
+  @@map("otp_codes")
+}
+
+model PasswordResetToken {
+  id          String   @id @default(uuid())
+  userId      String
+  hashedToken String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model OtpChallenge {
+  id                String      @id @default(uuid())
+  userId            String?
+  phoneTargetHash   String
+  purpose           OtpPurpose
+  codeHash          String
+  expiresAt         DateTime
+  attemptCount      Int         @default(0)
+  maxAttempts       Int         @default(5)
+  resendCount       Int         @default(0)
+  resendAvailableAt DateTime
+  consumedAt        DateTime?
+  invalidatedAt     DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phoneTargetHash, purpose])
+  @@index([userId, purpose])
+  @@map("otp_challenges")
+}
+
+model PasswordResetAuthorization {
+  id          String     @id @default(uuid())
+  userId      String
+  challengeId String
+  tokenHash   String     @unique
+  purpose     OtpPurpose @default(PASSWORD_RESET)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@map("password_reset_authorizations")
+}
+
+model AuthSecurityEvent {
+  id                String   @id @default(uuid())
+  eventType         String
+  userId            String?
+  accountTargetHash String?
+  ipHash            String?
+  deviceHash        String?
+  endpoint          String
+  purpose           String?
+  action            String
+  riskLevel         String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  correlationId     String?
+  details           String?
+  createdAt         DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([accountTargetHash, createdAt])
+  @@index([ipHash, createdAt])
+  @@index([eventType, createdAt])
+  @@map("auth_security_events")
+}
+
+model WebAuthnCredential {
+  id             String    @id @default(uuid())
+  userId         String
+  credentialId   String    @unique
+  publicKey      String
+  signCount      BigInt    @default(0)
+  transports     String?   // Comma-separated list: "internal,usb,ble,nfc"
+  backupEligible Boolean   @default(false)
+  backupState    Boolean   @default(false)
+  deviceLabel    String?
+  revokedAt      DateTime?
+  lastUsedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("webauthn_credentials")
+}
+
+model WebAuthnChallenge {
+  id        String   @id @default(uuid())
+  userId    String
+  challenge String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("webauthn_challenges")
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  fullName  String
+  phone     String
+  street    String
+  city      String   @default("Dar es Salaam")
+  region    String   @default("Dar es Salaam")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model CartItem {
+  id              String   @id @default(uuid())
+  userId          String
+  productId       String
+  quantity        Int      @default(1)
+  selectedVariant String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, selectedVariant])
+  @@map("cart_items")
+}
+
+// ──────────────────────────────────────────────
+// Supplier
+// ──────────────────────────────────────────────
+
+model Supplier {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  companyName String
+  country     String
+  hubLocation String?
+  verified    Boolean  @default(false)
+  rating      Float    @default(4.8)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@map("suppliers")
+}
+
+// ──────────────────────────────────────────────
+// Category (hierarchical)
+// ──────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  icon        String?
+  description String?
+  parentId    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@map("categories")
+}
+
+// ──────────────────────────────────────────────
+// Product (LUMO-owned catalog)
+// ──────────────────────────────────────────────
+
+model Product {
+  id               String  @id @default(uuid())
+  productCode      String  @unique @default("")
+  title            String
+  slug             String  @unique
+  shortDescription String?
+  description      String
+  categoryId       String
+  brand            String?
+
+  status ProductStatus @default(IMPORTED)
+
+  // Pricing using Decimal for exact financial precision
+  priceTZS       Decimal  @db.Decimal(14, 2)
+  priceUSD       Decimal  @db.Decimal(12, 2)
+  costPriceUSD   Decimal? @db.Decimal(12, 2)
+  compareAtPrice Decimal? @db.Decimal(14, 2)
+
+  sourceType      SourceType @default(MANUAL)
+  sourcePlatform  String?
+  sourceProductId String?
+  sourceUrl       String?
+
+  moq             Int     @default(1)
+  stock           Int     @default(0)
+  weight          Float?
+  length          Float?
+  width           Float?
+  height          Float?
+  material        String?
+  countryOfOrigin String?
+
+  sourceHub String   @default("LUMO Direct")
+  imageUrl  String   @default("")
+  gallery   String[] @default([])
+  specs     Json?
+  variants  Json?
+
+  rating     Float   @default(0)
+  totalSales Int     @default(0)
+  isApproved Boolean @default(false)
+
+  agentId    String?
+  supplierId String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  category        Category               @relation(fields: [categoryId], references: [id])
+  supplier        Supplier?              @relation(fields: [supplierId], references: [id])
+  orderItems      OrderItem[]
+  images          ProductImage[]
+  productVariants ProductVariantRecord[]
+  priceTiers      ProductPriceTier[]
+  importRows      ProductImportRow[]
+  auditLogs       CatalogAuditLog[]
+  wishlistItems   WishlistItem[]
+  cartItems       CartItem[]
+
+  @@map("products")
+}
+
+model ProductPriceTier {
+  id          String    @id @default(cuid())
+  productId   String
+  minQuantity Int
+  maxQuantity Int?
+  unitPrice   Decimal   @db.Decimal(18, 4)
+  currency    String    @default("TZS")
+  validFrom   DateTime  @default(now())
+  validUntil  DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, minQuantity, currency])
+  @@index([productId, isActive])
+  @@map("product_price_tiers")
+}
+
+model ProductImage {
+  id          String   @id @default(uuid())
+  productId   String
+  storageUrl  String
+  originalUrl String?
+  altText     String?
+  sortOrder   Int      @default(0)
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model ProductVariantRecord {
+  id        String   @id @default(uuid())
+  productId String
+  sku       String?
+  name      String
+  options   Json
+  priceTZS  Decimal? @db.Decimal(14, 2)
+  priceUSD  Decimal? @db.Decimal(12, 2)
+  costPrice Decimal? @db.Decimal(12, 2)
+  stock     Int      @default(0)
+  weight    Float?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+model ProductImport {
+  id            String       @id @default(uuid())
+  fileName      String
+  fileType      String       @default("csv")
+  totalRows     Int          @default(0)
+  importedCount Int          @default(0)
+  skippedCount  Int          @default(0)
+  failedCount   Int          @default(0)
+  warningCount  Int          @default(0)
+  status        ImportStatus @default(PROCESSING)
+  columnMapping Json?
+  templateName  String?
+  adminId       String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  admin User               @relation(fields: [adminId], references: [id])
+  rows  ProductImportRow[]
+
+  @@map("product_imports")
+}
+
+model ProductImportRow {
+  id        String          @id @default(uuid())
+  importId  String
+  rowNumber Int
+  rawData   Json
+  status    ImportRowStatus @default(PENDING)
+  errors    Json?
+  warnings  Json?
+  productId String?
+  createdAt DateTime        @default(now())
+
+  import  ProductImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  product Product?      @relation(fields: [productId], references: [id])
+
+  @@map("product_import_rows")
+}
+
+model CatalogAuditLog {
+  id            String   @id @default(uuid())
+  productId     String?
+  action        String
+  adminName     String
+  previousValue String?
+  newValue      String?
+  details       String?
+  createdAt     DateTime @default(now())
+
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("catalog_audit_logs")
+}
+
+// ──────────────────────────────────────────────
+// Orders & Commerce
+// ──────────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  buyerId         String
+  subtotalTZS     Decimal     @db.Decimal(14, 2)
+  shippingFeeTZS  Decimal     @default(0) @db.Decimal(14, 2)
+  taxAmountTZS    Decimal     @default(0) @db.Decimal(14, 2)
+  discountTZS     Decimal     @default(0) @db.Decimal(14, 2)
+  totalAmountTZS  Decimal     @db.Decimal(14, 2)
+  status          OrderStatus @default(PENDING_PAYMENT)
+  paymentMethod   String      @default("AzamPay Escrow")
+  shippingAddress Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  buyer         User                @relation(fields: [buyerId], references: [id])
+  items         OrderItem[]
+  shipments     Shipment[]
+  disputes      Dispute[]
+  payments      PaymentRecord[]
+  escrowRecords EscrowLedger[]
+  waybills      ElectronicWaybill[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String  @id @default(uuid())
+  orderId         String
+  productId       String
+  quantity        Int
+  unitPriceTZS    Decimal @db.Decimal(14, 2)
+  totalPriceTZS   Decimal @db.Decimal(14, 2)
+  selectedVariant String?
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model PaymentRecord {
+  id             String        @id @default(uuid())
+  orderId        String
+  provider       String        @default("AzamPay") // "AzamPay", "M-Pesa", "AirtelMoney"
+  transactionRef String        @unique
+  amountTZS      Decimal       @db.Decimal(14, 2)
+  status         PaymentStatus @default(PENDING)
+  channel        String? // "M-PESA", "HALOPESA", "AIRTEL", "CARD"
+  rawPayload     Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payment_records")
+}
+
+model EscrowLedger {
+  id             String       @id @default(uuid())
+  orderId        String       @unique
+  buyerId        String
+  supplierId     String?
+  amountTZS      Decimal      @db.Decimal(14, 2)
+  status         EscrowStatus @default(INITIATED)
+  holdingPartner String       @default("AzamPay Escrow Partner")
+  releasedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  buyer    User  @relation("EscrowBuyer", fields: [buyerId], references: [id])
+  supplier User? @relation("EscrowSupplier", fields: [supplierId], references: [id])
+
+  @@map("escrow_ledger")
+}
+
+model Shipment {
+  id                String      @id @default(uuid())
+  trackingNumber    String      @unique
+  orderId           String
+  origin            String
+  destination       String      @default("Dar es Salaam Port")
+  mode              FreightMode @default(SEA)
+  status            String      @default("In Transit")
+  estimatedDelivery DateTime?
+  milestones        Json?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipments")
+}
+
+model SourcingRequest {
+  id             String         @id @default(uuid())
+  buyerId        String
+  productUrl     String
+  description    String?
+  targetQuantity Int            @default(10)
+  targetPriceTZS Decimal?       @db.Decimal(14, 2)
+  status         SourcingStatus @default(SUBMITTED)
+  quoteDetails   Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  buyer User @relation(fields: [buyerId], references: [id])
+
+  @@map("sourcing_requests")
+}
+
+model Dispute {
+  id           String       @id @default(uuid())
+  ticketNumber String       @unique
+  orderId      String
+  buyerId      String
+  reason       String
+  status       TicketStatus @default(OPEN)
+  resolution   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+  buyer User  @relation(fields: [buyerId], references: [id])
+
+  @@map("disputes")
+}
+
+model AgentAssignment {
+  id               String   @id @default(uuid())
+  orderNumber      String   @unique
+  customerName     String
+  country          String
+  productName      String
+  quantityNeeded   Int
+  targetBudgetUSD  Decimal  @db.Decimal(12, 2)
+  status           String   @default("assigned")
+  priority         String   @default("Medium")
+  assignedBy       String   @default("LUMO HQ")
+  selectedSupplier Json?
+  packageSpecs     Json?
+  shippingMethod   String?
+  carrierName      String?
+  trackingNumber   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  inspectionRecords InspectionRecord[]
+
+  @@map("agent_assignments")
+}
+
+model InspectionRecord {
+  id               String   @id @default(uuid())
+  assignmentId     String
+  checklist        Json
+  photos           Json
+  videoUrl         String?
+  passed           Boolean  @default(true)
+  customerApproval String   @default("pending")
+  createdAt        DateTime @default(now())
+
+  assignment AgentAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@map("inspection_records")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  userId         String?
+  userRole       String?
+  action         String
+  targetResource String
+  details        String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model AgentAuditLog {
+  id          String   @id @default(uuid())
+  agentName   String
+  country     String
+  action      String
+  details     String
+  gpsLocation String?
+  deviceInfo  String?
+  createdAt   DateTime @default(now())
+
+  @@map("agent_audit_logs")
+}
+
+// ──────────────────────────────────────────────
+// RFQ & Quotations Engine (Alibaba-Style Sourcing)
+// ──────────────────────────────────────────────
+
+enum RfqStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  QUOTED
+  AWARDED
+  CLOSED
+  EXPIRED
+  CANCELLED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SUBMITTED
+  REVISED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+model RFQ {
+  id                 String    @id @default(cuid())
+  rfqNumber          String    @unique
+  buyerId            String
+  title              String
+  description        String
+  categoryId         String?
+  targetDeliveryDate DateTime?
+  destinationCity    String    @default("Dar es Salaam")
+  destinationPort    String    @default("Dar es Salaam Port")
+  incotermPreference String    @default("FOB")
+  maxBudgetTZS       Decimal?  @db.Decimal(18, 4)
+  status             RfqStatus @default(SUBMITTED)
+  expiresAt          DateTime
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  buyer        User                @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  items        RFQItem[]
+  requirements RFQRequirement[]
+  attachments  RFQAttachment[]
+  invitations  RFQInvitation[]
+  quotations   SupplierQuotation[]
+
+  @@index([buyerId, status])
+  @@map("rfqs")
+}
+
+model RFQItem {
+  id                 String   @id @default(cuid())
+  rfqId              String
+  productName        String
+  specifications     String?
+  quantity           Int
+  unit               String   @default("pcs")
+  targetUnitPriceTZS Decimal? @db.Decimal(18, 4)
+
+  rfq RFQ @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@map("rfq_items")
+}
+
+model RFQRequirement {
+  id              String  @id @default(cuid())
+  rfqId           String
+  requirementType String // e.g. "QUALITY_INSPECTION", "CE_CERTIFICATION", "SAMPLE_REQUIRED"
+  description     String
+  isMandatory     Boolean @default(true)
+
+  rfq RFQ @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@map("rfq_requirements")
+}
+
+model RFQAttachment {
+  id         String   @id @default(cuid())
+  rfqId      String
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  uploadedAt DateTime @default(now())
+
+  rfq RFQ @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@map("rfq_attachments")
+}
+
+model RFQInvitation {
+  id         String   @id @default(cuid())
+  rfqId      String
+  supplierId String
+  status     String   @default("SENT") // SENT, VIEWED, DECLINED, QUOTED
+  sentAt     DateTime @default(now())
+
+  rfq RFQ @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@map("rfq_invitations")
+}
+
+model SupplierQuotation {
+  id                String          @id @default(cuid())
+  quotationNumber   String          @unique
+  rfqId             String
+  supplierId        String
+  version           Int             @default(1)
+  status            QuotationStatus @default(SUBMITTED)
+  validUntil        DateTime
+  currency          String          @default("TZS")
+  subtotalAmount    Decimal         @db.Decimal(18, 4)
+  freightAmount     Decimal         @default(0) @db.Decimal(18, 4)
+  taxAmount         Decimal         @default(0) @db.Decimal(18, 4)
+  totalAmount       Decimal         @db.Decimal(18, 4)
+  incoterm          String          @default("FOB")
+  estimatedLeadDays Int             @default(14)
+  sampleAvailable   Boolean         @default(false)
+  originCountry     String          @default("China")
+  inspectionTerms   String?
+  paymentTerms      String?
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  rfq           RFQ                      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  supplierUser  User                     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  items         QuotationItem[]
+  charges       QuotationCharge[]
+  versions      QuotationVersion[]
+  messages      QuotationMessage[]
+  statusHistory QuotationStatusHistory[]
+
+  @@index([rfqId, supplierId, status])
+  @@map("supplier_quotations")
+}
+
+model QuotationItem {
+  id              String  @id @default(cuid())
+  quotationId     String
+  itemDescription String
+  quantity        Int
+  unitPrice       Decimal @db.Decimal(18, 4)
+  subtotal        Decimal @db.Decimal(18, 4)
+
+  quotation SupplierQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_items")
+}
+
+model QuotationCharge {
+  id          String  @id @default(cuid())
+  quotationId String
+  chargeName  String // e.g. "PORT_HANDLING", "DOCUMENTATION_FEE", "ORIGIN_INSPECTION"
+  amount      Decimal @db.Decimal(18, 4)
+  isIncluded  Boolean @default(true)
+
+  quotation SupplierQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_charges")
+}
+
+model QuotationVersion {
+  id            String   @id @default(cuid())
+  quotationId   String
+  versionNumber Int
+  snapshotData  Json
+  changeReason  String?
+  createdAt     DateTime @default(now())
+
+  quotation SupplierQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_versions")
+}
+
+model QuotationMessage {
+  id          String   @id @default(cuid())
+  quotationId String
+  senderId    String
+  senderRole  Role
+  messageText String
+  createdAt   DateTime @default(now())
+
+  quotation SupplierQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_messages")
+}
+
+model QuotationStatusHistory {
+  id             String          @id @default(cuid())
+  quotationId    String
+  previousStatus QuotationStatus
+  newStatus      QuotationStatus
+  changedById    String
+  reason         String?
+  createdAt      DateTime        @default(now())
+
+  quotation SupplierQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_status_history")
+}
+
+// ──────────────────────────────────────────────
+// Landed-Cost Engine & Multi-Currency Tariffs
+// ──────────────────────────────────────────────
+
+model ExchangeRate {
+  id             String    @id @default(cuid())
+  baseCurrency   String // e.g. "USD", "CNY", "EUR"
+  targetCurrency String    @default("TZS")
+  rate           Decimal   @db.Decimal(18, 6)
+  source         String    @default("BOT_OFFICIAL") // BOT (Bank of Tanzania) or CENTRAL_BANK
+  effectiveAt    DateTime  @default(now())
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([baseCurrency, targetCurrency, effectiveAt])
+  @@map("exchange_rates")
+}
+
+model TariffCode {
+  id          String   @id @default(cuid())
+  hsCode      String   @unique // Harmonized System Code e.g. "8517.12.00"
+  description String
+  category    String // Electronics, Textiles, Industrial Machinery, Automotive
+  createdAt   DateTime @default(now())
+
+  dutyRates TariffDutyRate[]
+
+  @@map("tariff_codes")
+}
+
+model TariffDutyRate {
+  id                 String    @id @default(cuid())
+  tariffCodeId       String
+  importDutyPercent  Decimal   @db.Decimal(6, 2) // e.g. 25.00%
+  vatPercent         Decimal   @default(18.00) @db.Decimal(6, 2) // Tanzania VAT 18.00%
+  railwayLevyPercent Decimal   @default(1.50) @db.Decimal(6, 2) // RDL 1.50%
+  whidLevyPercent    Decimal   @default(0.60) @db.Decimal(6, 2) // CESS / WHID 0.60%
+  excisePercent      Decimal   @default(0.00) @db.Decimal(6, 2)
+  effectiveFrom      DateTime  @default(now())
+  effectiveTo        DateTime?
+
+  tariffCode TariffCode @relation(fields: [tariffCodeId], references: [id], onDelete: Cascade)
+
+  @@map("tariff_duty_rates")
+}
+
+model FreightRateCard {
+  id                 String   @id @default(cuid())
+  originCountry      String // e.g. "China", "UAE", "Turkey", "India"
+  destinationPort    String   @default("Dar es Salaam Port")
+  transportMode      String   @default("AIR") // AIR, SEA_FCL, SEA_LCL
+  minWeightKg        Decimal  @default(1.0) @db.Decimal(10, 2)
+  pricePerKgUSD      Decimal  @db.Decimal(10, 2)
+  baseHandlingFeeUSD Decimal  @default(20.00) @db.Decimal(10, 2)
+  estimatedDaysMin   Int      @default(5)
+  estimatedDaysMax   Int      @default(10)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  @@index([originCountry, transportMode, isActive])
+  @@map("freight_rate_cards")
+}
+
+// ──────────────────────────────────────────────
+// Electronic Waybills & Cross-Border Logistics
+// ──────────────────────────────────────────────
+
+model ElectronicWaybill {
+  id               String    @id @default(cuid())
+  ewbNumber        String    @unique // Format: "EWB-TZ-2026-XXXXX"
+  orderId          String?
+  shipmentType     String    @default("AIR_CARGO") // AIR_CARGO, SEA_CONTAINER, GROUND_TRUCK
+  originPort       String    @default("Guangzhou Baiyun Intl Airport")
+  destinationPort  String    @default("Dar es Salaam Port (JNIA)")
+  carrierName      String    @default("Ethiopian Airlines Cargo")
+  vesselOrFlightNo String?
+  containerNo      String?
+  billOfLadingNo   String?
+  departureDate    DateTime?
+  estimatedArrival DateTime
+  actualArrival    DateTime?
+  status           String    @default("BOOKED") // BOOKED, IN_TRANSIT, PORT_CUSTOMS_CLEARANCE, CUSTOMS_CLEARED, OUT_FOR_DELIVERY, DELIVERED
+  qrCodeData       String?
+  digitalSignature String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  order           Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  events          ShipmentEvent[]
+  proofOfDelivery ProofOfDelivery?
+
+  @@index([orderId, status])
+  @@map("electronic_waybills")
+}
+
+model ShipmentEvent {
+  id                String   @id @default(cuid())
+  waybillId         String
+  eventCode         String // e.g. "PICKED_UP", "DEPARTED_ORIGIN", "CUSTOMS_CLEARED", "DELIVERED"
+  locationName      String // e.g. "Guangzhou, CN", "Dar es Salaam Port, TZ"
+  statusDescription String
+  eventTimestamp    DateTime @default(now())
+  createdByRole     String   @default("LOGISTICS_AGENT")
+
+  waybill ElectronicWaybill @relation(fields: [waybillId], references: [id], onDelete: Cascade)
+
+  @@map("shipment_events")
+}
+
+model ProofOfDelivery {
+  id                String   @id @default(cuid())
+  waybillId         String   @unique
+  recipientName     String
+  recipientIdType   String? // NIDA, PASSPORT, VOTER_ID
+  signaturePhotoUrl String?
+  gpsLat            Float?
+  gpsLng            Float?
+  deliveredAt       DateTime @default(now())
+
+  waybill ElectronicWaybill @relation(fields: [waybillId], references: [id], onDelete: Cascade)
+
+  @@map("proof_of_deliveries")
+}
+
+// ──────────────────────────────────────────────
+// Meseji SMS, Outbox & Campaign Messaging Models
+// ──────────────────────────────────────────────
+
+enum SmsCampaignType {
+  TRANSACTIONAL
+  SERVICE
+  MARKETING
+  SECURITY
+}
+
+enum SmsCampaignStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SCHEDULED
+  QUEUED
+  SENDING
+  COMPLETED
+  PARTIALLY_FAILED
+  FAILED
+  CANCELLED
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  DEAD_LETTER
+}
+
+model SmsTemplate {
+  id              String   @id @default(cuid())
+  templateKey     String   @unique // e.g. "REGISTRATION_OTP", "ORDER_PAID_CUSTOMER"
+  name            String
+  campaignType    SmsCampaignType @default(TRANSACTIONAL)
+  language        String   @default("en") // "en" | "sw"
+  templateTextEn  String
+  templateTextSw  String
+  version         Int      @default(1)
+  isApproved      Boolean  @default(true)
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("sms_templates")
+}
+
+model SmsCampaign {
+  id                   String            @id @default(cuid())
+  campaignName         String
+  campaignType         SmsCampaignType   @default(MARKETING)
+  senderId             String            @default("LUMO")
+  language             String            @default("sw")
+  templateKey          String?
+  messageContent       String
+  audienceFilter       String            // JSON snapshot of audience criteria
+  recipientCount       Int               @default(0)
+  excludedCount        Int               @default(0)
+  estimatedSegments    Int               @default(1)
+  estimatedCostTzs     Decimal           @default(0.00) @db.Decimal(10, 2)
+  actualCostTzs        Decimal           @default(0.00) @db.Decimal(10, 2)
+  status               SmsCampaignStatus @default(DRAFT)
+  createdById          String
+  approvedById         String?
+  scheduledTime        DateTime?
+  startedTime          DateTime?
+  completedTime        DateTime?
+  providerBatchIds     String[]          @default([])
+  failureReason        String?
+  auditMetadata        String?           // Sanitized audit JSON
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  recipients SmsCampaignRecipient[]
+  batches    SmsBatch[]
+
+  @@index([status, scheduledTime])
+  @@map("sms_campaigns")
+}
+
+model SmsCampaignRecipient {
+  id            String   @id @default(cuid())
+  campaignId    String
+  userId        String?
+  phoneE164     String
+  status        String   @default("QUEUED") // QUEUED, DELIVERED, FAILED, OPTED_OUT
+  deliveredAt   DateTime?
+  failureReason String?
+
+  campaign SmsCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, phoneE164])
+  @@map("sms_campaign_recipients")
+}
+
+model SmsBatch {
+  id               String   @id @default(cuid())
+  batchId          String   @unique // Meseji provider batch ID
+  campaignId       String?
+  provider         String   @default("meseji")
+  senderId         String   @default("LUMO")
+  totalRecipients  Int      @default(0)
+  successfulCount  Int      @default(0)
+  failedCount      Int      @default(0)
+  successRate      Decimal  @default(0.00) @db.Decimal(5, 2)
+  status           String   @default("queued") // queued, completed, partially_failed, failed
+  lastPolledAt     DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime @default(now())
+
+  campaign SmsCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  attempts SmsMessageAttempt[]
+
+  @@index([batchId])
+  @@map("sms_batches")
+}
+
+model SmsMessageAttempt {
+  id            String   @id @default(cuid())
+  batchId       String?
+  recipientE164 String
+  messageId     String?
+  status        String   @default("QUEUED")
+  attemptsCount Int      @default(1)
+  errorDetails  String?
+  createdAt     DateTime @default(now())
+
+  batch SmsBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  @@map("sms_message_attempts")
+}
+
+model NotificationOutbox {
+  id              String       @id @default(cuid())
+  eventType       String       // e.g. "ORDER_PAID", "ORDER_DELIVERED", "OTP_REQUEST"
+  aggregateId     String       // e.g. orderId, userId, or challengeId
+  recipientId     String       // userId or phoneE164
+  recipientPhone  String
+  channel         String       @default("SMS")
+  templateKey     String
+  templateVersion Int          @default(1)
+  payloadJson     String       // Render parameters JSON
+  status          OutboxStatus @default(PENDING)
+  retryCount      Int          @default(0)
+  maxRetries      Int          @default(5)
+  nextAttemptAt   DateTime     @default(now())
+  processedAt     DateTime?
+  providerBatchId String?
+  errorMessage    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Strict idempotency constraint preventing duplicate notifications
+  @@unique([eventType, aggregateId, recipientId, templateVersion], name: "outbox_idempotency_idx")
+  @@index([status, nextAttemptAt])
+  @@map("notification_outbox")
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  transactionalSmsEnabled Boolean @default(true)
+  marketingSmsEnabled     Boolean @default(true)
+  orderStatusSmsEnabled   Boolean @default(true)
+  securitySmsEnabled      Boolean @default(true)
+  optedOutAt            DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+model SmsProviderAccountSnapshot {
+  id                   String   @id @default(cuid())
+  provider             String   @default("meseji")
+  totalMessagesSent    Int      @default(0)
+  successfulDeliveries Int      @default(0)
+  failedDeliveries     Int      @default(0)
+  successRate          Decimal  @default(0.00) @db.Decimal(5, 2)
+  balanceTzs           Decimal? @db.Decimal(12, 2)
+  snapshotAt           DateTime @default(now())
+
+  @@map("sms_provider_account_snapshots")
+}
+
+// ──────────────────────────────────────────────
+// Order Assignment Engine
+// ──────────────────────────────────────────────
+
+enum AssignmentRole {
+  SALES
+  AGENT
+  SUPPLIER
+  INSPECTOR
+  LOGISTICS
+}
+
+enum AssignmentStatus {
+  UNASSIGNED
+  OFFERED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+  EXPIRED
+  REASSIGNED
+  CANCELLED
+}
+
+model OrderAssignment {
+  id                 String           @id @default(uuid())
+  orderId            String
+  assignmentRole     AssignmentRole   @default(SALES)
+  assigneeId         String?
+  assignedById       String?
+  status             AssignmentStatus @default(UNASSIGNED)
+  priority           String           @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  reason             String?
+  offeredAt          DateTime?
+  expiresAt          DateTime?
+  acceptedAt         DateTime?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  slaDueAt           DateTime?
+  rejectedAt         DateTime?
+  rejectionReason    String?
+  unassignedAt       DateTime?
+  reassignmentReason String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  version            Int              @default(1)
+
+  @@index([orderId, assignmentRole, status])
+  @@index([assigneeId, status])
+  @@map("order_assignments")
+}
+
+
