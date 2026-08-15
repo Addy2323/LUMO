@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       activeRfqsCount: sourcingRequests.length,
       quotesAwaitingCount: sourcingRequests.filter((s) => s.status === 'QUOTED').length,
       slaAtRiskCount: disputes.filter((d) => d.status === 'OPEN').length,
-      conversionRate: conversionRate > 0 ? conversionRate : 38,
+      conversionRate,
       salesValueTzs: totalSalesValueTzs,
     }
 
@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
         customer: s.buyer?.companyName || s.buyer?.name || 'B2B Buyer',
         type: 'RFQ',
         typeBg: 'bg-purple-50 text-purple-700 border-purple-200',
-        value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'USD 8,500',
-        owner: staffUsers[idx % staffUsers.length]?.name || 'Amani M.',
+        value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'RFQ / Market Quote',
+        owner: staffUsers[idx % staffUsers.length]?.name || 'Sales Officer',
         ownerAvatar: (staffUsers[idx % staffUsers.length]?.name || 'AM')
           .split(' ')
           .map((n) => n[0])
@@ -105,8 +105,8 @@ export async function GET(req: NextRequest) {
         customer: d.buyer?.companyName || d.buyer?.name || 'Merchant',
         type: 'Dispute',
         typeBg: 'bg-rose-50 text-rose-700 border-rose-200',
-        value: d.order?.totalAmountTZS ? `TZS ${Number(d.order.totalAmountTZS).toLocaleString()}` : 'USD 1,850',
-        owner: staffUsers[idx % staffUsers.length]?.name || 'Amani M.',
+        value: d.order?.totalAmountTZS ? `TZS ${Number(d.order.totalAmountTZS).toLocaleString()}` : 'N/A',
+        owner: staffUsers[idx % staffUsers.length]?.name || 'Sales Officer',
         ownerAvatar: (staffUsers[idx % staffUsers.length]?.name || 'AM')
           .split(' ')
           .map((n) => n[0])
@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
         type: 'Order',
         typeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         value: `TZS ${Number(o.totalAmountTZS).toLocaleString()}`,
-        owner: staffUsers[idx % staffUsers.length]?.name || 'Neema T.',
+        owner: staffUsers[idx % staffUsers.length]?.name || 'Sales Officer',
         ownerAvatar: (staffUsers[idx % staffUsers.length]?.name || 'NT')
           .split(' ')
           .map((n) => n[0])
@@ -166,10 +166,10 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage1',
         title: 'New Lead',
-        count: buyers.length || 8,
+        count: buyers.length,
         deals: buyers.slice(0, 2).map((b, i) => ({
           name: b.companyName || b.name,
-          value: `TZS ${(4500000 * (i + 1)).toLocaleString()}`,
+          value: `TZS ${(Number(paidOrders[i]?.totalAmountTZS || 0)).toLocaleString()}`,
           avatar: b.name.split(' ').map((n) => n[0]).join(''),
           avatarBg: i % 2 === 0 ? 'bg-blue-600' : 'bg-emerald-600',
         })),
@@ -177,10 +177,10 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage2',
         title: 'Requirements',
-        count: sourcingRequests.filter((s) => s.status === 'SUBMITTED').length || 4,
+        count: sourcingRequests.filter((s) => s.status === 'SUBMITTED').length,
         deals: sourcingRequests.slice(0, 2).map((s, i) => ({
           name: s.buyer?.companyName || s.buyer?.name || 'Oceanic Traders',
-          value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'TZS 11,250,000',
+          value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'TZS 0',
           avatar: (s.buyer?.name || 'NT').split(' ').map((n) => n[0]).join(''),
           avatarBg: 'bg-purple-600',
         })),
@@ -188,10 +188,10 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage3',
         title: 'Agent Assigned',
-        count: agentAssignments.length || 3,
+        count: agentAssignments.length,
         deals: agentAssignments.slice(0, 2).map((a, i) => ({
           name: a.customerName || 'Prime Agri',
-          value: 'TZS 14,500,000',
+          value: 'TZS 0',
           avatar: (a.assignedBy || 'BK').split(' ').map((n) => n[0]).join(''),
           avatarBg: 'bg-emerald-600',
         })),
@@ -199,10 +199,10 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage4',
         title: 'Supplier Quotes',
-        count: sourcingRequests.filter((s) => s.status === 'QUOTED').length || 5,
+        count: sourcingRequests.filter((s) => s.status === 'QUOTED').length,
         deals: sourcingRequests.filter((s) => s.status === 'QUOTED').slice(0, 2).map((s, i) => ({
           name: s.buyer?.companyName || s.buyer?.name || 'Global Textiles',
-          value: `TZS ${Number(s.targetPriceTZS || 12800000).toLocaleString()}`,
+          value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'TZS 0',
           avatar: 'AM',
           avatarBg: 'bg-blue-600',
         })),
@@ -210,10 +210,10 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage5',
         title: 'Customer Approval',
-        count: sourcingRequests.filter((s) => s.status === 'ACCEPTED').length || 2,
+        count: sourcingRequests.filter((s) => s.status === 'ACCEPTED').length,
         deals: sourcingRequests.filter((s) => s.status === 'ACCEPTED').slice(0, 2).map((s, i) => ({
-          name: s.buyer?.companyName || s.buyer?.name || 'Sunrise Elec',
-          value: 'TZS 22,450,000',
+          name: s.buyer?.companyName || s.buyer?.name || 'Customer',
+          value: s.targetPriceTZS ? `TZS ${Number(s.targetPriceTZS).toLocaleString()}` : 'TZS 0',
           avatar: 'AM',
           avatarBg: 'bg-blue-600',
         })),
@@ -221,7 +221,7 @@ export async function GET(req: NextRequest) {
       {
         id: 'stage6',
         title: 'Paid',
-        count: paidOrders.length || 5,
+        count: paidOrders.length,
         deals: paidOrders.slice(0, 2).map((o, i) => ({
           name: o.buyer?.companyName || o.buyer?.name || 'Mega Dist',
           value: `TZS ${Number(o.totalAmountTZS).toLocaleString()}`,
@@ -273,7 +273,7 @@ export async function GET(req: NextRequest) {
 
     // 6. Team Members
     const teamMembers = staffUsers.map((u, i) => {
-      const activeCount = agentAssignments.filter((a) => a.assignedBy === u.name).length + (15 - i * 3)
+      const activeCount = agentAssignments.filter((a) => a.assignedBy === u.name).length
       const workloadPct = Math.min(95, activeCount * 4)
       return {
         name: u.name,

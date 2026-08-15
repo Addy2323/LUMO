@@ -63,7 +63,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       items: [
         { label: 'Overview', href: '/account', icon: LayoutDashboard },
         { label: 'Marketplace', href: '/marketplace', icon: Store },
-        { label: 'Cart', href: '/cart', icon: ShoppingCart, badge: '3' },
+        { label: 'Cart', href: '/cart', icon: ShoppingCart },
         { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
       ],
     },
@@ -71,7 +71,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Orders',
       items: [
         { label: 'My orders', href: '/account/orders', icon: ShoppingBag },
-        { label: 'Sourcing requests', href: '/account/sourcing', icon: PackageSearch, badge: '3' },
+        { label: 'Sourcing requests', href: '/account/sourcing', icon: PackageSearch },
         { label: 'Returns & refunds', href: '/account/returns', icon: Package },
         { label: 'Invoices', href: '/account/invoices', icon: FileText },
       ],
@@ -79,7 +79,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     {
       label: 'Account',
       items: [
-        { label: 'Support', href: '/account/support', icon: LifeBuoy, badge: '1' },
+        { label: 'Support', href: '/account/support', icon: LifeBuoy },
         { label: 'Addresses', href: '/account/addresses', icon: MapPin },
         { label: 'Payment methods', href: '/account/payment-methods', icon: CreditCard },
         { label: 'Referrals', href: '/account/referrals', icon: Gift },
@@ -93,7 +93,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Business',
       items: [
         { label: 'Overview', href: '/supplier', icon: Gauge },
-        { label: 'Orders', href: '/supplier/orders', icon: ClipboardList, badge: '7' },
+        { label: 'Orders', href: '/supplier/orders', icon: ClipboardList },
         { label: 'Shipments', href: '/supplier/shipments', icon: Truck },
       ],
     },
@@ -121,11 +121,11 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Sales Operations',
       items: [
         { label: 'Overview', href: '/sales', icon: Gauge },
-        { label: 'Shared Inbox', href: '/sales/inbox', icon: Inbox, badge: '12' },
-        { label: 'My Assigned Orders', href: '/sales/orders', icon: ClipboardList, badge: '5' },
-        { label: 'Sales Pipeline', href: '/sales/pipeline', icon: Activity, badge: 'NEW' },
-        { label: 'Sourcing Requests', href: '/sales/sourcing', icon: PackageSearch, badge: '4' },
-        { label: 'Quotations', href: '/sales/quotations', icon: FileText, badge: '3' },
+        { label: 'Shared Inbox', href: '/sales/inbox', icon: Inbox },
+        { label: 'My Assigned Orders', href: '/sales/orders', icon: ClipboardList },
+        { label: 'Sales Pipeline', href: '/sales/pipeline', icon: Activity },
+        { label: 'Sourcing Requests', href: '/sales/sourcing', icon: PackageSearch },
+        { label: 'Quotations', href: '/sales/quotations', icon: FileText },
         { label: 'Customer Follow-ups', href: '/sales/follow-ups', icon: Clock },
         { label: 'Tasks & Calendar', href: '/sales/tasks', icon: Sparkles },
       ],
@@ -134,10 +134,10 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Customer Service',
       items: [
         { label: 'Customer 360°', href: '/sales/customers', icon: Users },
-        { label: 'Support Tickets', href: '/sales/tickets', icon: LifeBuoy, badge: '5' },
+        { label: 'Support Tickets', href: '/sales/tickets', icon: LifeBuoy },
         { label: 'Complaints', href: '/sales/complaints', icon: AlertTriangle },
         { label: 'Returns & Refunds', href: '/sales/returns', icon: Package },
-        { label: 'Disputes', href: '/sales/disputes', icon: Scale, badge: '2' },
+        { label: 'Disputes', href: '/sales/disputes', icon: Scale },
         { label: 'Escalations', href: '/sales/escalations', icon: ShieldCheck },
       ],
     },
@@ -170,7 +170,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Operations',
       items: [
         { label: 'Overview', href: '/logistics', icon: Gauge },
-        { label: 'Shipments', href: '/logistics/shipments', icon: Truck, badge: '9' },
+        { label: 'Shipments', href: '/logistics/shipments', icon: Truck },
         { label: 'Route planning', href: '/logistics/routes', icon: Route },
         { label: 'Proof of delivery', href: '/logistics/proof-of-delivery', icon: BadgeCheck },
       ],
@@ -189,7 +189,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Agent Portal',
       items: [
         { label: 'Overview', href: '/agent', icon: Gauge },
-        { label: 'Sourcing Orders', href: '/agent/orders', icon: PackageSearch, badge: '5' },
+        { label: 'Sourcing Orders', href: '/agent/orders', icon: PackageSearch },
         { label: 'Shipments', href: '/agent/shipments', icon: Truck },
         { label: 'Commissions & Reports', href: '/agent/reports', icon: BarChart3 },
       ],
@@ -202,7 +202,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { label: 'Overview', href: '/admin', icon: Gauge },
         { label: 'Order Control', href: '/admin/orders', icon: ClipboardList },
         { label: 'Assignment Board', href: '/admin/assignment-board', icon: Boxes },
-        { label: 'Sourcing & RFQs', href: '/admin/sourcing', icon: PackageSearch, badge: '3' },
+        { label: 'Sourcing & RFQs', href: '/admin/sourcing', icon: PackageSearch },
         { label: 'Inspections', href: '/admin/inspections', icon: ShieldCheck },
         { label: 'Shipments', href: '/admin/shipments', icon: Truck },
       ],
@@ -211,7 +211,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       label: 'Commerce',
       items: [
         { label: 'Products', href: '/admin/products', icon: Boxes },
-        { label: 'Catalog Approval', href: '/admin/catalog', icon: UploadCloud, badge: 'NEW' },
+        { label: 'Catalog Approval', href: '/admin/catalog', icon: UploadCloud },
         { label: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
         { label: 'Payments', href: '/admin/payments', icon: CreditCard },
         { label: 'Settlements', href: '/admin/settlements', icon: Banknote },
@@ -221,9 +221,9 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     {
       label: 'Communication',
       items: [
-        { label: 'Messaging', href: '/admin/messaging', icon: MessageSquare, badge: '12' },
+        { label: 'Messaging', href: '/admin/messaging', icon: MessageSquare },
         { label: 'SMS Campaigns', href: '/admin/sms', icon: Inbox },
-        { label: 'Support Tickets', href: '/admin/tickets', icon: LifeBuoy, badge: '5' },
+        { label: 'Support Tickets', href: '/admin/tickets', icon: LifeBuoy },
         { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       ],
     },

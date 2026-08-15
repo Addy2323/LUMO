@@ -52,6 +52,8 @@ export function AppSidebar({ role }: { role: Role }) {
 
   // Live Multi-Role Database Badges State
   const [dynamicBadges, setDynamicBadges] = useState<Record<string, string | number>>({})
+  // Track dismissed badge hrefs per session
+  const [dismissedBadges, setDismissedBadges] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     async function fetchBadges() {
@@ -70,7 +72,20 @@ export function AppSidebar({ role }: { role: Role }) {
     fetchBadges()
   }, [])
 
+  function handleItemClick(href: string) {
+    // Automatically dismiss/clear notification badge for this route when clicked
+    setDismissedBadges((prev) => {
+      const next = new Set(prev)
+      next.add(href)
+      return next
+    })
+  }
+
   function getDynamicBadge(itemHref: string, staticBadge?: string) {
+    if (dismissedBadges.has(itemHref)) {
+      return undefined
+    }
+
     if (itemHref === '/cart') {
       return cartCount > 0 ? String(cartCount) : undefined
     }
@@ -82,11 +97,11 @@ export function AppSidebar({ role }: { role: Role }) {
     }
 
     // Dynamic Database Badges from /api/navigation/badges
-    if (dynamicBadges[itemHref] !== undefined) {
+    if (dynamicBadges[itemHref] !== undefined && Number(dynamicBadges[itemHref]) > 0) {
       return String(dynamicBadges[itemHref])
     }
 
-    return staticBadge
+    return undefined
   }
 
   return (
@@ -143,7 +158,11 @@ export function AppSidebar({ role }: { role: Role }) {
                             : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                         }`}
                         render={
-                          <Link href={item.href} className="flex items-center gap-2.5">
+                          <Link
+                            href={item.href}
+                            onClick={() => handleItemClick(item.href)}
+                            className="flex items-center gap-2.5"
+                          >
                             <item.icon className={`size-4 shrink-0 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70'}`} strokeWidth={isActive ? 2.2 : 1.75} />
                             <span className="text-xs">{item.label}</span>
                           </Link>

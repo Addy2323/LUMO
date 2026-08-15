@@ -110,8 +110,8 @@ export default function SalesDisputeDeskPage() {
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
               <Scale className="size-6 text-[#FF6B00]" /> 8-Stage Dispute Resolution Workspace
             </h1>
-            <Badge className="bg-rose-50 text-rose-700 border-rose-200 text-[10px] font-bold">
-              Escrow Safeguard Active
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
+              Live PostgreSQL
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -192,7 +192,7 @@ export default function SalesDisputeDeskPage() {
                   <div className="font-semibold text-slate-800 truncate">{disp.reason || 'Merchant Claim'}</div>
                   <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono pt-1">
                     <span>Order: {disp.orderId ? disp.orderId.slice(0, 8) : 'N/A'}</span>
-                    <span className="font-bold text-slate-900">{formatTZS(disp.order?.totalAmountTZS || 4500000)}</span>
+                    <span className="font-bold text-slate-900">{disp.order?.totalAmountTZS ? formatTZS(Number(disp.order.totalAmountTZS)) : 'N/A'}</span>
                   </div>
                 </div>
               ))
@@ -216,8 +216,8 @@ export default function SalesDisputeDeskPage() {
                     </Badge>
                   </div>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    Disputed Order: {selectedDispute.orderId || 'ORD-9902'} · Risk Amount:{' '}
-                    <strong className="text-rose-600 font-mono">{formatTZS(selectedDispute.order?.totalAmountTZS || 4500000)}</strong>
+                    Disputed Order: {selectedDispute.orderId ? selectedDispute.orderId.slice(0, 12) : 'N/A'} · Risk Amount:{' '}
+                    <strong className="text-rose-600 font-mono">{selectedDispute.order?.totalAmountTZS ? formatTZS(Number(selectedDispute.order.totalAmountTZS)) : 'TZS 0'}</strong>
                   </p>
                 </div>
               </div>
@@ -228,21 +228,21 @@ export default function SalesDisputeDeskPage() {
                   <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                     <FileText className="size-3 text-blue-600" /> Customer Statement
                   </span>
-                  <p className="text-slate-800 font-medium">{selectedDispute.reason || 'Goods received damaged during freight transit.'}</p>
+                  <p className="text-slate-800 font-medium">{selectedDispute.reason || 'No customer statement recorded.'}</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                     <Building2 className="size-3 text-purple-600" /> Supplier Response
                   </span>
-                  <p className="text-slate-800 font-medium">Factory provided origin packaging inspection photos matching specification.</p>
+                  <p className="text-slate-800 font-medium text-slate-400 italic">Awaiting supplier response evidence.</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                     <Truck className="size-3 text-amber-600" /> Logistics Evidence
                   </span>
-                  <p className="text-slate-800 font-medium">Electronic Waybill #EWB-881 signed at Dar Port with container seal intact.</p>
+                  <p className="text-slate-800 font-medium text-slate-400 italic">Awaiting logistics evidence submission.</p>
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Inbox,
@@ -14,6 +14,7 @@ import {
   Filter,
   Plus,
   Trash2,
+  RefreshCw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,28 +24,68 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatDate } from '@/lib/format'
 import { toast } from 'sonner'
 
-type SupportTicket = {
+type InboxTicket = {
   id: string
   ticketNumber: string
   customerName: string
   customerEmail: string
   subject: string
-  category: 'Sourcing' | 'Logistics' | 'Billing' | 'Returns'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  status: 'open' | 'in_progress' | 'resolved' | 'closed'
+  category: string
+  priority: string
+  status: string
   assignedAgent: string
   updatedAt: string
   messages: { sender: 'customer' | 'agent'; text: string; time: string }[]
 }
 
-const INITIAL_TICKETS: SupportTicket[] = []
-
 export default function SharedInboxPage() {
-  const [tickets, setTickets] = useState<SupportTicket[]>(INITIAL_TICKETS)
+  const [tickets, setTickets] = useState<InboxTicket[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedTicketId, setSelectedTicketId] = useState<string>('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [replyText, setReplyText] = useState('')
+
+  useEffect(() => {
+    fetchInboxTickets()
+  }, [])
+
+  async function fetchInboxTickets() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/support/tickets')
+      if (res.ok) {
+        const data = await res.json()
+        const rawTickets = Array.isArray(data) ? data : data.tickets || data.disputes || []
+        const mapped: InboxTicket[] = rawTickets.map((t: any) => ({
+          id: t.id,
+          ticketNumber: t.ticketNumber || `TCK-${t.id.slice(0, 6).toUpperCase()}`,
+          customerName: t.buyer?.name || t.buyerName || 'Customer',
+          customerEmail: t.buyer?.email || t.buyerEmail || '',
+          subject: t.reason || t.subject || 'Support Inquiry',
+          category: t.category || 'General',
+          priority: t.status === 'OPEN' ? 'high' : 'medium',
+          status: (t.status || 'OPEN').toLowerCase().replace('_', '_'),
+          assignedAgent: t.assignedAgent || 'Unassigned',
+          updatedAt: t.updatedAt || t.createdAt || new Date().toISOString(),
+          messages: [
+            {
+              sender: 'customer' as const,
+              text: t.reason || t.subject || 'Customer inquiry submitted via the platform.',
+              time: new Date(t.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+          ],
+        }))
+        setTickets(mapped)
+        if (mapped.length > 0) setSelectedTicketId(mapped[0].id)
+      }
+    } catch (err) {
+      console.error('Failed to fetch inbox tickets:', err)
+      toast.error('Failed to load inbox tickets')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const activeTicket = tickets.find((t) => t.id === selectedTicketId) || tickets[0]
 
@@ -75,7 +116,7 @@ export default function SharedInboxPage() {
           ? {
               ...t,
               status: t.status === 'open' ? 'in_progress' : t.status,
-              assignedAgent: 'DevStromer (Sales Lead)',
+              assignedAgent: 'Sales Officer',
               updatedAt: new Date().toISOString(),
               messages: [...t.messages, newMsg],
             }
@@ -84,10 +125,10 @@ export default function SharedInboxPage() {
     )
 
     setReplyText('')
-    toast.success('Reply dispatched to customer email & portal!')
+    toast.success('Reply dispatched to customer!')
   }
 
-  function handleStatusChange(ticketId: string, newStatus: SupportTicket['status']) {
+  function handleStatusChange(ticketId: string, newStatus: string) {
     setTickets(
       tickets.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t)),
     )
@@ -96,7 +137,7 @@ export default function SharedInboxPage() {
 
   function handleAssignToMe(ticketId: string) {
     setTickets(
-      tickets.map((t) => (t.id === ticketId ? { ...t, assignedAgent: 'DevStromer (Sales Lead)' } : t)),
+      tickets.map((t) => (t.id === ticketId ? { ...t, assignedAgent: 'Sales Officer' } : t)),
     )
     toast.success('Ticket assigned to your queue!')
   }
@@ -108,9 +149,16 @@ export default function SharedInboxPage() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight">Shared Service Desk Inbox</h1>
           <p className="text-sm text-muted-foreground">
-            Centralized B2B customer inquiries, sourcing ticket escalation, and resolution workflow.
+            Centralized B2B customer inquiries, sourcing ticket escalation, and resolution workflow — powered by live PostgreSQL.
           </p>
         </div>
+        <Button
+          onClick={fetchInboxTickets}
+          variant="outline"
+          className="text-xs font-bold gap-1.5 h-9"
+        >
+          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Inbox
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -154,40 +202,52 @@ export default function SharedInboxPage() {
 
           <CardContent className="p-0">
             <div className="divide-y border-t border-border max-h-[600px] overflow-y-auto">
-              {filteredTickets.map((t) => {
-                const isSelected = t.id === activeTicket?.id
-                return (
-                  <div
-                    key={t.id}
-                    onClick={() => setSelectedTicketId(t.id)}
-                    className={`p-4 flex flex-col gap-2 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-brand-500/10 border-l-4 border-l-brand-500' : 'hover:bg-muted/30'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-extrabold text-xs text-brand-500">{t.ticketNumber}</span>
-                      <Badge
-                        className={`text-[9px] uppercase font-bold ${
-                          t.priority === 'urgent'
-                            ? 'bg-red-600 text-white'
-                            : t.priority === 'high'
-                            ? 'bg-amber-500 text-white'
-                            : 'bg-slate-600 text-white'
-                        }`}
-                      >
-                        {t.priority}
-                      </Badge>
-                    </div>
+              {loading ? (
+                <div className="p-12 text-center text-xs text-muted-foreground">
+                  <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                  Loading tickets from PostgreSQL database...
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="p-12 text-center text-xs text-muted-foreground space-y-1">
+                  <p className="font-semibold text-foreground">No active tickets found in database.</p>
+                  <p>Customer tickets will appear here when submitted.</p>
+                </div>
+              ) : (
+                filteredTickets.map((t) => {
+                  const isSelected = t.id === activeTicket?.id
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => setSelectedTicketId(t.id)}
+                      className={`p-4 flex flex-col gap-2 cursor-pointer transition-colors ${
+                        isSelected ? 'bg-brand-500/10 border-l-4 border-l-brand-500' : 'hover:bg-muted/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-extrabold text-xs text-brand-500">{t.ticketNumber}</span>
+                        <Badge
+                          className={`text-[9px] uppercase font-bold ${
+                            t.priority === 'urgent'
+                              ? 'bg-red-600 text-white'
+                              : t.priority === 'high'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-slate-600 text-white'
+                          }`}
+                        >
+                          {t.priority}
+                        </Badge>
+                      </div>
 
-                    <h4 className="text-xs font-bold text-foreground line-clamp-1">{t.subject}</h4>
+                      <h4 className="text-xs font-bold text-foreground line-clamp-1">{t.subject}</h4>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span className="truncate max-w-[160px]">{t.customerName}</span>
-                      <span className="capitalize font-medium text-foreground">{t.status.replace('_', ' ')}</span>
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className="truncate max-w-[160px]">{t.customerName}</span>
+                        <span className="capitalize font-medium text-foreground">{t.status.replace('_', ' ')}</span>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
           </CardContent>
         </Card>
@@ -219,7 +279,7 @@ export default function SharedInboxPage() {
 
                     <select
                       value={activeTicket.status}
-                      onChange={(e) => handleStatusChange(activeTicket.id, e.target.value as SupportTicket['status'])}
+                      onChange={(e) => handleStatusChange(activeTicket.id, e.target.value)}
                       className="flex h-8 rounded-md border border-input bg-background px-2 py-0.5 text-xs font-bold focus-visible:outline-none"
                     >
                       <option value="open">Open</option>
@@ -266,7 +326,7 @@ export default function SharedInboxPage() {
                 {/* Reply Form */}
                 <form onSubmit={handleSendReply} className="space-y-3 pt-3 border-t">
                   <Textarea
-                    placeholder="Type official response or canned template reply to customer..."
+                    placeholder="Type official response to customer..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     rows={3}
@@ -283,7 +343,9 @@ export default function SharedInboxPage() {
               </CardContent>
             </>
           ) : (
-            <CardContent className="py-12 text-center text-xs text-muted-foreground">Select a ticket to inspect.</CardContent>
+            <CardContent className="py-12 text-center text-xs text-muted-foreground">
+              {loading ? 'Loading tickets...' : 'No tickets available. Customer tickets will appear when submitted.'}
+            </CardContent>
           )}
         </Card>
       </div>

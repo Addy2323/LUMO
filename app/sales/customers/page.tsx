@@ -31,6 +31,9 @@ export default function Customer360Page() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
+  const [customerOrders, setCustomerOrders] = useState<any[]>([])
+  const [customerSourcing, setCustomerSourcing] = useState<any[]>([])
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
     fetchCustomers()
@@ -44,7 +47,7 @@ export default function Customer360Page() {
         const data = await res.json()
         setCustomers(data.users || [])
         if (data.users && data.users.length > 0) {
-          setSelectedCustomer(data.users[0])
+          selectCustomer(data.users[0])
         }
       }
     } catch (err) {
@@ -54,6 +57,47 @@ export default function Customer360Page() {
       setLoading(false)
     }
   }
+
+  async function selectCustomer(cust: any) {
+    setSelectedCustomer(cust)
+    setLoadingDetails(true)
+    try {
+      // Fetch customer's orders and sourcing requests in parallel
+      const [ordRes, srcRes] = await Promise.all([
+        fetch('/api/orders').catch(() => null),
+        fetch('/api/sourcing').catch(() => null),
+      ])
+
+      if (ordRes && ordRes.ok) {
+        const ordData = await ordRes.json()
+        const allOrders = ordData.orders || ordData || []
+        const custOrders = Array.isArray(allOrders)
+          ? allOrders.filter((o: any) => o.buyerId === cust.id)
+          : []
+        setCustomerOrders(custOrders)
+      } else {
+        setCustomerOrders([])
+      }
+
+      if (srcRes && srcRes.ok) {
+        const srcData = await srcRes.json()
+        const allSourcing = Array.isArray(srcData) ? srcData : srcData.requests || []
+        const custSourcing = allSourcing.filter((s: any) => s.buyerId === cust.id)
+        setCustomerSourcing(custSourcing)
+      } else {
+        setCustomerSourcing([])
+      }
+    } catch (err) {
+      console.error('Error loading customer details:', err)
+    } finally {
+      setLoadingDetails(false)
+    }
+  }
+
+  const lifetimeValue = customerOrders.reduce((acc, o) => acc + Number(o.totalAmountTZS || 0), 0)
+  const completedOrderCount = customerOrders.filter(
+    (o) => o.status === 'COMPLETED' || o.status === 'DELIVERED'
+  ).length
 
   const filtered = customers.filter(
     (c) =>
@@ -73,7 +117,7 @@ export default function Customer360Page() {
               <Users className="size-6 text-[#FF6B00]" /> Customer 360° Workspace
             </h1>
             <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
-              Shielded Data Access
+              Live PostgreSQL
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -119,12 +163,12 @@ export default function Customer360Page() {
             {loading ? (
               <div className="py-8 text-center text-xs text-slate-400">Loading customers...</div>
             ) : filtered.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">No customers found</div>
+              <div className="py-8 text-center text-xs text-slate-400">No customers found in database</div>
             ) : (
               filtered.map((cust) => (
                 <div
                   key={cust.id}
-                  onClick={() => setSelectedCustomer(cust)}
+                  onClick={() => selectCustomer(cust)}
                   className={`p-3 rounded-lg border text-xs cursor-pointer transition ${
                     selectedCustomer?.id === cust.id
                       ? 'bg-orange-50/80 border-[#FF6B00] shadow-xs'
@@ -141,7 +185,7 @@ export default function Customer360Page() {
                     {cust.companyName || cust.email}
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono mt-1">
-                    Phone: {cust.phone || 'N/A'}
+                    Phone: {cust.phone || 'Not provided'}
                   </div>
                 </div>
               ))
@@ -159,11 +203,11 @@ export default function Customer360Page() {
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-black text-slate-900">{selectedCustomer.name}</h2>
                     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
-                      Verified Buyer
+                      {selectedCustomer.kycStatus === 'VERIFIED' ? 'Verified Buyer' : 'Registered'}
                     </Badge>
                   </div>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    {selectedCustomer.companyName || 'Retail Merchant'} · ID: {selectedCustomer.id.slice(0, 12)}
+                    {selectedCustomer.companyName || 'Individual Buyer'} · ID: {selectedCustomer.id.slice(0, 12)}
                   </p>
                 </div>
 
@@ -178,7 +222,7 @@ export default function Customer360Page() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Phone Number</span>
-                  <p className="font-mono text-slate-900 font-bold">{selectedCustomer.phone || '0768828247'}</p>
+                  <p className="font-mono text-slate-900 font-bold">{selectedCustomer.phone || 'Not provided'}</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
@@ -188,42 +232,71 @@ export default function Customer360Page() {
 
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Value</span>
-                  <p className="font-mono text-emerald-600 font-black">{formatTZS(14500000)}</p>
+                  <p className="font-mono text-emerald-600 font-black">
+                    {lifetimeValue > 0 ? formatTZS(lifetimeValue) : 'TZS 0'}
+                  </p>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Completed Orders</span>
-                  <p className="font-mono text-slate-900 font-bold">12 Orders</p>
+                  <p className="font-mono text-slate-900 font-bold">{completedOrderCount} Orders</p>
                 </div>
               </div>
 
-              {/* Customer History Tabs */}
+              {/* Customer History */}
               <div className="space-y-3 text-xs">
                 <h3 className="font-extrabold text-slate-900 border-b border-slate-100 pb-2">
                   Active Sourcing Requests &amp; Orders
                 </h3>
 
-                <div className="space-y-2">
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-900">High-Grade Cotton Textiles (500 rolls)</div>
-                      <div className="text-[11px] text-slate-500">RFQ Ref: RFQ-8821 · Budget: {formatTZS(8500000)}</div>
-                    </div>
-                    <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px]">
-                      QUOTATION PREPARED
-                    </Badge>
+                {loadingDetails ? (
+                  <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                    <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading customer data...
                   </div>
-
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-slate-900">Order #ORD-9902 (Solar Panels 10kW)</div>
-                      <div className="text-[11px] text-slate-500">Total: {formatTZS(12400000)} · AzamPay Escrow</div>
-                    </div>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
-                      IN TRANSIT
-                    </Badge>
+                ) : (
+                  <div className="space-y-2">
+                    {customerSourcing.length === 0 && customerOrders.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-slate-400">
+                        No active sourcing requests or orders for this customer in the database.
+                      </div>
+                    ) : (
+                      <>
+                        {customerSourcing.map((s: any) => (
+                          <div key={s.id} className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-slate-900">{s.description || s.productUrl || 'Sourcing Request'}</div>
+                              <div className="text-[11px] text-slate-500">
+                                Ref: SRC-{s.id.slice(0, 6).toUpperCase()} ·
+                                Target: {s.targetPriceTZS ? formatTZS(Number(s.targetPriceTZS)) : 'Market Quote'} ·
+                                Qty: {s.targetQuantity}
+                              </div>
+                            </div>
+                            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px]">
+                              {s.status}
+                            </Badge>
+                          </div>
+                        ))}
+                        {customerOrders.map((o: any) => (
+                          <div key={o.id} className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-slate-900">Order #{o.orderNumber}</div>
+                              <div className="text-[11px] text-slate-500">
+                                Total: {formatTZS(Number(o.totalAmountTZS))} · {o.paymentMethod || 'AzamPay'}
+                              </div>
+                            </div>
+                            <Badge className={`text-[10px] ${
+                              o.status === 'COMPLETED' || o.status === 'DELIVERED'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                            }`}>
+                              {o.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Internal Notes & Follow-up */}
@@ -231,7 +304,7 @@ export default function Customer360Page() {
                 <label className="font-bold text-slate-700">Internal Sales Desk Notes</label>
                 <textarea
                   rows={3}
-                  defaultValue="Customer prefers Swahili communication via SMS. High repetition rate for textile sourcing."
+                  placeholder="Add internal notes about this customer..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
                 />
               </div>

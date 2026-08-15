@@ -46,74 +46,69 @@ export default function SalesPipelinePage() {
   async function fetchPipeline() {
     setLoading(true)
     try {
-      const res = await fetch('/api/sales/overview')
-      if (res.ok) {
-        const json = await res.json()
-        // Generate pipeline cards from live data
-        const sampleCards = [
-          {
-            id: 'c1',
-            stageId: 'NEW_LEAD',
-            customer: 'Kigoma Supermarket Ltd',
-            reference: 'RFQ-8821',
-            valueTzs: 4500000,
-            officer: 'Amani J.',
-            nextAction: 'Confirm fabric specs',
-            followUpDate: 'Today',
-            probability: 40,
-            timeInStage: '2 hrs',
-          },
-          {
-            id: 'c2',
-            stageId: 'REQ_CONFIRMED',
-            customer: 'Mwanza Hardware Supply',
-            reference: 'RFQ-8824',
-            valueTzs: 12800000,
-            officer: 'Sarah M.',
-            nextAction: 'Review target price',
-            followUpDate: 'Tomorrow',
-            probability: 60,
-            timeInStage: '1 day',
-          },
-          {
-            id: 'c3',
-            stageId: 'RFQ_REVIEWED',
-            customer: 'Dar Merchant Group',
-            reference: 'RFQ-8819',
-            valueTzs: 8900000,
-            officer: 'Amani J.',
-            nextAction: 'Assign Guangzhou Agent',
-            followUpDate: 'Today',
-            probability: 70,
-            timeInStage: '4 hrs',
-          },
-          {
-            id: 'c4',
-            stageId: 'CUSTOMER_QUOTE',
-            customer: 'Arusha Logistics Hub',
-            reference: 'Q-9902',
-            valueTzs: 18500000,
-            officer: 'Daniel K.',
-            nextAction: 'Send Landed Cost PDF',
-            followUpDate: 'Today',
-            probability: 85,
-            timeInStage: '5 hrs',
-          },
-          {
-            id: 'c5',
-            stageId: 'PAYMENT',
-            customer: 'Dodoma Retail Network',
-            reference: 'ORD-7712',
-            valueTzs: 24000000,
-            officer: 'Amani J.',
-            nextAction: 'Verify AzamPay Escrow',
-            followUpDate: 'Completed',
-            probability: 95,
-            timeInStage: '1 hr',
-          },
-        ]
-        setPipelineData(sampleCards)
+      const [srcRes, ordRes] = await Promise.all([
+        fetch('/api/sourcing'),
+        fetch('/api/orders'),
+      ])
+
+      const cards: any[] = []
+
+      if (srcRes.ok) {
+        const srcData = await srcRes.json()
+        const requests = Array.isArray(srcData) ? srcData : srcData.requests || []
+        requests.forEach((req: any) => {
+          let stageId = 'NEW_LEAD'
+          if (req.status === 'SUBMITTED') stageId = 'NEW_LEAD'
+          else if (req.status === 'UNDER_REVIEW') stageId = 'REQ_CONFIRMED'
+          else if (req.status === 'QUOTED') stageId = 'SUPPLIER_QUOTES'
+          else if (req.status === 'ACCEPTED') stageId = 'CUSTOMER_DECISION'
+          else if (req.status === 'FULFILLED') stageId = 'COMPLETED'
+          else if (req.status === 'REJECTED') return
+
+          cards.push({
+            id: `src_${req.id}`,
+            stageId,
+            customer: req.buyer?.companyName || req.buyer?.name || 'B2B Buyer',
+            reference: `SRC-${req.id.slice(0, 6).toUpperCase()}`,
+            valueTzs: Number(req.targetPriceTZS || 0),
+            officer: req.buyer?.name || 'Sales Officer',
+            nextAction: req.description ? req.description.slice(0, 40) : 'Review sourcing request',
+            followUpDate: new Date(req.createdAt).toLocaleDateString(),
+            probability: stageId === 'SUPPLIER_QUOTES' ? 60 : stageId === 'CUSTOMER_DECISION' ? 80 : 30,
+            timeInStage: `${Math.floor((Date.now() - new Date(req.createdAt).getTime()) / 3600000)}h`,
+          })
+        })
       }
+
+      if (ordRes.ok) {
+        const ordData = await ordRes.json()
+        const orders = ordData.orders || ordData || []
+        if (Array.isArray(orders)) {
+          orders.forEach((ord: any) => {
+            let stageId = 'PAYMENT'
+            if (ord.status === 'PAID') stageId = 'PAYMENT'
+            else if (ord.status === 'PROCESSING') stageId = 'ORDER_COORDINATION'
+            else if (ord.status === 'SHIPPED') stageId = 'ORDER_COORDINATION'
+            else if (ord.status === 'DELIVERED' || ord.status === 'COMPLETED') stageId = 'COMPLETED'
+            else if (ord.status === 'PENDING_PAYMENT') stageId = 'CUSTOMER_DECISION'
+
+            cards.push({
+              id: `ord_${ord.id}`,
+              stageId,
+              customer: ord.buyer?.companyName || ord.buyer?.name || 'Customer',
+              reference: `ORD-${ord.orderNumber}`,
+              valueTzs: Number(ord.totalAmountTZS || 0),
+              officer: ord.buyer?.name || 'Sales Officer',
+              nextAction: ord.status === 'PAID' ? 'Verify payment escrow' : `Order ${ord.status}`,
+              followUpDate: new Date(ord.createdAt).toLocaleDateString(),
+              probability: stageId === 'COMPLETED' ? 100 : 90,
+              timeInStage: `${Math.floor((Date.now() - new Date(ord.createdAt).getTime()) / 3600000)}h`,
+            })
+          })
+        }
+      }
+
+      setPipelineData(cards)
     } catch (err) {
       console.error('Failed to fetch pipeline:', err)
       toast.error('Failed to load pipeline data')
@@ -121,6 +116,14 @@ export default function SalesPipelinePage() {
       setLoading(false)
     }
   }
+
+  const filteredPipeline = search.trim()
+    ? pipelineData.filter(
+        (c) =>
+          c.customer.toLowerCase().includes(search.toLowerCase()) ||
+          c.reference.toLowerCase().includes(search.toLowerCase())
+      )
+    : pipelineData
 
   return (
     <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24 overflow-x-hidden">
@@ -132,15 +135,25 @@ export default function SalesPipelinePage() {
               <TrendingUp className="size-6 text-[#FF6B00]" /> 10-Stage Visual Sales Conversion Pipeline
             </h1>
             <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
-              Live Conversion Engine
+              Live PostgreSQL
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track deals from initial enquiry to quotation approval, payment escrow, and order fulfillment.
+            Track deals from initial enquiry to quotation approval, payment escrow, and order fulfillment — powered by live database.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="relative w-48">
+            <Search className="absolute left-3 top-2.5 size-3.5 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search deals..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 bg-slate-50 border-slate-200 text-xs h-9"
+            />
+          </div>
           <Button
             onClick={fetchPipeline}
             variant="outline"
@@ -155,7 +168,7 @@ export default function SalesPipelinePage() {
       <div className="overflow-x-auto pb-4">
         <div className="flex gap-3 min-w-[1800px]">
           {STAGES.map((stage) => {
-            const stageCards = pipelineData.filter((c) => c.stageId === stage.id)
+            const stageCards = filteredPipeline.filter((c) => c.stageId === stage.id)
             const totalStageValue = stageCards.reduce((acc, c) => acc + c.valueTzs, 0)
 
             return (
