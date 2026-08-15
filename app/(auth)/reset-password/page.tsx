@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Lock, ArrowRight, Loader2, CheckCircle2, ShieldAlert, Check } from 'lucide-react'
+import { Lock, ArrowRight, Loader2, CheckCircle2, ShieldAlert, Check, Eye, EyeOff } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -12,11 +12,13 @@ export default function ResetPasswordPage() {
   const router = useRouter()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  const isMinLength = newPassword.length >= 12
+  const isMinLength = newPassword.length >= 8
   const hasUpper = /[A-Z]/.test(newPassword)
   const hasLower = /[a-z]/.test(newPassword)
   const hasNumber = /\d/.test(newPassword)
@@ -109,30 +111,50 @@ export default function ResetPasswordPage() {
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  New Password (Min 12 Characters)
+                  New Password (Min 8 Characters)
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  required
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  required
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
 
               {/* Password Checklist */}
@@ -142,7 +164,7 @@ export default function ResetPasswordPage() {
                     <Check className="size-2.5 stroke-[3]" />
                   </div>
                   <span className={isMinLength ? 'text-slate-900 dark:text-slate-200 font-bold' : 'text-slate-400'}>
-                    At least 12 characters
+                    At least 8 characters
                   </span>
                 </div>
 
