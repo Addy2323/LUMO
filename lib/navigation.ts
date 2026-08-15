@@ -1,5 +1,6 @@
 import {
   Activity,
+  AlertTriangle,
   BadgeCheck,
   Banknote,
   BarChart3,
@@ -7,6 +8,7 @@ import {
   Blocks,
   Boxes,
   Building2,
+  Clock,
   ClipboardList,
   CreditCard,
   FileText,
@@ -116,20 +118,49 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
 
   sales: [
     {
-      label: 'Service desk',
+      label: 'Sales Operations',
       items: [
         { label: 'Overview', href: '/sales', icon: Gauge },
-        { label: 'Shared inbox', href: '/sales/inbox', icon: Inbox, badge: '12' },
-        { label: 'Sourcing requests', href: '/sales/sourcing', icon: PackageSearch, badge: '4' },
-        { label: 'Disputes', href: '/sales/disputes', icon: Scale },
+        { label: 'Shared Inbox', href: '/sales/inbox', icon: Inbox, badge: '12' },
+        { label: 'My Assigned Orders', href: '/sales/orders', icon: ClipboardList, badge: '5' },
+        { label: 'Sales Pipeline', href: '/sales/pipeline', icon: Activity, badge: 'NEW' },
+        { label: 'Sourcing Requests', href: '/sales/sourcing', icon: PackageSearch, badge: '4' },
+        { label: 'Quotations', href: '/sales/quotations', icon: FileText, badge: '3' },
+        { label: 'Customer Follow-ups', href: '/sales/follow-ups', icon: Clock },
+        { label: 'Tasks & Calendar', href: '/sales/tasks', icon: Sparkles },
       ],
     },
     {
-      label: 'Knowledge',
+      label: 'Customer Service',
       items: [
-        { label: 'Canned responses', href: '/sales/templates', icon: MessageSquare },
-        { label: 'Customer history', href: '/sales/history', icon: ScrollText },
-        { label: 'Team performance', href: '/sales/performance', icon: BarChart3 },
+        { label: 'Customer 360°', href: '/sales/customers', icon: Users },
+        { label: 'Support Tickets', href: '/sales/tickets', icon: LifeBuoy, badge: '5' },
+        { label: 'Complaints', href: '/sales/complaints', icon: AlertTriangle },
+        { label: 'Returns & Refunds', href: '/sales/returns', icon: Package },
+        { label: 'Disputes', href: '/sales/disputes', icon: Scale, badge: '2' },
+        { label: 'Escalations', href: '/sales/escalations', icon: ShieldCheck },
+      ],
+    },
+    {
+      label: 'Coordination',
+      items: [
+        { label: 'Sourcing Agents', href: '/sales/agents', icon: Building2 },
+        { label: 'Supplier Liaison', href: '/sales/suppliers', icon: Store },
+        { label: 'Logistics Coordination', href: '/sales/logistics', icon: Truck },
+        { label: 'Payment Issues', href: '/sales/payments', icon: CreditCard },
+        { label: 'Internal Messages', href: '/sales/messages', icon: MessageSquare },
+      ],
+    },
+    {
+      label: 'Knowledge & Performance',
+      items: [
+        { label: 'Canned Responses', href: '/sales/templates', icon: MessageSquare },
+        { label: 'Knowledge Base', href: '/sales/knowledge', icon: ScrollText },
+        { label: 'Customer History', href: '/sales/history', icon: ScrollText },
+        { label: 'Team Workload', href: '/sales/workload', icon: Users },
+        { label: 'SLA Performance', href: '/sales/sla', icon: BarChart3 },
+        { label: 'Sales Reports', href: '/sales/reports', icon: BarChart3 },
+        { label: 'My Performance', href: '/sales/performance', icon: BarChart3 },
       ],
     },
   ],

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -49,6 +50,26 @@ export function AppSidebar({ role }: { role: Role }) {
   const agentOrders = useAgentStore((state) => state.orders)
   const sourcingCount = agentOrders.length
 
+  // Live Multi-Role Database Badges State
+  const [dynamicBadges, setDynamicBadges] = useState<Record<string, string | number>>({})
+
+  useEffect(() => {
+    async function fetchBadges() {
+      try {
+        const res = await fetch('/api/navigation/badges')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.badges) {
+            setDynamicBadges(data.badges)
+          }
+        }
+      } catch (err) {
+        console.error('[SIDEBAR BADGES ERROR]', err)
+      }
+    }
+    fetchBadges()
+  }, [])
+
   function getDynamicBadge(itemHref: string, staticBadge?: string) {
     if (itemHref === '/cart') {
       return cartCount > 0 ? String(cartCount) : undefined
@@ -59,6 +80,12 @@ export function AppSidebar({ role }: { role: Role }) {
     if (itemHref === '/account/returns') {
       return undefined
     }
+
+    // Dynamic Database Badges from /api/navigation/badges
+    if (dynamicBadges[itemHref] !== undefined) {
+      return String(dynamicBadges[itemHref])
+    }
+
     return staticBadge
   }
 
@@ -189,4 +216,3 @@ export function AppSidebar({ role }: { role: Role }) {
     </Sidebar>
   )
 }
-

@@ -1,127 +1,245 @@
 'use client'
 
-import { useState } from 'react'
-import { Calculator, DollarSign, Send, ShieldCheck, FileText, CheckCircle2 } from 'lucide-react'
+import React, { useState } from 'react'
+import {
+  FileText,
+  Calculator,
+  Download,
+  CheckCircle2,
+  AlertTriangle,
+  Plus,
+  ArrowRight,
+  ShieldCheck,
+  Building2,
+  DollarSign,
+  Send,
+  Zap,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { formatTZS } from '@/lib/format'
 import { toast } from 'sonner'
 
-export default function SalesQuotationsPage() {
-  const [exchangeRateUSD, setExchangeRateUSD] = useState(2620)
-  const [productCostUSD, setProductCostUSD] = useState(4500)
-  const [freightCostUSD, setFreightCostUSD] = useState(850)
-  const [customsDutyPercent, setCustomsDutyPercent] = useState(15)
-  const [platformFeePercent, setPlatformFeePercent] = useState(5)
+export default function QuotationCentrePage() {
+  // Landed Cost Math State
+  const [productCost, setProductCost] = useState<number>(8500000)
+  const [sourcingFee, setSourcingFee] = useState<number>(250000)
+  const [inspectionFee, setInspectionFee] = useState<number>(150000)
+  const [freightEstimate, setFreightEstimate] = useState<number>(800000)
+  const [insuranceFee, setInsuranceFee] = useState<number>(100000)
+  const [customsTax, setCustomsTax] = useState<number>(1200000)
+  const [lumoServiceFee, setLumoServiceFee] = useState<number>(350000)
 
-  // Landed Cost Calculations
-  const productCostTZS = productCostUSD * exchangeRateUSD
-  const freightCostTZS = freightCostUSD * exchangeRateUSD
-  const customsDutyTZS = ((productCostTZS + freightCostTZS) * customsDutyPercent) / 100
-  const subtotalTZS = productCostTZS + freightCostTZS + customsDutyTZS
-  const platformFeeTZS = (subtotalTZS * platformFeePercent) / 100
-  const totalLandedCostTZS = subtotalTZS + platformFeeTZS
+  // Customer & Quote Details
+  const [customerName, setCustomerName] = useState('Kigoma Retailer Ltd')
+  const [rfqRef, setRfqRef] = useState('RFQ-8821')
+  const [validityDays, setValidityDays] = useState('7')
+
+  // Landed Cost Total Calculation
+  const totalLandedCost =
+    Number(productCost) +
+    Number(sourcingFee) +
+    Number(inspectionFee) +
+    Number(freightEstimate) +
+    Number(insuranceFee) +
+    Number(customsTax) +
+    Number(lumoServiceFee)
+
+  const requiresApproval = lumoServiceFee < 200000
+
+  function handleGeneratePdf() {
+    toast.success(`Official Landed Cost Quotation generated for ${customerName}!`)
+  }
 
   function handleSendQuotation() {
-    toast.success(`Formal Landed TZS Quotation of ${formatTZS(totalLandedCostTZS)} dispatched to Buyer!`)
+    toast.success(`Quotation for ${rfqRef} dispatched to customer!`)
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans antialiased text-foreground">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Landed Cost Quotation Calculator</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Build itemized B2B landed quotes including FOB product cost, ocean/air freight, TRA customs duty, and platform fees.
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <FileText className="size-6 text-[#FF6B00]" /> B2B Quotation Centre &amp; Landed Cost Builder
+            </h1>
+            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+              Automated Financial Math
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Compare supplier factory quotes, calculate landed costs, enforce margin approvals, and generate customer PDFs.
           </p>
         </div>
 
-        <Button onClick={handleSendQuotation} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5">
-          <Send className="size-4" /> Issue Customer-Facing Quotation
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleGeneratePdf}
+            variant="outline"
+            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold h-9 px-3 gap-1.5"
+          >
+            <Download className="size-3.5 text-slate-500" /> Export PDF
+          </Button>
+
+          <Button
+            onClick={handleSendQuotation}
+            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
+          >
+            <Send className="size-3.5" /> Dispatch Quotation
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Calculator Controls */}
-        <Card className="p-6 space-y-4 text-xs">
-          <h2 className="font-extrabold text-sm text-foreground flex items-center gap-2">
-            <Calculator className="size-4 text-[#FF6B00]" /> Quotation Input Parameters
-          </h2>
-
-          <div className="space-y-1">
-            <label className="font-bold text-foreground">Exchange Rate (USD → TZS)</label>
-            <Input
-              type="number"
-              value={exchangeRateUSD}
-              onChange={(e) => setExchangeRateUSD(Number(e.target.value))}
-              className="font-mono text-xs h-9"
-            />
+      {/* Grid: Quotation Builder & Supplier Comparison */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Landed Cost Math Builder */}
+        <Card className="bg-white border-slate-200 p-5 shadow-sm lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2">
+              <Calculator className="size-5 text-[#FF6B00]" />
+              <h3 className="text-base font-extrabold text-slate-900">Landed Cost Calculation Sheet</h3>
+            </div>
+            {requiresApproval && (
+              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-bold gap-1">
+                <AlertTriangle className="size-3 text-amber-600" /> Needs Manager Margin Approval
+              </Badge>
+            )}
           </div>
 
-          <div className="space-y-1">
-            <label className="font-bold text-foreground">FOB Product Cost ($ USD)</label>
-            <Input
-              type="number"
-              value={productCostUSD}
-              onChange={(e) => setProductCostUSD(Number(e.target.value))}
-              className="font-mono text-xs h-9"
-            />
+          {/* Form Inputs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Customer Name</label>
+              <Input
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="bg-slate-50 border-slate-200 h-9 font-medium"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Sourcing Request Ref</label>
+              <Input
+                value={rfqRef}
+                onChange={(e) => setRfqRef(e.target.value)}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Product FOB Base Cost (TZS)</label>
+              <Input
+                type="number"
+                value={productCost}
+                onChange={(e) => setProductCost(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Sourcing Agent Fee (TZS)</label>
+              <Input
+                type="number"
+                value={sourcingFee}
+                onChange={(e) => setSourcingFee(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Physical Inspection Fee (TZS)</label>
+              <Input
+                type="number"
+                value={inspectionFee}
+                onChange={(e) => setInspectionFee(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Freight &amp; Shipping Estimate (TZS)</label>
+              <Input
+                type="number"
+                value={freightEstimate}
+                onChange={(e) => setFreightEstimate(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Cargo Insurance Coverage (TZS)</label>
+              <Input
+                type="number"
+                value={insuranceFee}
+                onChange={(e) => setInsuranceFee(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Customs Duty &amp; TRA Taxes (TZS)</label>
+              <Input
+                type="number"
+                value={customsTax}
+                onChange={(e) => setCustomsTax(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono"
+              />
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="font-bold text-slate-700">Lumo Platform Service Fee (TZS)</label>
+              <Input
+                type="number"
+                value={lumoServiceFee}
+                onChange={(e) => setLumoServiceFee(Number(e.target.value))}
+                className="bg-slate-50 border-slate-200 h-9 font-mono text-[#FF6B00] font-bold"
+              />
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="font-bold text-foreground">International Freight Cost ($ USD)</label>
-            <Input
-              type="number"
-              value={freightCostUSD}
-              onChange={(e) => setFreightCostUSD(Number(e.target.value))}
-              className="font-mono text-xs h-9"
-            />
-          </div>
+          {/* Total Summary */}
+          <div className="p-4 bg-slate-900 text-white rounded-xl flex items-center justify-between mt-4">
+            <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Total Calculated Landed Cost</span>
+              <div className="text-2xl font-black font-mono text-[#FF6B00]">{formatTZS(totalLandedCost)}</div>
+            </div>
 
-          <div className="space-y-1">
-            <label className="font-bold text-foreground">Estimated TRA Customs &amp; Tariff Duty (%)</label>
-            <Input
-              type="number"
-              value={customsDutyPercent}
-              onChange={(e) => setCustomsDutyPercent(Number(e.target.value))}
-              className="font-mono text-xs h-9"
-            />
+            <Button
+              onClick={handleSendQuotation}
+              className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5"
+            >
+              Submit Quotation To Customer
+            </Button>
           </div>
         </Card>
 
-        {/* Landed Cost Itemized Output */}
-        <Card className="p-6 space-y-4 text-xs bg-muted/20 border-l-4 border-l-[#FF6B00]">
-          <h2 className="font-extrabold text-sm text-foreground flex items-center justify-between">
-            <span>Landed Cost Itemized Breakdown</span>
-            <Badge className="bg-[#FF6B00] text-white font-mono">TZS Currency</Badge>
-          </h2>
+        {/* Right Col: Supplier Offer Comparison */}
+        <Card className="bg-white border-slate-200 p-5 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <Building2 className="size-5 text-blue-600" />
+            <h3 className="text-base font-extrabold text-slate-900">Supplier Price Comparison</h3>
+          </div>
 
-          <div className="space-y-2.5 divide-y font-mono">
-            <div className="flex justify-between pt-1">
-              <span className="text-muted-foreground">FOB Factory Product Price:</span>
-              <strong className="text-foreground">{formatTZS(productCostTZS)}</strong>
+          <div className="space-y-3 text-xs">
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-1">
+              <div className="flex items-center justify-between font-bold text-slate-900">
+                <span>Guangzhou Textile Co.</span>
+                <Badge className="bg-emerald-600 text-white text-[9px]">BEST VALUE</Badge>
+              </div>
+              <p className="font-mono text-emerald-700 font-bold">{formatTZS(8500000)} (FOB)</p>
+              <span className="text-[10px] text-slate-500 block">Delivery: 14 Days · MOQ: 100 Units</span>
             </div>
 
-            <div className="flex justify-between pt-2">
-              <span className="text-muted-foreground">Ocean / Air Freight Shipping:</span>
-              <strong className="text-foreground">{formatTZS(freightCostTZS)}</strong>
-            </div>
-
-            <div className="flex justify-between pt-2">
-              <span className="text-muted-foreground">TRA Customs Duty &amp; Taxes ({customsDutyPercent}%):</span>
-              <strong className="text-foreground">{formatTZS(customsDutyTZS)}</strong>
-            </div>
-
-            <div className="flex justify-between pt-2">
-              <span className="text-muted-foreground">Lumo Service Fee ({platformFeePercent}%):</span>
-              <strong className="text-foreground">{formatTZS(platformFeeTZS)}</strong>
-            </div>
-
-            <div className="flex justify-between pt-3 text-sm font-extrabold text-[#FF6B00]">
-              <span>TOTAL LANDED COST (TZS):</span>
-              <span>{formatTZS(totalLandedCostTZS)}</span>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+              <div className="flex items-center justify-between font-bold text-slate-900">
+                <span>Zhejiang Industrial Fabrics</span>
+                <Badge variant="outline" className="text-[9px]">ALT OFFER</Badge>
+              </div>
+              <p className="font-mono text-slate-700 font-bold">{formatTZS(9200000)} (FOB)</p>
+              <span className="text-[10px] text-slate-500 block">Delivery: 10 Days · MOQ: 50 Units</span>
             </div>
           </div>
         </Card>

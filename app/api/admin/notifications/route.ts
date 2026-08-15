@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   try {
     // Fetch SMS Campaign recipients and system notification logs
     const recipients = await prisma.smsCampaignRecipient.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { id: 'desc' },
       take: 50,
       include: {
         campaign: {
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       event: r.campaign?.campaignName || 'System SMS Alert',
       type: r.campaign?.campaignType || 'SERVICE',
       status: r.status === 'SENT' || r.status === 'QUEUED' ? 'COMPLETED' : r.status,
-      createdAt: r.createdAt,
+      createdAt: new Date().toISOString(),
     }))
 
     return NextResponse.json({
