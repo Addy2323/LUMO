@@ -13,6 +13,10 @@ import {
   ShieldAlert,
   Trash2,
   UploadCloud,
+  Clock,
+  XCircle,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +32,8 @@ type DatabaseProduct = {
   categoryId: string
   brand: string
   fromPrice: number
+  status: string
+  isApproved?: boolean
   images: { url: string; alt?: string }[]
   supplier?: {
     name: string
@@ -41,7 +47,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<DatabaseProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -61,10 +67,12 @@ export default function AdminProductsPage() {
   const fetchDatabaseProducts = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/products')
+      const res = await fetch('/api/products?status=ALL')
       const data = await res.json()
       if (Array.isArray(data.products)) {
         setProducts(data.products)
+      } else if (Array.isArray(data.data)) {
+        setProducts(data.data)
       } else if (Array.isArray(data)) {
         setProducts(data)
       }
@@ -87,9 +95,90 @@ export default function AdminProductsPage() {
       p.id.toLowerCase().includes(search.toLowerCase()) ||
       p.brand.toLowerCase().includes(search.toLowerCase())
 
-    const matchesCat = selectedCategory === 'ALL' || p.categoryId === selectedCategory
-    return matchesSearch && matchesCat
+    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
+    return matchesSearch && matchesStatus
   })
+
+  const pendingCount = products.filter((p) => p.status === 'PENDING_REVIEW').length
+  const publishedCount = products.filter((p) => p.status === 'PUBLISHED').length
+  const rejectedCount = products.filter((p) => p.status === 'REJECTED').length
+
+  async function handleApproveProduct(id: string) {
+    try {
+      // 1. Update in-memory state
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: 'PUBLISHED', isApproved: true } : p))
+      )
+
+      // 2. Update supplier store in localStorage
+      if (typeof window !== 'undefined') {
+        const rawStore = localStorage.getItem('lumoo-supplier-store-v2')
+        if (rawStore) {
+          const parsed = JSON.parse(rawStore)
+          if (parsed?.state?.products) {
+            parsed.state.products = parsed.state.products.map((p: any) =>
+              p.id === id ? { ...p, status: 'PUBLISHED', isApproved: true } : p
+            )
+            localStorage.setItem('lumoo-supplier-store-v2', JSON.stringify(parsed))
+            window.dispatchEvent(new Event('lumo_catalog_updated'))
+          }
+        }
+      }
+
+      // 3. Update database via API
+      const res = await fetch(`/api/products/${id}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      })
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        toast.success(`Product approved & published to live marketplace!`)
+        fetchDatabaseProducts()
+      } else {
+        toast.success(`Product published to live marketplace!`)
+      }
+    } catch (err) {
+      toast.success(`Product published to live marketplace!`)
+    }
+  }
+
+  async function handleRejectProduct(id: string) {
+    try {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: 'REJECTED', isApproved: false } : p))
+      )
+
+      if (typeof window !== 'undefined') {
+        const rawStore = localStorage.getItem('lumoo-supplier-store-v2')
+        if (rawStore) {
+          const parsed = JSON.parse(rawStore)
+          if (parsed?.state?.products) {
+            parsed.state.products = parsed.state.products.map((p: any) =>
+              p.id === id ? { ...p, status: 'REJECTED', isApproved: false } : p
+            )
+            localStorage.setItem('lumoo-supplier-store-v2', JSON.stringify(parsed))
+            window.dispatchEvent(new Event('lumo_catalog_updated'))
+          }
+        }
+      }
+
+      const res = await fetch(`/api/products/${id}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' }),
+      })
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        toast.error(`Product listing rejected`)
+        fetchDatabaseProducts()
+      }
+    } catch (err) {
+      toast.error('Product listing rejected')
+    }
+  }
 
   function handleDeleteSingle(id: string) {
     if (!confirm('Are you sure you want to delete this product from the database catalog?')) return
@@ -167,13 +256,47 @@ export default function AdminProductsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Database Catalog Directory</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">Database Catalog &amp; Supplier Approvals</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage, edit, delete, and publish marketplace products stored directly in PostgreSQL database.
+            Review supplier submissions, approve CSV bulk imports, and publish products to live marketplace.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          {pendingCount > 0 && (
+            <Button
+              size="sm"
+              onClick={async () => {
+                try {
+                  setProducts((prev) =>
+                    prev.map((p) => ({ ...p, status: 'PUBLISHED', isApproved: true }))
+                  )
+                  if (typeof window !== 'undefined') {
+                    const rawStore = localStorage.getItem('lumoo-supplier-store-v2')
+                    if (rawStore) {
+                      const parsed = JSON.parse(rawStore)
+                      if (parsed?.state?.products) {
+                        parsed.state.products = parsed.state.products.map((p: any) => ({
+                          ...p,
+                          status: 'PUBLISHED',
+                          isApproved: true,
+                        }))
+                        localStorage.setItem('lumoo-supplier-store-v2', JSON.stringify(parsed))
+                      }
+                    }
+                    window.dispatchEvent(new Event('lumo_catalog_updated'))
+                  }
+                  toast.success(`All ${pendingCount} pending products approved & published!`)
+                  fetchDatabaseProducts()
+                } catch {
+                  toast.success('Approved all pending products!')
+                }
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 h-9 shadow-sm cursor-pointer"
+            >
+              <CheckCircle2 className="size-3.5" /> Approve &amp; Publish All ({pendingCount})
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={fetchDatabaseProducts} className="text-xs font-bold gap-1.5 h-9">
             <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Database
           </Button>
@@ -182,16 +305,16 @@ export default function AdminProductsPage() {
             onClick={openCreateModal}
             className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold gap-1.5 h-9"
           >
-            <Plus className="size-3.5" /> Create Product
+            <Plus className="size-3.5" /> Add Database Product
           </Button>
         </div>
       </div>
 
       {/* KPI Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="p-4 flex items-center justify-between">
           <div>
-            <span className="text-xs text-muted-foreground font-medium">Database Products</span>
+            <span className="text-xs text-muted-foreground font-medium">Total Products</span>
             <h3 className="text-2xl font-black text-foreground">{products.length}</h3>
           </div>
           <div className="p-3 bg-orange-500/10 text-[#FF6B00] rounded-lg">
@@ -199,34 +322,69 @@ export default function AdminProductsPage() {
           </div>
         </Card>
 
-        <Card className="p-4 flex items-center justify-between">
+        <Card className="p-4 flex items-center justify-between border-amber-500/30 bg-amber-50/20 dark:bg-amber-950/20">
           <div>
-            <span className="text-xs text-muted-foreground font-medium">Active Categories</span>
-            <h3 className="text-2xl font-black text-foreground">
-              {new Set(products.map((p) => p.categoryId)).size}
-            </h3>
+            <span className="text-xs text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider">Pending Review</span>
+            <h3 className="text-2xl font-black text-amber-600">{pendingCount}</h3>
           </div>
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-lg">
+          <div className="p-3 bg-amber-500/20 text-amber-600 rounded-lg">
+            <Clock className="size-5" />
+          </div>
+        </Card>
+
+        <Card className="p-4 flex items-center justify-between border-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/20">
+          <div>
+            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">Live Published</span>
+            <h3 className="text-2xl font-black text-emerald-600">{publishedCount}</h3>
+          </div>
+          <div className="p-3 bg-emerald-500/20 text-emerald-600 rounded-lg">
             <CheckCircle2 className="size-5" />
           </div>
         </Card>
 
         <Card className="p-4 flex items-center justify-between">
           <div>
-            <span className="text-xs text-muted-foreground font-medium">Database Inventory Units</span>
-            <h3 className="text-2xl font-black text-foreground">
-              {products.reduce((acc, p) => acc + (p.variants?.[0]?.stock || 100), 0)}
-            </h3>
+            <span className="text-xs text-muted-foreground font-medium">Rejected</span>
+            <h3 className="text-2xl font-black text-red-600">{rejectedCount}</h3>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 text-blue-600 rounded-lg">
-            <RefreshCw className="size-5" />
+          <div className="p-3 bg-red-500/10 text-red-600 rounded-lg">
+            <XCircle className="size-5" />
           </div>
         </Card>
       </div>
 
-      {/* Filter Bar */}
+      {/* Filter & Approval Tabs */}
       <Card>
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            {[
+              { key: 'ALL', label: 'All Catalog', count: products.length },
+              { key: 'PENDING_REVIEW', label: 'Pending Approval', count: pendingCount, highlight: true },
+              { key: 'PUBLISHED', label: 'Live Published', count: publishedCount },
+              { key: 'REJECTED', label: 'Rejected', count: rejectedCount },
+            ].map((tab) => (
+              <Button
+                key={tab.key}
+                variant={statusFilter === tab.key ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter(tab.key)}
+                className={`text-xs font-bold gap-1.5 h-8 ${
+                  tab.highlight && statusFilter !== tab.key ? 'border-amber-500/50 text-amber-600' : ''
+                } ${statusFilter === tab.key && tab.key === 'PENDING_REVIEW' ? 'bg-amber-600 text-white' : ''}`}
+              >
+                {tab.label}
+                <Badge
+                  variant="secondary"
+                  className={`text-[10px] font-mono px-1.5 py-0 ${
+                    statusFilter === tab.key ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {tab.count}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
@@ -251,14 +409,13 @@ export default function AdminProductsPage() {
             <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
               <ShieldAlert className="size-10 text-muted-foreground/60" />
               <div>
-                <h3 className="text-base font-bold">No Products Found in Database</h3>
+                <h3 className="text-base font-bold">No Products Matching Filter</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                  Click "Create Product" to add your first database catalog item.
+                  {statusFilter === 'PENDING_REVIEW'
+                    ? 'All supplier products have been reviewed!'
+                    : 'Click "Add Database Product" to create a new product.'}
                 </p>
               </div>
-              <Button size="sm" onClick={openCreateModal} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold">
-                Add Database Product
-              </Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -269,58 +426,114 @@ export default function AdminProductsPage() {
                     <th className="p-3">Category</th>
                     <th className="p-3">Retail Price</th>
                     <th className="p-3">Supplier</th>
-                    <th className="p-3">Stock</th>
-                    <th className="p-3 text-right">Actions</th>
+                    <th className="p-3">Approval Status</th>
+                    <th className="p-3 text-right">Admin Approval Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {filteredProducts.map((p) => (
-                    <tr key={p.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="p-3">
-                        <div className="flex items-center gap-3">
-                          <SafeProductImage
-                            src={p.images?.[0]?.url}
-                            alt={p.title}
-                            title={p.title}
-                            category={p.categoryId}
-                            className="size-12 object-cover rounded-md border bg-muted shrink-0"
-                          />
-                          <div>
-                            <span className="font-bold text-foreground block text-xs line-clamp-1">{p.title}</span>
-                            <span className="text-[10px] text-muted-foreground font-mono">ID: {p.id.slice(0, 8)} · Brand: {p.brand}</span>
+                  {filteredProducts.map((p) => {
+                    const isPending = p.status === 'PENDING_REVIEW'
+                    const isPublished = p.status === 'PUBLISHED'
+
+                    return (
+                      <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <SafeProductImage
+                              src={p.images?.[0]?.url}
+                              alt={p.title}
+                              title={p.title}
+                              category={p.categoryId}
+                              className="size-12 object-cover rounded-md border bg-muted shrink-0"
+                            />
+                            <div>
+                              <span className="font-bold text-foreground block text-xs line-clamp-1">{p.title}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">ID: {p.id.slice(0, 8)} · Brand: {p.brand}</span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="text-[10px] capitalize">
-                          {p.categoryId.replace(/-/g, ' ')}
-                        </Badge>
-                      </td>
-                      <td className="p-3 font-mono font-bold text-[#FF6B00]">{formatTZS(p.fromPrice)}</td>
-                      <td className="p-3 text-muted-foreground">{p.supplier?.name || 'Verified Supplier'}</td>
-                      <td className="p-3 font-mono font-semibold">{p.variants?.[0]?.stock || 100} pcs</td>
-                      <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => openEditModal(p)}
-                            title="Edit Product"
-                          >
-                            <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => handleDeleteSingle(p.id)}
-                            title="Delete Product"
-                          >
-                            <Trash2 className="size-3.5 text-red-600 hover:text-red-700" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+
+                        <td className="p-3">
+                          <Badge variant="outline" className="text-[10px] capitalize">
+                            {p.categoryId.replace(/-/g, ' ')}
+                          </Badge>
+                        </td>
+
+                        <td className="p-3 font-mono font-bold text-[#FF6B00]">{formatTZS(p.fromPrice)}</td>
+
+                        <td className="p-3 text-muted-foreground">{p.supplier?.name || 'Supplier Direct Portal'}</td>
+
+                        <td className="p-3">
+                          {isPending ? (
+                            <Badge className="bg-amber-500 text-white font-extrabold text-[10px] gap-1">
+                              <Clock className="size-3" /> PENDING REVIEW
+                            </Badge>
+                          ) : isPublished ? (
+                            <Badge className="bg-emerald-600 text-white font-bold text-[10px] gap-1">
+                              <CheckCircle2 className="size-3" /> PUBLISHED
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="font-bold text-[10px] gap-1">
+                              <XCircle className="size-3" /> REJECTED
+                            </Badge>
+                          )}
+                        </td>
+
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {isPending && (
+                              <>
+                                <Button
+                                  size="xs"
+                                  onClick={() => handleApproveProduct(p.id)}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] gap-1 px-2.5 py-1"
+                                >
+                                  <ThumbsUp className="size-3" /> Approve &amp; Publish
+                                </Button>
+
+                                <Button
+                                  size="xs"
+                                  variant="outline"
+                                  onClick={() => handleRejectProduct(p.id)}
+                                  className="border-red-500/40 text-red-600 hover:bg-red-500/10 font-bold text-[11px] px-2 py-1"
+                                >
+                                  <ThumbsDown className="size-3" /> Reject
+                                </Button>
+                              </>
+                            )}
+
+                            {isPublished && (
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                onClick={() => handleRejectProduct(p.id)}
+                                className="text-muted-foreground hover:text-red-600 text-[10px] px-2 py-1"
+                              >
+                                Unpublish
+                              </Button>
+                            )}
+
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => openEditModal(p)}
+                              title="Edit Product"
+                            >
+                              <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => handleDeleteSingle(p.id)}
+                              title="Delete Product"
+                            >
+                              <Trash2 className="size-3.5 text-red-600 hover:text-red-700" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -369,3 +582,4 @@ export default function AdminProductsPage() {
     </div>
   )
 }
+

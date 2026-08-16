@@ -58,11 +58,14 @@ export function AppSidebar({ role }: { role: Role }) {
   // Collapsible dropdown menu state per section group
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
 
-  function toggleGroup(label: string) {
-    setCollapsedGroups((prev) => ({
-      ...prev,
-      [label]: !prev[label],
-    }))
+  function toggleGroup(label: string, defaultCollapsed: boolean) {
+    setCollapsedGroups((prev) => {
+      const currentCollapsed = prev[label] !== undefined ? prev[label] : defaultCollapsed
+      return {
+        ...prev,
+        [label]: !currentCollapsed,
+      }
+    })
   }
 
   useEffect(() => {
@@ -146,11 +149,17 @@ export function AppSidebar({ role }: { role: Role }) {
 
       <SidebarContent className="px-2 py-3">
         {groups.map((group) => {
-          const isCollapsed = Boolean(collapsedGroups[group.label])
+          const hasActiveItem = group.items.some((item) => current === item.href)
+          const defaultCollapsed = !hasActiveItem
+          const isCollapsed =
+            collapsedGroups[group.label] !== undefined
+              ? collapsedGroups[group.label]
+              : defaultCollapsed
+
           return (
             <SidebarGroup key={group.label} className="py-1">
               <div
-                onClick={() => toggleGroup(group.label)}
+                onClick={() => toggleGroup(group.label, defaultCollapsed)}
                 className="flex items-center justify-between text-[10px] font-bold tracking-widest text-sidebar-foreground/60 hover:text-sidebar-foreground uppercase px-2 py-1.5 rounded-md hover:bg-sidebar-accent/50 transition-colors cursor-pointer select-none mb-0.5"
               >
                 <span>{group.label}</span>

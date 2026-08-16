@@ -131,13 +131,13 @@ export default function NewProductPage() {
 
     const minPrice = Math.min(...variants.map((v) => v.price))
 
-    addProduct({
+    const newProd = {
       title: title.trim(),
       slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       brand: brand.trim() || 'Generic Brand',
       category: categoryId,
       description: description.trim() || shortDesc.trim(),
-      status: 'active',
+      status: 'PENDING_REVIEW',
       fromPriceTZS: minPrice,
       images: images.length > 0 ? images : ['/images/products/phone-case-armour.png'],
       variants: variants.map((v) => ({
@@ -150,7 +150,24 @@ export default function NewProductPage() {
         reorderPoint: 5,
         attributes: { option: v.label },
       })),
+    }
+
+    // 1. Add to local store
+    addProduct(newProd as any)
+
+    // 2. Persist to PostgreSQL Database
+    fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProd),
     })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success('Product saved to PostgreSQL database! Queued for Admin review.')
+        }
+      })
+      .catch((err) => console.error('Failed to post product to database API:', err))
 
     toast.success('New product listed in catalog!')
     setSubmitted(true)

@@ -18,24 +18,7 @@ type BannerContent = {
   status: 'Active' | 'Draft'
 }
 
-const INITIAL_BANNERS: BannerContent[] = [
-  {
-    id: 'b1',
-    title: 'Direct Factory Sourcing from China to Tanzania',
-    subtitle: 'Air Freight in 5-7 Days · Sea Freight in 25-35 Days door-to-door.',
-    ctaText: 'Paste Product Link',
-    ctaLink: '/sourcing/paste-link',
-    status: 'Active',
-  },
-  {
-    id: 'b2',
-    title: 'Off-Grid Solar Power Systems & Inverters',
-    subtitle: 'Wholesale B2B prices for Tanzanian hardware retailers.',
-    ctaText: 'Shop Solar Range',
-    ctaLink: '/marketplace?category=Solar',
-    status: 'Active',
-  },
-]
+const INITIAL_BANNERS: BannerContent[] = []
 
 export default function AdminContentPage() {
   const [banners, setBanners] = useState<BannerContent[]>(INITIAL_BANNERS)

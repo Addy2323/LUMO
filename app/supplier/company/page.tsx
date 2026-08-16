@@ -153,7 +153,7 @@ export default function SupplierCompanyKYCPage() {
           <CardHeader>
             <CardTitle className="text-base font-extrabold flex items-center gap-2">
               <CreditCard className="size-5 text-brand-500" />
-              Escrow Payout Settlement Accounts
+              Buyer Protection Payout Settlement Accounts
             </CardTitle>
             <CardDescription className="text-xs">
               Where Lumo deposits your unlocked TZS funds (24h after delivery scanning).

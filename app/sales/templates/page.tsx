@@ -18,32 +18,7 @@ type CannedTemplate = {
   content: string
 }
 
-const INITIAL_TEMPLATES: CannedTemplate[] = [
-  {
-    id: 'tmpl_1',
-    title: 'Formal Landed Quotation Issued',
-    shortcut: '/quote-issued',
-    category: 'Sourcing',
-    content:
-      'Dear {{customer_name}},\n\nYour official landed quotation for {{product_title}} has been published to your Lumoo portal. The quote covers supplier unit costs, sea/air freight, TRA import tariffs, and door-step delivery.\n\nPlease review and approve the quotation to lock in cargo allocation.\n\nBest regards,\nLumoo Sales Desk',
-  },
-  {
-    id: 'tmpl_2',
-    title: 'Customs Clearance Update (JNIA / Dar Port)',
-    shortcut: '/customs-update',
-    category: 'Logistics',
-    content:
-      'Hello {{customer_name}},\n\nYour shipment {{shipment_id}} is undergoing TRA valuation clearance at Dar es Salaam. We anticipate manifest release within 24-48 business hours.\n\nTrack real-time freight progress at lumoo.co.tz/track-freight.',
-  },
-  {
-    id: 'tmpl_3',
-    title: 'Payment Confirmation & Escrow Release',
-    shortcut: '/pay-confirm',
-    category: 'Billing',
-    content:
-      'Dear {{customer_name}},\n\nWe have confirmed your payment receipt via Vodacom M-Pesa / CRDB Bank. Your funds are secured in Lumoo Escrow until goods arrive in Dar es Salaam.\n\nThank you for choosing Lumoo B2B!',
-  },
-]
+const INITIAL_TEMPLATES: CannedTemplate[] = []
 
 export default function CannedResponsesPage() {
   const [templates, setTemplates] = useState<CannedTemplate[]>(INITIAL_TEMPLATES)

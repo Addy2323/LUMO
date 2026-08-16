@@ -70,98 +70,7 @@ export type SourcingItem = {
   messages: SourcingMessage[]
 }
 
-const INITIAL_SOURCING_ITEMS: SourcingItem[] = [
-  {
-    id: 'src_demo_01',
-    reference: 'SR-412',
-    customerName: 'Amina Hassan',
-    customerEmail: 'amina.hassan@example.co.tz',
-    productName: '500W Portable Solar Power Station',
-    productLink: 'https://detail.1688.com/offer/7421890123.html',
-    description: 'Foldable 100W solar panel + 500Wh lithium battery station with 220V AC output for commercial office backup.',
-    brand: 'Yexing Solar Tech',
-    modelNumber: 'YX-500W-PRO',
-    color: 'Matte Black',
-    sizeDimensions: '42 x 28 x 20 cm (4.5 kg)',
-    techSpecs: 'Pure Sine Wave 220V AC output, 12V DC input, Type-C 60W PD quick charge.',
-    quantity: 10,
-    targetBudget: 1620000,
-    currency: 'TZS',
-    region: 'Dar es Salaam',
-    destination: 'Dar es Salaam',
-    shippingMethod: 'standard_air',
-    addInsurance: true,
-    inspectionRequired: true,
-    status: 'quoted',
-    assignedAgent: 'John Sourcing (Guangzhou Hub)',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    quotation: {
-      unitCostTZS: 125000,
-      shippingCostTZS: 250000,
-      customsDutyTZS: 120000,
-      totalLandedTZS: 1620000,
-      deliveryEta: '14–21 Days via Standard Air Freight',
-      quotedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-      notes: 'All-inclusive landed quote includes Guangzhou pre-shipment quality inspection and customs clearance at TRA Dar es Salaam.',
-    },
-    messages: [
-      {
-        id: 'msg_demo_01',
-        senderRole: 'customer',
-        senderName: 'Amina Hassan',
-        content: 'Sourcing request SR-412 created for 500W Portable Solar Power Station. Quantity: 10 units.',
-        sentAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-      },
-      {
-        id: 'msg_demo_02',
-        senderRole: 'sales',
-        senderName: 'John Sourcing (Guangzhou Hub)',
-        content: 'Formal Landed TZS Quote issued: TZS 1,620,000. All factory tests verified.',
-        sentAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-      },
-    ],
-  },
-  {
-    id: 'src_demo_02',
-    reference: 'SR-413',
-    customerName: 'Amina Hassan',
-    customerEmail: 'amina.hassan@example.co.tz',
-    productName: 'Series 9 Ultra Smart Watch 256GB',
-    productLink: 'https://www.alibaba.com/product-detail/Series-9-Ultra_1601880490.html',
-    description: 'AMOLED display, heart rate monitor, IP68 waterproof, wireless charging.',
-    brand: 'HK Tech',
-    modelNumber: 'HK9-ULTRA-2',
-    color: 'Titanium Grey',
-    sizeDimensions: '49mm Dial',
-    quantity: 50,
-    targetBudget: 1170000,
-    currency: 'TZS',
-    region: 'Arusha',
-    destination: 'Arusha',
-    shippingMethod: 'express_air',
-    addInsurance: true,
-    inspectionRequired: true,
-    status: 'assigned',
-    assignedAgent: 'Amani Sourcing Officer',
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    messages: [
-      {
-        id: 'msg_demo_03',
-        senderRole: 'customer',
-        senderName: 'Amina Hassan',
-        content: 'Sourcing request SR-413 created for Series 9 Ultra Smart Watch 256GB. Quantity: 50 units.',
-        sentAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-      },
-      {
-        id: 'msg_demo_04',
-        senderRole: 'sales',
-        senderName: 'System Dispatch',
-        content: 'Sourcing Officer assigned: Amani Sourcing Officer. Officer is reviewing product specifications with suppliers.',
-        sentAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-      },
-    ],
-  },
-]
+const INITIAL_SOURCING_ITEMS: SourcingItem[] = []
 
 type SourcingStore = {
   items: SourcingItem[]
@@ -172,12 +81,14 @@ type SourcingStore = {
   payQuotation: (requestId: string, paymentDetails: { method: string; transactionRef: string; paidAmountTZS: number }) => void
   updateStatus: (requestId: string, status: SourcingItem['status']) => void
   downloadDocument: (doc: SourcingSubmittedDocument) => void
+  clearAll: () => void
 }
 
 export const useSourcingStore = create<SourcingStore>()(
   persist(
     (set, get) => ({
-      items: INITIAL_SOURCING_ITEMS,
+      items: [],
+      clearAll: () => set({ items: [] }),
 
       addRequest: (requestData) => {
         const nextIdNumber = get().items.length + 413
@@ -301,14 +212,14 @@ export const useSourcingStore = create<SourcingStore>()(
                   id: `msg_${Date.now()}`,
                   senderRole: 'customer',
                   senderName: item.customerName || 'Buyer',
-                  content: `Escrow Payment Confirmed! Landed quote paid via ${paymentDetails.method}. Transaction Reference: ${paymentDetails.transactionRef}. Total Paid: TZS ${paymentDetails.paidAmountTZS.toLocaleString()}`,
+                  content: `Buyer Protection Payment Confirmed! Landed quote paid via ${paymentDetails.method}. Transaction Reference: ${paymentDetails.transactionRef}. Total Paid: TZS ${paymentDetails.paidAmountTZS.toLocaleString()}`,
                   sentAt: paidAt,
                 },
                 {
                   id: `msg_${Date.now() + 1}`,
                   senderRole: 'sales',
-                  senderName: 'Lumo Automated Escrow',
-                  content: `Funds held in Lumo Escrow Protection. Supplier manufacturing order dispatched to Guangzhou/Shenzhen hub. Tracking updates will appear here.`,
+                  senderName: 'Lumo Automated Protection',
+                  content: `Funds held under Lumo Buyer Protection. Supplier manufacturing order dispatched to Guangzhou/Shenzhen hub. Tracking updates will appear here.`,
                   sentAt: paidAt,
                 },
               ],

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ClipboardList,
@@ -22,10 +23,36 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAgentStore } from '@/lib/stores/agent-store'
+import { useSessionStore } from '@/lib/stores/session-store'
 import { toast } from 'sonner'
 
 export default function AgentDashboardPage() {
-  const { activeCountry, agentName, orders, seedSampleOrder, clearAllData } = useAgentStore()
+  const user = useSessionStore((s) => s.user)
+  const { activeCountry, agentName: localAgentName, orders: localOrders, seedSampleOrder, clearAllData } = useAgentStore()
+
+  const agentName = user?.fullName || localAgentName
+
+  const [serverAssignments, setServerAssignments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAgentAssignments()
+  }, [])
+
+  async function fetchAgentAssignments() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/assignments')
+      if (res.ok) {
+        const data = await res.json()
+        setServerAssignments(data.assignments || [])
+      }
+    } catch (err) {
+      console.error('[AGENT DASHBOARD] Failed to fetch server assignments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const countryFlagMap: Record<string, string> = {
     China: '🇨🇳',
@@ -36,14 +63,29 @@ export default function AgentDashboardPage() {
 
   const activeFlag = countryFlagMap[activeCountry] || '🇨🇳'
 
-  // Dynamic calculations based on active country orders
-  const countryOrders = orders.filter((o) => o.assignedCountry === activeCountry)
+  // Combine server assignments and local agent orders
+  const displayOrders = serverAssignments.length > 0
+    ? serverAssignments.map((a) => ({
+        id: a.id,
+        orderNumber: `ORD-${a.orderId.slice(-6).toUpperCase()}`,
+        priority: 'Normal',
+        status: a.status.toLowerCase(),
+        productName: a.instructions || 'Sourcing & Inspection Assignment',
+        customerName: 'Tanzanian Buyer',
+        quantityNeeded: 100,
+        targetBudgetUSD: 1500,
+        destinationRegion: 'Dar es Salaam',
+        destinationCountry: 'Tanzania',
+        assignedCountry: activeCountry,
+        customerInspectionApproval: 'pending',
+      }))
+    : localOrders.filter((o) => o.assignedCountry === activeCountry)
 
-  const newOrdersCount = countryOrders.filter((o) => o.status === 'assigned' || o.status === 'new').length
-  const pendingCollectionCount = countryOrders.filter((o) => o.status === 'purchased' || o.status === 'collection_pending').length
-  const waitingApprovalCount = countryOrders.filter((o) => o.customerInspectionApproval === 'pending' && o.status === 'inspected').length
-  const readyToShipCount = countryOrders.filter((o) => o.status === 'packed' || o.status === 'at_warehouse').length
-  const shippedTodayCount = countryOrders.filter((o) => o.status === 'shipped').length
+  const newOrdersCount = displayOrders.filter((o) => o.status === 'assigned' || o.status === 'new' || o.status === 'offered').length
+  const pendingCollectionCount = displayOrders.filter((o) => o.status === 'purchased' || o.status === 'collection_pending' || o.status === 'accepted').length
+  const waitingApprovalCount = displayOrders.filter((o) => o.customerInspectionApproval === 'pending' && o.status === 'inspected').length
+  const readyToShipCount = displayOrders.filter((o) => o.status === 'packed' || o.status === 'at_warehouse').length
+  const shippedTodayCount = displayOrders.filter((o) => o.status === 'shipped' || o.status === 'completed').length
 
   return (
     <div className="space-y-8">
@@ -79,7 +121,7 @@ export default function AgentDashboardPage() {
             Simulate Order from HQ
           </Button>
 
-          {orders.length > 0 && (
+          {localOrders.length > 0 && (
             <Button
               onClick={() => {
                 clearAllData()
@@ -192,7 +234,7 @@ export default function AgentDashboardPage() {
           />
         </CardHeader>
         <CardContent className="p-0">
-          {countryOrders.length === 0 ? (
+          {displayOrders.length === 0 ? (
             <div className="p-12 text-center space-y-4">
               <div className="size-12 rounded-2xl bg-slate-800 text-slate-400 mx-auto flex items-center justify-center border border-slate-700">
                 <ClipboardList className="size-6" />
@@ -217,7 +259,7 @@ export default function AgentDashboardPage() {
             </div>
           ) : (
             <div className="divide-y divide-slate-800">
-              {countryOrders.map((ord) => (
+              {displayOrders.map((ord) => (
                 <div key={ord.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-800/40 transition-colors">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">

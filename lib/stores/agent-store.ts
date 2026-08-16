@@ -159,60 +159,7 @@ interface AgentState {
   seedSampleOrder: () => void
 }
 
-const INITIAL_SUPPLIERS: FieldSupplier[] = [
-  {
-    id: 'sup_cn_001',
-    name: 'Shenzhen XYZ Electronics Co., Ltd',
-    city: 'Shenzhen',
-    country: 'China',
-    productCategory: 'Mobile & Tech Accessories',
-    rating: 4.9,
-    verified: true,
-    moq: 100,
-    unitPriceUSD: 3.2,
-    contactPhone: '+86 755 8890 1234',
-    address: 'Building B, Huaqiangbei Electronics Market, Shenzhen',
-  },
-  {
-    id: 'sup_cn_002',
-    name: 'Yiwu Golden Dragon Trading',
-    city: 'Yiwu',
-    country: 'China',
-    productCategory: 'General Merchandise & Home',
-    rating: 4.7,
-    verified: true,
-    moq: 200,
-    unitPriceUSD: 3.1,
-    contactPhone: '+86 579 8551 9988',
-    address: 'District 3, Yiwu International Trade City',
-  },
-  {
-    id: 'sup_db_001',
-    name: 'Dragon Mart Gulf Wholesale LLC',
-    city: 'Dubai',
-    country: 'Dubai',
-    productCategory: 'Lighting & Hardware',
-    rating: 4.8,
-    verified: true,
-    moq: 50,
-    unitPriceUSD: 4.5,
-    contactPhone: '+971 4 438 0000',
-    address: 'Section A, Dragon Mart 1, International City, Dubai',
-  },
-  {
-    id: 'sup_tr_001',
-    name: 'Istanbul Grand Bazaar Textile Fabrics',
-    city: 'Istanbul',
-    country: 'Turkey',
-    productCategory: 'Textiles & Garments',
-    rating: 4.9,
-    verified: true,
-    moq: 50,
-    unitPriceUSD: 8.9,
-    contactPhone: '+90 212 519 1234',
-    address: 'Laleli District, Fatih, Istanbul',
-  },
-]
+const INITIAL_SUPPLIERS: FieldSupplier[] = []
 
 export const DEFAULT_PHOTOS: InspectionPhotoSlot[] = [
   { id: 'p1', label: 'Front View', required: true },
@@ -227,79 +174,16 @@ export const DEFAULT_PHOTOS: InspectionPhotoSlot[] = [
   { id: 'p10', label: 'Supplier Invoice', required: true },
 ]
 
-const INITIAL_ORDERS: AgentOrder[] = [
-  {
-    id: 'agent_ord_demo_01',
-    orderNumber: 'SR-412',
-    customerName: 'Amina Hassan (Kigoma Trading)',
-    destinationRegion: 'Kigoma',
-    destinationCountry: 'Tanzania',
-    assignedCountry: 'China',
-    productName: '500W Portable Solar Power Station',
-    quantityNeeded: 10,
-    targetBudgetUSD: 1250,
-    status: 'customer_approved_quote',
-    priority: 'High',
-    assignedBy: 'John Sourcing (Guangzhou Hub)',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    inspectionPhotos: DEFAULT_PHOTOS,
-  },
-  {
-    id: 'agent_ord_demo_02',
-    orderNumber: 'SR-413',
-    customerName: 'Dar Electronics Center',
-    destinationRegion: 'Dar es Salaam',
-    destinationCountry: 'Tanzania',
-    assignedCountry: 'China',
-    productName: 'Series 9 Ultra Smart Watch 256GB',
-    quantityNeeded: 50,
-    targetBudgetUSD: 900,
-    status: 'assigned',
-    priority: 'Urgent',
-    assignedBy: 'LUMO HQ (Dar)',
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    inspectionPhotos: DEFAULT_PHOTOS,
-  },
-  {
-    id: 'agent_ord_demo_03',
-    orderNumber: 'SR-414',
-    customerName: 'Zanzibar Resort & Spa',
-    destinationRegion: 'Zanzibar',
-    destinationCountry: 'Tanzania',
-    assignedCountry: 'Dubai',
-    productName: 'Commercial Outdoor Hotel Pool Loungers',
-    quantityNeeded: 25,
-    targetBudgetUSD: 4500,
-    status: 'assigned',
-    priority: 'High',
-    assignedBy: 'LUMO HQ (Dar)',
-    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-    inspectionPhotos: DEFAULT_PHOTOS,
-  },
-]
+const INITIAL_ORDERS: AgentOrder[] = []
 
 export const useAgentStore = create<AgentState>()(
   persist(
     (set, get) => ({
       activeCountry: 'China',
-      agentName: 'John Zhang (Field Ops Lead)',
+      agentName: 'Field Operations Agent',
       orders: INITIAL_ORDERS,
       suppliers: INITIAL_SUPPLIERS,
-      auditLogs: [
-        {
-          id: 'log_01',
-          timestamp: '2026-08-06 14:15:22',
-          agentName: 'John Zhang',
-          country: 'China',
-          action: 'Quality Inspection Uploaded',
-          details: 'Uploaded 10 inspection photos & 45s video for order #LM-202600319',
-          gpsLocation: '22.5431° N, 114.0579° E (Shenzhen Hub)',
-          deviceInfo: 'LUMO Field Terminal Android v4.2',
-        },
-      ],
+      auditLogs: [],
 
       setActiveCountry: (activeCountry) => {
         set({ activeCountry })
@@ -496,7 +380,7 @@ export const useAgentStore = create<AgentState>()(
       },
     }),
     {
-      name: 'lumo.agent.store.v1',
+      name: 'lumo.agent.store.v2',
     }
   )
 )

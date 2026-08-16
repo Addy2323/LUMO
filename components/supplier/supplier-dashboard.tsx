@@ -1,12 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   AlertTriangle,
   ArrowRight,
   Boxes,
-  CheckCircle2,
-  Clock,
   DollarSign,
   Package,
   Plus,
@@ -21,26 +20,63 @@ import { StatusBadge } from '@/components/status-badge'
 import { formatTZS, formatDate } from '@/lib/format'
 import { useSessionStore } from '@/lib/stores/session-store'
 import { useSupplierStore } from '@/lib/stores/supplier-store'
+import { OrderConversationPanel } from '@/components/conversations/order-conversation-panel'
 
 export function SupplierDashboard() {
   const user = useSessionStore((s) => s.user)
-  const { products, orders, profile, settlements } = useSupplierStore()
+  const { products, orders: localOrders, settlements } = useSupplierStore()
+
+  const [serverAssignments, setServerAssignments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchSupplierAssignments()
+  }, [])
+
+  async function fetchSupplierAssignments() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/assignments')
+      if (res.ok) {
+        const data = await res.json()
+        setServerAssignments(data.assignments || [])
+      }
+    } catch (err) {
+      console.error('[SUPPLIER DASHBOARD] Failed to fetch server assignments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Combine local and server orders
+  const displayOrders = serverAssignments.length > 0
+    ? serverAssignments.map((a) => ({
+        id: a.orderId,
+        orderNumber: `ORD-${a.orderId.slice(-6).toUpperCase()}`,
+        status: a.status === 'ACCEPTED' ? 'PROCESSING' : a.status.toLowerCase(),
+        customerName: 'Verified Buyer',
+        destinationRegion: 'Dar es Salaam',
+        createdAt: a.createdAt,
+        totalAmountTZS: 450000,
+        items: [{ variantSku: 'SKU-01', quantity: 1, productTitle: a.instructions || 'Supplier Assignment Item' }],
+      }))
+    : localOrders
 
   const allVariants = products.flatMap((p) => p.variants)
   const lowStockVariants = allVariants.filter((v) => v.stock > 0 && v.stock <= v.reorderPoint)
   const outOfStockVariants = allVariants.filter((v) => v.stock === 0)
 
-  const pendingPackOrders = orders.filter((o) => ['pending', 'processing'].includes(o.status))
-  const inTransitOrders = orders.filter((o) => o.status === 'shipped')
-  const deliveredOrders = orders.filter((o) => o.status === 'delivered')
+  const pendingPackOrders = displayOrders.filter((o) => ['pending', 'processing', 'offered', 'accepted'].includes(o.status.toLowerCase()))
+  const inTransitOrders = displayOrders.filter((o) => ['shipped', 'in_transit'].includes(o.status.toLowerCase()))
 
   const unlockedPayoutTotal = settlements
     .filter((s) => s.status === 'completed')
     .reduce((sum, s) => sum + s.amountTZS, 0)
 
-  const pendingPayoutTotal = orders
-    .filter((o) => ['processing', 'shipped'].includes(o.status))
-    .reduce((sum, o) => sum + o.totalAmountTZS, 0)
+  const pendingPayoutTotal = displayOrders
+    .filter((o) => ['processing', 'shipped', 'accepted'].includes(o.status.toLowerCase()))
+    .reduce((sum, o) => sum + (o.totalAmountTZS || 0), 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,11 +85,11 @@ export function SupplierDashboard() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold tracking-tight">
-              Kilimanjaro Electronics
+              {user?.fullName || 'Supplier Operations'}
             </h1>
             <Badge className="bg-brand-500/10 text-brand-500 border border-brand-500/20 text-xs font-bold gap-1">
               <Sparkles className="size-3 text-brand-500" />
-              Verified Merchant · Arusha
+              Verified Merchant
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -168,7 +204,7 @@ export function SupplierDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
-                {orders.slice(0, 4).map((order) => (
+                {displayOrders.slice(0, 4).map((order) => (
                   <div
                     key={order.id}
                     className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/30 transition-colors"
@@ -182,8 +218,8 @@ export function SupplierDashboard() {
                         Customer: {order.customerName} · Destination: {order.destinationRegion} · Placed: {formatDate(order.createdAt)}
                       </span>
                       <div className="flex flex-wrap gap-1.5 text-xs font-medium text-foreground mt-1">
-                        {order.items.map((i) => (
-                          <span key={i.variantSku} className="rounded-md bg-muted px-2 py-0.5 border border-border text-[11px]">
+                        {order.items.map((i: any, idx: number) => (
+                          <span key={idx} className="rounded-md bg-muted px-2 py-0.5 border border-border text-[11px]">
                             {i.quantity}× {i.productTitle}
                           </span>
                         ))}
@@ -194,19 +230,37 @@ export function SupplierDashboard() {
                       <span className="font-extrabold text-sm tnum text-foreground">
                         {formatTZS(order.totalAmountTZS)}
                       </span>
-                      <Button
-                        size="sm"
-                        className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-xs"
-                        render={<Link href={`/supplier/orders`} />}
-                      >
-                        Pack &amp; Dispatch
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs font-semibold"
+                          onClick={() => setSelectedOrderId(selectedOrderId === order.id ? null : order.id)}
+                        >
+                          Chat
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-xs"
+                          render={<Link href={`/supplier/orders`} />}
+                        >
+                          Pack &amp; Dispatch
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
+
+          {/* Embedded Order Communication Panel if order selected */}
+          {selectedOrderId && (
+            <OrderConversationPanel
+              orderId={selectedOrderId}
+              allowInternalNotes={true}
+            />
+          )}
         </div>
 
         {/* Right Column: Inventory Stock Alerts & Payout Summary */}
@@ -270,4 +324,3 @@ export function SupplierDashboard() {
     </div>
   )
 }
-

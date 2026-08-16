@@ -23,6 +23,22 @@ enum Role {
   ADMIN
 }
 
+enum PlatformRole {
+  BUYER
+  SUPPLIER
+  SALES
+  LOGISTICS
+  AGENT
+  ADMIN
+}
+
+enum RoleStatus {
+  ACTIVE
+  PENDING_APPROVAL
+  REVOKED
+  SUSPENDED
+}
+
 enum AccountStatus {
   PENDING_PHONE_VERIFICATION
   ACTIVE
@@ -126,6 +142,50 @@ enum ProductStatus {
   DISCONTINUED
 }
 
+enum UserRoleStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REVOKED
+}
+
+enum OrganizationType {
+  CUSTOMER_BUSINESS
+  SUPPLIER
+  LOGISTICS_COMPANY
+  LUMO_INTERNAL
+}
+
+enum MembershipPosition {
+  OWNER
+  MANAGER
+  SALES_OFFICER
+  DISPATCHER
+  DRIVER
+  OPERATOR
+  VIEWER
+}
+
+enum ConversationVisibility {
+  CUSTOMER_VISIBLE
+  ASSIGNED_PARTICIPANTS
+  LUMO_INTERNAL
+  ADMIN_SECURITY
+}
+
+enum NotificationType {
+  SECURITY
+  TRANSACTIONAL
+  SERVICE
+  MARKETING
+}
+
+enum NotificationChannel {
+  IN_APP
+  SMS
+  EMAIL
+}
+
 enum SourceType {
   DEMO
   CSV_IMPORT
@@ -197,6 +257,13 @@ model User {
   consentRecords             ConsentRecord[]
   rfqs                       RFQ[]
   supplierQuotations         SupplierQuotation[]
+  userRoles                  UserRole[]
+  roleAssignments            UserRoleAssignment[]
+  organizationMemberships    OrganizationMember[]
+  conversationParticipants   ConversationParticipant[]
+  sentMessages               Message[]
+  inAppNotifications         InAppNotification[]
+  assignmentEvents           AssignmentEvent[]            @relation("AssignmentActor")
 
   @@map("users")
 }
@@ -423,6 +490,7 @@ model Session {
   id           String   @id @default(uuid())
   userId       String
   sessionToken String   @unique
+  activeRole   Role?
   userAgent    String?
   ipAddress    String?
   expiresAt    DateTime
@@ -1560,31 +1628,219 @@ enum AssignmentStatus {
 }
 
 model OrderAssignment {
-  id                 String           @id @default(uuid())
-  orderId            String
-  assignmentRole     AssignmentRole   @default(SALES)
-  assigneeId         String?
-  assignedById       String?
-  status             AssignmentStatus @default(UNASSIGNED)
-  priority           String           @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
-  reason             String?
-  offeredAt          DateTime?
-  expiresAt          DateTime?
-  acceptedAt         DateTime?
-  startedAt          DateTime?
-  completedAt        DateTime?
-  slaDueAt           DateTime?
-  rejectedAt         DateTime?
-  rejectionReason    String?
-  unassignedAt       DateTime?
-  reassignmentReason String?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  version            Int              @default(1)
+  id                      String           @id @default(uuid())
+  orderId                 String
+  sourcingRequestId       String?
+  assignmentRole          AssignmentRole   @default(SALES)
+  assigneeId              String?
+  assigneeOrganizationId  String?
+  assignedById            String?
+  status                  AssignmentStatus @default(UNASSIGNED)
+  priority                String           @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  reason                  String?
+  instructions            String?
+  offeredAt               DateTime?
+  expiresAt               DateTime?
+  acceptedAt              DateTime?
+  startedAt               DateTime?
+  completedAt             DateTime?
+  slaDueAt                DateTime?
+  rejectedAt              DateTime?
+  rejectionReason         String?
+  unassignedAt            DateTime?
+  reassignmentReason      String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  version                 Int              @default(1)
+
+  assigneeOrganization Organization?    @relation(fields: [assigneeOrganizationId], references: [id])
+  events               AssignmentEvent[]
 
   @@index([orderId, assignmentRole, status])
   @@index([assigneeId, status])
+  @@index([assigneeOrganizationId, status])
   @@map("order_assignments")
 }
 
+// ──────────────────────────────────────────────
+// Multi-Role Identity & Organizations
+// ──────────────────────────────────────────────
+
+model UserRole {
+  id            String         @id @default(uuid())
+  userId        String
+  role          Role
+  status        UserRoleStatus @default(PENDING)
+  approvedAt    DateTime?
+  approvedById  String?
+  revokedAt     DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId, status])
+  @@map("user_roles")
+}
+
+model UserRoleAssignment {
+  id           String       @id @default(cuid())
+  userId       String
+  role         PlatformRole
+  status       RoleStatus   @default(ACTIVE)
+  approvedAt   DateTime?
+  approvedById String?
+  revokedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId, status])
+  @@map("user_role_assignments")
+}
+
+model Organization {
+  id                 String           @id @default(uuid())
+  name               String
+  type               OrganizationType
+  registrationNumber String?
+  tinNumber          String?
+  verified           Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  members     OrganizationMember[]
+  assignments OrderAssignment[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String             @id @default(uuid())
+  organizationId String
+  userId         String
+  position       MembershipPosition @default(VIEWER)
+  isActive       Boolean            @default(true)
+  joinedAt       DateTime           @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId, isActive])
+  @@map("organization_members")
+}
+
+// ──────────────────────────────────────────────
+// Assignment Events (Audit Trail)
+// ──────────────────────────────────────────────
+
+model AssignmentEvent {
+  id           String   @id @default(uuid())
+  assignmentId String
+  eventType    String   // OFFERED, ACCEPTED, REJECTED, EXPIRED, REASSIGNED, COMPLETED, CANCELLED
+  actorId      String?
+  details      String?
+  createdAt    DateTime @default(now())
+
+  assignment OrderAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  actor      User?           @relation("AssignmentActor", fields: [actorId], references: [id])
+
+  @@index([assignmentId, createdAt])
+  @@map("assignment_events")
+}
+
+// ──────────────────────────────────────────────
+// Conversations & Messaging
+// ──────────────────────────────────────────────
+
+model Conversation {
+  id                String                   @id @default(uuid())
+  orderId           String?
+  sourcingRequestId String?
+  supportTicketId   String?
+  disputeId         String?
+  visibility        ConversationVisibility   @default(CUSTOMER_VISIBLE)
+  title             String?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([orderId])
+  @@index([sourcingRequestId])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  role           Role
+  joinedAt       DateTime  @default(now())
+  lastReadAt     DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  senderRole     Role
+  content        String
+  isInternal     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User              @relation(fields: [senderId], references: [id])
+  attachments  MessageAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id         String   @id @default(uuid())
+  messageId  String
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  uploadedAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("message_attachments")
+}
+
+// ──────────────────────────────────────────────
+// In-App Notifications
+// ──────────────────────────────────────────────
+
+model InAppNotification {
+  id           String   @id @default(uuid())
+  userId       String
+  eventType    String   // ORDER_PAID, ASSIGNMENT_OFFERED, MESSAGE_RECEIVED, etc.
+  title        String
+  body         String?
+  resourceType String?  // ORDER, SOURCING_REQUEST, ASSIGNMENT, CONVERSATION
+  resourceId   String?
+  isRead       Boolean  @default(false)
+  readAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("in_app_notifications")
+}
 

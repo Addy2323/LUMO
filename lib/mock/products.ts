@@ -114,10 +114,189 @@ export const SUPPLIERS = {
   },
 }
 
-/** NO hardcoded demo products. Pure real imported catalog storage. */
-export const INITIAL_PRODUCTS: Product[] = []
+export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 'prod-ph-01',
+    slug: 'flagship-ultra-5g-smartphone',
+    title: 'Flagship Ultra 5G Smartphone 256GB',
+    shortDescription: '6.7" AMOLED 120Hz Display, 108MP Camera, 5000mAh Battery',
+    description: 'Direct factory imported 5G flagship smartphone with dual SIM support, 67W fast charging, and Tanzanian network compatibility.',
+    categoryId: 'phones-accessories',
+    brand: 'TechMaster',
+    supplier: SUPPLIERS.guangzhou,
+    images: [{ url: '/images/products/smartphone.png', alt: 'Flagship Ultra 5G Smartphone' }],
+    attributes: [{ name: 'Storage', options: ['128GB', '256GB', '512GB'] }],
+    variants: [
+      { id: 'v-ph-1', sku: 'TM-PH-128', options: { Storage: '128GB' }, price: 850000, stock: 45, imageIndex: 0 },
+      { id: 'v-ph-2', sku: 'TM-PH-256', options: { Storage: '256GB' }, price: 980000, stock: 30, imageIndex: 0 },
+    ],
+    fromPrice: 850000,
+    compareAtPrice: 1050000,
+    rating: 4.9,
+    reviewCount: 34,
+    soldCount: 240,
+    deliveryEstimateDays: [5, 10],
+    specifications: [{ label: 'RAM', value: '12GB' }, { label: 'Battery', value: '5000mAh' }],
+    reviews: [],
+    createdAt: '2026-01-15T08:00:00Z',
+  },
+  {
+    id: 'prod-el-01',
+    slug: 'ultra-slim-4k-oled-laptop',
+    title: 'Ultra-Slim 16" 4K OLED Executive Laptop',
+    shortDescription: 'Intel Core i7 13th Gen, 32GB RAM, 1TB NVMe SSD',
+    description: 'High-performance ultrabook with 4K touch display, aluminum unibody chassis, and 14-hour battery life.',
+    categoryId: 'electronics',
+    brand: 'AeroBook',
+    supplier: SUPPLIERS.guangzhou,
+    images: [{ url: '/categories/electronics.png', alt: 'Ultra-Slim 4K Laptop' }],
+    attributes: [{ name: 'RAM', options: ['16GB', '32GB'] }],
+    variants: [{ id: 'v-el-1', sku: 'AB-LAP-16', options: { RAM: '32GB' }, price: 2450000, stock: 15, imageIndex: 0 }],
+    fromPrice: 2450000,
+    compareAtPrice: 2800000,
+    rating: 4.9,
+    reviewCount: 28,
+    soldCount: 110,
+    deliveryEstimateDays: [7, 14],
+    specifications: [{ label: 'Display', value: '16" 4K OLED' }],
+    reviews: [],
+    createdAt: '2026-01-18T08:00:00Z',
+  },
+  {
+    id: 'prod-sol-01',
+    slug: '5kw-hybrid-solar-inverter-system',
+    title: '5KW Hybrid Solar Inverter & LiFePO4 Lithium Battery Kit',
+    shortDescription: 'Pure Sine Wave 48V, MPPT Charge Controller, 10kWh Storage',
+    description: 'Complete commercial & residential hybrid solar power package with smart app monitoring and 10-year battery lifespan.',
+    categoryId: 'solar-power',
+    brand: 'SunPower Direct',
+    supplier: SUPPLIERS.guangzhou,
+    images: [{ url: '/images/products/solar-kit.png', alt: '5KW Hybrid Solar System' }],
+    attributes: [{ name: 'Battery Capacity', options: ['5kWh', '10kWh'] }],
+    variants: [{ id: 'v-sol-1', sku: 'SP-SOL-10K', options: { 'Battery Capacity': '10kWh' }, price: 4800000, stock: 25, imageIndex: 0 }],
+    fromPrice: 4800000,
+    compareAtPrice: 5500000,
+    rating: 5.0,
+    reviewCount: 42,
+    soldCount: 88,
+    deliveryEstimateDays: [14, 21],
+    specifications: [{ label: 'Inverter Power', value: '5000W' }],
+    reviews: [],
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 'prod-wm-01',
+    slug: 'tanzanian-handmade-kitenge-dress',
+    title: "Handmade Premium Kitenge Women's Fashion Dress",
+    shortDescription: '100% Cotton Authentic Print, Vibrant African Design',
+    description: 'Elegant tailored women dress crafted with high-grade Wax Print fabric, suitable for formal events and modern fashion.',
+    categoryId: 'womens-clothing',
+    brand: 'Kilimanjaro Couture',
+    supplier: SUPPLIERS.kilimanjaro,
+    images: [{ url: '/images/products/kitenge-shirt.png', alt: 'Kitenge Dress' }],
+    attributes: [{ name: 'Size', options: ['S', 'M', 'L', 'XL'] }],
+    variants: [{ id: 'v-wm-1', sku: 'KC-KIT-M', options: { Size: 'M' }, price: 120000, stock: 60, imageIndex: 0 }],
+    fromPrice: 120000,
+    compareAtPrice: 160000,
+    rating: 4.8,
+    reviewCount: 56,
+    soldCount: 310,
+    deliveryEstimateDays: [2, 5],
+    specifications: [{ label: 'Material', value: '100% Cotton Wax' }],
+    reviews: [],
+    createdAt: '2026-02-01T08:00:00Z',
+  },
+  {
+    id: 'prod-mn-01',
+    slug: 'bespoke-executive-mens-3piece-suit',
+    title: "Bespoke Italian-Cut Men's 3-Piece Executive Suit",
+    shortDescription: 'Slim Fit Jacket, Waistcoat & Trousers in Midnight Navy',
+    description: 'Premium wool-blend tailored suit designed for corporate executives and formal occasions. Anti-wrinkle finish.',
+    categoryId: 'mens-clothing',
+    brand: 'Sartorial Istanbul',
+    supplier: SUPPLIERS.istanbul,
+    images: [{ url: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=500&q=80', alt: 'Mens Executive Suit' }],
+    attributes: [{ name: 'Size', options: ['48EU', '50EU', '52EU', '54EU'] }],
+    variants: [{ id: 'v-mn-1', sku: 'SI-SUIT-50', options: { Size: '50EU' }, price: 380000, stock: 35, imageIndex: 0 }],
+    fromPrice: 380000,
+    compareAtPrice: 480000,
+    rating: 4.9,
+    reviewCount: 22,
+    soldCount: 145,
+    deliveryEstimateDays: [7, 12],
+    specifications: [{ label: 'Fabric', value: '70% Wool, 30% Microfiber' }],
+    reviews: [],
+    createdAt: '2026-02-03T08:00:00Z',
+  },
+  {
+    id: 'prod-sh-01',
+    slug: 'italian-calfskin-leather-oxford-shoes',
+    title: "Handcrafted Italian Calfskin Leather Men's Oxford Shoes",
+    shortDescription: 'Goodyear Welted Sole, Genuine Full-Grain Leather in Burnished Tan',
+    description: 'Timeless luxury dress shoes featuring hand-finished patina, breathable leather lining, and durable leather soles.',
+    categoryId: 'shoes',
+    brand: 'Milano Footwear',
+    supplier: SUPPLIERS.istanbul,
+    images: [{ url: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=500&q=80', alt: 'Italian Leather Oxford Shoes' }],
+    attributes: [{ name: 'Shoe Size', options: ['40EU', '41EU', '42EU', '43EU', '44EU'] }],
+    variants: [{ id: 'v-sh-1', sku: 'MF-OXF-42', options: { 'Shoe Size': '42EU' }, price: 210000, stock: 40, imageIndex: 0 }],
+    fromPrice: 210000,
+    compareAtPrice: 270000,
+    rating: 4.9,
+    reviewCount: 38,
+    soldCount: 190,
+    deliveryEstimateDays: [7, 12],
+    specifications: [{ label: 'Material', value: 'Full Grain Leather' }],
+    reviews: [],
+    createdAt: '2026-01-22T08:00:00Z',
+  },
+  {
+    id: 'prod-hr-01',
+    slug: 'virgin-brazilian-human-hair-lace-front-wig',
+    title: '100% Virgin Brazilian Human Hair Lace Front Wig 24"',
+    shortDescription: '180% Density Body Wave, HD Invisible Pre-Plucked Lace',
+    description: 'Unprocessed natural black human hair wig. Tangle-free, can be dyed, bleached, and heat-styled effortlessly.',
+    categoryId: 'hair-wigs',
+    brand: 'Glamour Hair',
+    supplier: SUPPLIERS.guangzhou,
+    images: [{ url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=500&q=80', alt: 'Brazilian Human Hair Wig' }],
+    attributes: [{ name: 'Length', options: ['20 Inch', '24 Inch', '28 Inch'] }],
+    variants: [{ id: 'v-hr-1', sku: 'GH-WIG-24', options: { Length: '24 Inch' }, price: 420000, stock: 50, imageIndex: 0 }],
+    fromPrice: 420000,
+    compareAtPrice: 520000,
+    rating: 5.0,
+    reviewCount: 64,
+    soldCount: 410,
+    deliveryEstimateDays: [6, 11],
+    specifications: [{ label: 'Hair Grade', value: '12A Virgin Hair' }],
+    reviews: [],
+    createdAt: '2026-01-28T08:00:00Z',
+  },
+  {
+    id: 'prod-fur-01',
+    slug: 'executive-ergonomic-mesh-office-chair',
+    title: 'Executive Ergonomic Mesh Swivel Office Chair with Lumbar Support',
+    shortDescription: 'Adjustable 3D Armrests, Breathable Mesh, 135° Recline',
+    description: 'BIFMA certified ergonomic task chair designed for 12+ hour daily office use with heavy-duty aluminum base.',
+    categoryId: 'furniture',
+    brand: 'Ekintop Ergonomics',
+    supplier: SUPPLIERS.guangzhou,
+    images: [{ url: 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?auto=format&fit=crop&w=500&q=80', alt: 'Ergonomic Office Chair' }],
+    attributes: [{ name: 'Color', options: ['Black Mesh', 'Grey Mesh'] }],
+    variants: [{ id: 'v-fur-1', sku: 'EK-CH-BLK', options: { Color: 'Black Mesh' }, price: 340000, stock: 75, imageIndex: 0 }],
+    fromPrice: 340000,
+    compareAtPrice: 420000,
+    rating: 4.8,
+    reviewCount: 47,
+    soldCount: 280,
+    deliveryEstimateDays: [7, 14],
+    specifications: [{ label: 'Weight Capacity', value: '150KG' }],
+    reviews: [],
+    createdAt: '2026-01-05T08:00:00Z',
+  },
+]
 
-export const PRODUCTS: Product[] = []
+export const PRODUCTS: Product[] = [...INITIAL_PRODUCTS]
 
 export const CATEGORIES: Category[] = [
   { id: 'phones-accessories', name: 'Phones & Accessories', productCount: 0 },
@@ -148,125 +327,144 @@ export function resolveImage(title: string, category: string): string {
   const t = (title || '').toLowerCase()
   const c = (category || '').toLowerCase()
 
-  if (t.includes('monitor') || t.includes('display') || t.includes('screen') || t.includes('tv')) {
-    return 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800'
+  if (t.includes('solar') || c.includes('solar') || t.includes('clean energy')) {
+    return '/images/products/solar-kit.png'
   }
-  if (t.includes('laptop') || t.includes('notebook') || t.includes('macbook')) {
-    return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800'
-  }
-  if (t.includes('shoe') || t.includes('sneaker') || t.includes('boot') || c.includes('shoe') || t.includes('footwear')) {
-    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800'
-  }
-  if (t.includes('dress') || t.includes('skirt') || c.includes('women')) {
-    return 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800'
-  }
-  if (t.includes('mouse')) {
-    return 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800'
-  }
-  if (t.includes('led') || t.includes('strip') || t.includes('light') || t.includes('backlight')) {
-    return 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800'
-  }
-  if (t.includes('power bank') || t.includes('powerbank') || t.includes('battery') || t.includes('charger')) {
-    return 'https://images.unsplash.com/photo-1609592424009-dd09fa668478?w=800'
+  if (t.includes('shirt') || t.includes('polo') || c.includes('fashion') || t.includes('apparel')) {
+    return '/images/products/kitenge-shirt.png'
   }
   if (t.includes('speaker') || t.includes('sound') || t.includes('audio') || t.includes('boom')) {
-    return 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800'
-  }
-  if (t.includes('headphone') || t.includes('earbud') || t.includes('tws') || t.includes('headset')) {
-    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800'
-  }
-  if (t.includes('smartwatch') || t.includes('watch') || t.includes('band')) {
-    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800'
-  }
-  if (t.includes('shirt') || t.includes('polo') || c.includes('fashion') || t.includes('apparel') || c.includes('men')) {
-    return 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800'
-  }
-  if (t.includes('fryer') || t.includes('juicer') || t.includes('blender') || c.includes('kitchen') || c.includes('home')) {
-    return 'https://images.unsplash.com/photo-1585515320310-259814833e62?w=800'
-  }
-  if (t.includes('solar') || c.includes('solar') || t.includes('clean energy')) {
-    return 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800'
+    return '/images/products/bluetooth-speaker.png'
   }
   if (t.includes('phone') || t.includes('case') || c.includes('phone')) {
-    return 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800'
+    return '/images/products/smartphone.png'
   }
-  if (c.includes('beauty') || t.includes('dryer') || t.includes('care')) {
-    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800'
+  if (t.includes('monitor') || t.includes('laptop') || c.includes('electronics') || t.includes('display')) {
+    return '/categories/electronics.png'
+  }
+  if (c.includes('industrial') || c.includes('tools')) {
+    return '/categories/industrial-tools.png'
+  }
+  if (c.includes('beauty') || c.includes('health') || c.includes('care')) {
+    return '/categories/beauty-health.png'
+  }
+  if (c.includes('sports') || c.includes('outdoors')) {
+    return '/categories/sports-outdoors.png'
   }
 
-  return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800'
+  return 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?auto=format&fit=crop&w=500&q=80'
 }
 
 export function sanitizeProductImage(url: string | undefined, title: string, categoryId: string): string {
-  const t = (title || '').toLowerCase()
-  const isMonitorOrLaptop = t.includes('monitor') || t.includes('display') || t.includes('screen') || t.includes('tv') || t.includes('laptop')
-  
   if (!url || typeof url !== 'string' || url.includes('example.com') || url.includes('placeholder') || !url.trim()) {
     return resolveImage(title, categoryId)
   }
 
-  // If previous fallback assigned a mouse photo to a monitor or laptop, fix it automatically
-  if (isMonitorOrLaptop && url.includes('photo-1615663245857')) {
-    return resolveImage(title, categoryId)
+  let trimmed = url.trim().replace(/^['"]|['"]$/g, '')
+  if (trimmed.startsWith('//')) {
+    trimmed = `https:${trimmed}`
+  } else if (
+    !trimmed.startsWith('http://') &&
+    !trimmed.startsWith('https://') &&
+    !trimmed.startsWith('data:') &&
+    !trimmed.startsWith('/') &&
+    (trimmed.includes('alicdn') || trimmed.includes('alibaba') || trimmed.includes('.') || trimmed.includes('/'))
+  ) {
+    trimmed = `https://${trimmed}`
   }
 
-  return url.trim()
+  return trimmed
 }
 
 export function getStoredProducts(): Product[] {
+  let catalog: Product[] = [...INITIAL_PRODUCTS]
+
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed: Product[] = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Sanitize images and repair numeric titles in local storage
-          const sanitized = parsed.map((p) => {
-            const rawUrl = p.images?.[0]?.url
-            let title = p.title || ''
-            const isNumericTitle = /^\d+$/.test(title.trim()) || /^10050\d+/.test(title.trim())
-
-            if (isNumericTitle) {
-              if (p.categoryId === 'shoes' || p.categoryId === 'footwear') {
-                title = "Men's Casual Leather & Canvas Shoes"
-              } else if (p.categoryId === 'electronics') {
-                title = "Wireless Bluetooth Audio Headphones"
-              } else if (p.categoryId === 'health-beauty') {
-                title = "Personal Beauty & Skincare Set"
-              } else if (p.categoryId === 'fashion') {
-                title = "Men's & Women's Premium Apparel"
-              } else if (p.categoryId === 'home-kitchen') {
-                title = "Modern Kitchen & Home Appliance"
-              } else {
-                title = "Direct Factory Sourcing Item"
-              }
-            }
-
-            let description = p.description || ''
-            if (!description || /^\d+$/.test(description.trim())) {
-              description = `${title} — Verified direct factory product with air & sea shipping to Tanzania.`
-            }
-
-            const validUrl = sanitizeProductImage(rawUrl, title, p.categoryId)
-            return {
-              ...p,
-              title,
-              description,
-              images: [{ url: validUrl, alt: title }],
-            }
-          })
-          PRODUCTS.length = 0
-          PRODUCTS.push(...sanitized)
-          saveStoredProducts(sanitized)
-          updateCategoryCounts()
-          return sanitized
+          const initialIds = new Set(INITIAL_PRODUCTS.map((p) => p.id))
+          const newStored = parsed.filter((p) => !initialIds.has(p.id))
+          catalog = [...newStored, ...catalog]
         }
       }
+
+      // Also merge approved & published products from lumoo-supplier-store-v2
+      const supplierStoreRaw = localStorage.getItem('lumoo-supplier-store-v2')
+      if (supplierStoreRaw) {
+        const parsedSupplierStore = JSON.parse(supplierStoreRaw)
+        const supplierProducts: any[] = parsedSupplierStore?.state?.products || []
+
+        const publishedSupplierProducts = supplierProducts
+          .filter((sp) => sp.status === 'PUBLISHED' || sp.status === 'ACTIVE' || sp.isApproved === true)
+          .map((sp) => {
+            const rawUrl = Array.isArray(sp.images) ? sp.images[0] : sp.images
+            const cleanUrl = typeof rawUrl === 'string' ? rawUrl : rawUrl?.url || resolveImage(sp.title, sp.category)
+            const title = sp.title || 'Direct Factory Product'
+            let categoryId = (sp.category || sp.categoryId || 'electronics').toLowerCase()
+            if (categoryId.includes('chair') || categoryId.includes('furniture')) categoryId = 'home-kitchen'
+            else if (categoryId.includes('phone')) categoryId = 'phones-accessories'
+            else if (categoryId.includes('beauty')) categoryId = 'health-beauty'
+            else if (categoryId.includes('fashion') || categoryId.includes('apparel')) categoryId = 'fashion'
+            else if (categoryId.includes('solar')) categoryId = 'solar-power'
+            else categoryId = 'electronics'
+
+            return {
+              id: sp.id,
+              title,
+              slug: sp.slug || sp.id,
+              description: sp.description || `${title} — Direct Factory Sourcing with Air & Sea Freight to Tanzania.`,
+              shortDescription: sp.shortDescription || title,
+              categoryId,
+              brand: sp.brand || 'Supplier Direct',
+              countryOfOrigin: 'China',
+              flag: '🇨🇳',
+              fromPrice: Number(sp.fromPrice || sp.priceTZS || 50000),
+              compareAtPrice: sp.compareAtPrice ? Number(sp.compareAtPrice) : null,
+              minOrderQuantity: sp.minOrderQuantity || 1,
+              soldCount: sp.soldCount || 15,
+              rating: sp.rating || 4.9,
+              reviewCount: sp.reviewCount || 18,
+              leadTimeDays: 7,
+              deliveryEstimateDays: [7, 14],
+              inStock: true,
+              supplier: {
+                id: 'sup-1',
+                name: sp.supplier?.name || sp.brand || 'Verified Factory Supplier',
+                verified: true,
+                rating: 4.9,
+                city: 'Guangzhou',
+                country: 'China',
+                flag: '🇨🇳',
+              },
+              images: [{ url: cleanUrl, alt: title }],
+              variants: sp.variants || [{ id: `${sp.id}-v1`, name: 'Standard', price: Number(sp.fromPrice || sp.priceTZS || 50000), stock: sp.stock || 20 }],
+              specifications: [],
+              attributes: [],
+              reviews: [],
+              tags: ['Factory Direct', 'Verified'],
+              createdAt: sp.createdAt || new Date().toISOString(),
+            } as Product
+          })
+
+        if (publishedSupplierProducts.length > 0) {
+          const existingIds = new Set(catalog.map((p) => p.id))
+          const newEntries = publishedSupplierProducts.filter((p) => !existingIds.has(p.id))
+          catalog = [...newEntries, ...catalog]
+        }
+      }
+
+      PRODUCTS.length = 0
+      PRODUCTS.push(...catalog)
+      updateCategoryCounts()
+      return catalog
     } catch (e) {
-      console.error('Error reading lumo_published_products from localStorage:', e)
+      console.error('Error reading published products from localStorage:', e)
     }
   }
-  return PRODUCTS
+  return catalog
 }
 
 export function saveStoredProducts(products: Product[]) {
@@ -291,7 +489,11 @@ export function clearAllProducts() {
   PRODUCTS.length = 0
   if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('lumoo-supplier-store-v2')
     window.dispatchEvent(new Event('lumo_catalog_updated'))
+    
+    // Asynchronously call API to delete database products
+    fetch('/api/products', { method: 'DELETE' }).catch(() => {})
   }
   updateCategoryCounts()
 }

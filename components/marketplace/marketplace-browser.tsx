@@ -139,6 +139,25 @@ export function MarketplaceBrowser() {
           </InputGroup>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (!confirm('Are you sure you want to completely delete all imported products from catalog & database?')) return
+                try {
+                  await fetch('/api/products', { method: 'DELETE' })
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('lumoo-supplier-store-v2')
+                    localStorage.removeItem('lumo_published_products')
+                    window.dispatchEvent(new Event('lumo_catalog_updated'))
+                    window.location.reload()
+                  }
+                } catch {}
+              }}
+              className="text-xs font-bold border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/40 cursor-pointer"
+            >
+              Clear All Products
+            </Button>
             <Sheet>
               <SheetTrigger
                 render={

@@ -2,20 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Clock,
   RefreshCw,
-  Search,
-  Truck,
-  UserCheck,
-  Building2,
-  ShieldCheck,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import { formatTZS } from '@/lib/format'
 import { toast } from 'sonner'
+import { apiRequest } from '@/lib/api/client'
 
 type AssignmentItem = {
   id: string
@@ -36,18 +30,19 @@ export default function AdminAssignmentBoardPage() {
     try {
       const res = await fetch('/api/orders')
       const data = await res.json()
-      if (Array.isArray(data.data)) {
-        const mapped: AssignmentItem[] = data.data.map((ord: any, idx: number) => {
+      if (Array.isArray(data.data || data.orders)) {
+        const ordersList = data.data || data.orders
+        const mapped: AssignmentItem[] = ordersList.map((ord: any, idx: number) => {
           const colStatus: AssignmentItem['column'] =
-            ord.status === 'delivered'
+            ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
               ? 'Completed'
-              : ord.status === 'shipped' || ord.status === 'processing'
+              : ord.status === 'SHIPPED' || ord.status === 'PROCESSING'
               ? 'In Progress'
-              : ord.assignedAgentId
+              : ord.assignments?.some((a: any) => a.status === 'ACCEPTED')
               ? 'Accepted'
-              : idx % 2 === 0
-              ? 'Unassigned'
-              : 'Offered'
+              : ord.assignments?.some((a: any) => a.status === 'OFFERED')
+              ? 'Offered'
+              : 'Unassigned'
 
           return {
             id: ord.id,
@@ -55,7 +50,7 @@ export default function AdminAssignmentBoardPage() {
             customerName: ord.shippingAddress?.fullName || 'B2B Wholesale Customer',
             targetCountry: 'China 🇨🇳',
             column: colStatus,
-            amountTZS: ord.totalAmountTZS || 25000000,
+            amountTZS: Number(ord.totalAmountTZS) || 25000000,
           }
         })
         setItems(mapped)
@@ -71,16 +66,26 @@ export default function AdminAssignmentBoardPage() {
     fetchDatabaseOrders()
   }, [])
 
-  function moveItem(id: string, targetColumn: AssignmentItem['column']) {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          return { ...item, column: targetColumn }
-        }
-        return item
-      })
-    )
-    toast.success(`Order assigned status updated to ${targetColumn} in PostgreSQL!`)
+  async function moveItem(id: string, targetColumn: AssignmentItem['column']) {
+    try {
+      if (targetColumn === 'Offered') {
+        await apiRequest('/api/assignments/offer', {
+          method: 'POST',
+          body: { orderId: id, assigneeRole: 'SUPPLIER', instructions: 'Assigned via Admin Kanban Board' },
+        })
+      }
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            return { ...item, column: targetColumn }
+          }
+          return item
+        })
+      )
+      toast.success(`Order assignment updated to ${targetColumn} on PostgreSQL!`)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update assignment status')
+    }
   }
 
   const columns: AssignmentItem['column'][] = ['Unassigned', 'Offered', 'Accepted', 'In Progress', 'Completed']

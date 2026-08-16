@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { resolveImage } from '@/lib/mock/products'
 
 export interface SupplierVariant {
   id: string
@@ -309,7 +310,34 @@ export const useSupplierStore = create<SupplierState>()(
       },
     }),
     {
-      name: 'lumoo-supplier-store',
+      name: 'lumoo-supplier-store-v2',
+      merge: (persistedState: any, currentState) => {
+        if (persistedState && Array.isArray(persistedState.products)) {
+          const sanitizedProducts = persistedState.products.map((p: any) => {
+            let cleanImages = (p.images || []).map((u: any) => {
+              let str = typeof u === 'string' ? u : (u?.url || u?.src || '')
+              if (!str) return ''
+              str = str.trim().replace(/^['"]|['"]$/g, '')
+              if (str.startsWith('//')) return `https:${str}`
+              if (!str.startsWith('http://') && !str.startsWith('https://') && !str.startsWith('data:') && !str.startsWith('/')) {
+                if (str.includes('.') || str.includes('/')) return `https://${str}`
+              }
+              return str
+            }).filter(Boolean)
+
+            return {
+              ...p,
+              images: cleanImages.length > 0 ? cleanImages : p.images || [],
+            }
+          })
+          return {
+            ...currentState,
+            ...persistedState,
+            products: sanitizedProducts,
+          }
+        }
+        return { ...currentState, ...persistedState }
+      },
     },
   ),
 )

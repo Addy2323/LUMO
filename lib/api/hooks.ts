@@ -70,23 +70,61 @@ export function useProducts(query: ProductQuery = {}) {
   return useQuery<Product[]>({
     queryKey: ['products', query],
     queryFn: async (): Promise<Product[]> => {
+      let dbProducts: Product[] = []
       try {
         const res = await apiRequest<any>('/products', { mock: () => filterProducts(query), latency: 300 })
-        let list: Product[] = []
         if (Array.isArray(res)) {
-          list = res
+          dbProducts = res
         } else if (res && Array.isArray(res.data)) {
-          list = res.data
+          dbProducts = res.data
         }
-        
-        // If DB return is non-empty, use DB list; otherwise fall back to stored catalog products
-        if (list.length > 0) {
-          return list
-        }
-        return filterProducts(query)
       } catch {
-        return filterProducts(query)
+        dbProducts = []
       }
+
+      const storedProducts = getStoredProducts()
+      const dbIds = new Set(dbProducts.map((p) => p.id))
+      const combined = [...dbProducts, ...storedProducts.filter((p) => !dbIds.has(p.id))]
+
+      // Apply in-memory search, category filter, and sorting
+      const term = query.q?.trim().toLowerCase()
+      let result = combined.filter((product) => {
+        if (term) {
+          const haystack = `${product.title} ${product.brand} ${product.shortDescription}`.toLowerCase()
+          if (!haystack.includes(term)) return false
+        }
+        if (query.categoryId) {
+          const cat = query.categoryId.toLowerCase()
+          const pCat = (product.categoryId || '').toLowerCase()
+          if (pCat !== cat && !pCat.includes(cat) && !cat.includes(pCat)) {
+            return false
+          }
+        }
+        if (query.minPrice !== undefined && product.fromPrice < query.minPrice) return false
+        if (query.maxPrice !== undefined && product.fromPrice > query.maxPrice) return false
+        if (query.minRating !== undefined && product.rating < query.minRating) return false
+        if (query.inStockOnly && !product.variants?.some((variant) => variant.stock > 0)) return false
+        return true
+      })
+
+      switch (query.sort) {
+        case 'price_asc':
+          result = [...result].sort((a, b) => a.fromPrice - b.fromPrice)
+          break
+        case 'price_desc':
+          result = [...result].sort((a, b) => b.fromPrice - a.fromPrice)
+          break
+        case 'rating':
+          result = [...result].sort((a, b) => b.rating - a.rating)
+          break
+        case 'newest':
+          result = [...result].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+          break
+        default:
+          result = [...result].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0))
+      }
+
+      return result
     },
   })
 }

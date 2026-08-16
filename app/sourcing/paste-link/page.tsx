@@ -215,44 +215,69 @@ export default function PasteLinkSourcingPage() {
 
   const [submittedRef, setSubmittedRef] = useState<string>('SR-412')
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     try {
       const parsedBudget = parseFloat(budget.replace(/[^0-9.]/g, '')) || 1000000
       const sessionUser = useSessionStore.getState().user
       const custName = sessionUser?.fullName || 'Amina Hassan'
       const custEmail = sessionUser?.email || 'amina.hassan@example.co.tz'
+      const targetPriceUSD = currency === 'USD' ? parsedBudget : Math.round(parsedBudget / 2600) || 100
 
-      const ref = useSourcingStore.getState().addRequest({
-        customerName: custName,
-        customerEmail: custEmail,
-        productName: productName || 'Custom Sourced Product',
-        productLink,
-        description,
-        brand,
-        modelNumber,
-        color,
-        sizeDimensions,
-        techSpecs,
-        quantity,
-        targetBudget: parsedBudget,
-        currency: currency || 'TZS',
-        region: destination || 'Dar es Salaam',
-        destination,
-        shippingMethod,
-        addInsurance,
-        inspectionRequired,
-        documentFile: uploadedFile,
-      })
+      // 1. Post to authoritative PostgreSQL database
+      let serverId = ''
+      try {
+        const res = await fetch('/api/sourcing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productUrl: productLink || `https://lumo.co.tz/sourcing/${encodeURIComponent(productName || 'Custom Product')}`,
+            targetPriceUSD,
+            targetQuantity: quantity || 1,
+            notes: `${productName || 'Custom Product'}: ${description || ''} | Brand: ${brand} | Specs: ${techSpecs}`,
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          serverId = data.id
+        }
+      } catch (postErr) {
+        console.warn('[SOURCING POST DB WARNING]', postErr)
+      }
+
+      const ref = serverId
+        ? `SRC-${serverId.slice(0, 8).toUpperCase()}`
+        : useSourcingStore.getState().addRequest({
+            customerName: custName,
+            customerEmail: custEmail,
+            productName: productName || 'Custom Sourced Product',
+            productLink,
+            description,
+            brand,
+            modelNumber,
+            color,
+            sizeDimensions,
+            techSpecs,
+            quantity,
+            targetBudget: parsedBudget,
+            currency: currency || 'TZS',
+            region: destination || 'Dar es Salaam',
+            destination,
+            shippingMethod,
+            addInsurance,
+            inspectionRequired,
+            documentFile: uploadedFile,
+          })
+
       // Automatically dispatch order to Agent Portal Hub
       useAgentStore.getState().addOrder({
         orderNumber: ref,
         customerName: custName,
         productName: productName || 'Custom Sourced Product',
         quantityNeeded: quantity,
-        targetBudgetUSD: Math.round(parsedBudget / 2600) || 1000,
+        targetBudgetUSD: targetPriceUSD,
         destinationRegion: destination || 'Dar es Salaam',
         destinationCountry: 'Tanzania',
         assignedCountry: 'China',
@@ -260,15 +285,14 @@ export default function PasteLinkSourcingPage() {
       })
 
       setSubmittedRef(ref)
-      toast.success(`Sourcing Request ${ref} created successfully!`)
+      toast.success(`Sourcing Request ${ref} created and sent to Sales & Admin!`)
     } catch (err) {
       console.error(err)
-    }
-
-    setTimeout(() => {
+      toast.error('Failed to process sourcing submission')
+    } finally {
       setIsSubmitting(false)
       setSubmitted(true)
-    }, 600)
+    }
   }
 
   return (

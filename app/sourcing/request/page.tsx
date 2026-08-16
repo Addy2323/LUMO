@@ -84,7 +84,7 @@ export default function CustomerSourcingRequestPage() {
     }
   }, [sessionUser])
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
     if (!productName || !productName.trim()) {
@@ -121,35 +121,59 @@ export default function CustomerSourcingRequestPage() {
 
     const custName = sessionUser?.fullName || 'Amina Hassan'
     const custEmail = sessionUser?.email || 'amina.hassan@example.co.tz'
-    const parsedBudget = parseFloat(targetPrice) || 1000000
+    const parsedBudget = parseFloat(targetPrice) || 100
+    const targetPriceUSD = targetCurrency === 'USD' ? parsedBudget : Math.round(parsedBudget / 2600) || 100
 
-    const generatedRef = useSourcingStore.getState().addRequest({
-      customerName: custName,
-      customerEmail: custEmail,
-      productName: productName || 'Custom Sourced Product',
-      productLink: urlLink,
-      description: specs ? `${specs}\n${notes}` : notes,
-      brand: 'Specified Brand',
-      modelNumber: 'Custom Spec',
-      color: 'Default',
-      sizeDimensions: 'Standard',
-      techSpecs: specs,
-      quantity: Number(quantity) || 10,
-      targetBudget: parsedBudget,
-      currency: targetCurrency || 'USD',
-      region: countryPref || 'China',
-      destination: countryPref || 'China',
-      shippingMethod: 'standard_air',
-      addInsurance: true,
-      inspectionRequired: true,
-    })
+    // 4. Post to authoritative PostgreSQL database
+    let serverId = ''
+    try {
+      const res = await fetch('/api/sourcing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productUrl: urlLink || `https://lumo.co.tz/sourcing/${encodeURIComponent(productName || 'Custom Product')}`,
+          targetPriceUSD,
+          targetQuantity: Number(quantity) || 10,
+          notes: `${productName}: ${specs ? `${specs}\n${notes}` : notes || ''} | Hub: ${countryPref}`,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        serverId = data.id
+      }
+    } catch (postErr) {
+      console.warn('[SOURCING POST DB WARNING]', postErr)
+    }
+
+    const generatedRef = serverId
+      ? `SRC-${serverId.slice(0, 8).toUpperCase()}`
+      : useSourcingStore.getState().addRequest({
+          customerName: custName,
+          customerEmail: custEmail,
+          productName: productName || 'Custom Sourced Product',
+          productLink: urlLink,
+          description: specs ? `${specs}\n${notes}` : notes,
+          brand: 'Specified Brand',
+          modelNumber: 'Custom Spec',
+          color: 'Default',
+          sizeDimensions: 'Standard',
+          techSpecs: specs,
+          quantity: Number(quantity) || 10,
+          targetBudget: parsedBudget,
+          currency: targetCurrency || 'USD',
+          region: countryPref || 'China',
+          destination: countryPref || 'China',
+          shippingMethod: 'standard_air',
+          addInsurance: true,
+          inspectionRequired: true,
+        })
 
     useAgentStore.getState().addOrder({
       orderNumber: generatedRef,
       customerName: custName,
       productName: productName || 'Custom Sourced Product',
       quantityNeeded: Number(quantity) || 10,
-      targetBudgetUSD: targetCurrency === 'USD' ? parsedBudget : Math.round(parsedBudget / 2600) || 500,
+      targetBudgetUSD: targetPriceUSD,
       destinationRegion: countryPref || 'China',
       destinationCountry: 'Tanzania',
       assignedCountry: (countryPref === 'ANY' ? 'China' : countryPref) as any,
@@ -158,7 +182,7 @@ export default function CustomerSourcingRequestPage() {
 
     setRequestId(generatedRef)
     setIsSubmitted(true)
-    toast.success(`Sourcing Request ${generatedRef} Submitted Successfully!`)
+    toast.success(`Sourcing Request ${generatedRef} Submitted & Sent to Database!`)
   }
 
   return (

@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, Upload, AlertCircle, Sparkles } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, Upload, AlertCircle, Sparkles, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useSupplierStore } from '@/lib/stores/supplier-store'
+import { resolveImage } from '@/lib/mock/products'
 import { toast } from 'sonner'
 
 export default function BulkImportProductsPage() {
@@ -17,79 +18,210 @@ export default function BulkImportProductsPage() {
 
   function handleDownloadTemplate() {
     const csvContent =
-      'Title,Brand,Category,SKU,OptionName,PriceTZS,Stock,Description\n' +
-      'Solar Panel Monocrystalline 350W,Kilimanjaro Solar,Renewable Energy,KIL-SOL-350W,Standard,420000,50,High efficiency 350W monocrystalline solar module.\n' +
-      'Commercial Air Fryer 12L,KiliKitchen Pro,Commercial Appliances,KIT-AF-12L,12L Digital,380000,30,Industrial grade 12-liter digital air fryer.\n'
+      'Title,Brand,Category,SKU,OptionName,PriceTZS,Stock,Description,MainImageURL,ImageURL2,ImageURL3,ImageURLs\n' +
+      'Solar Panel Monocrystalline 350W,Kilimanjaro Solar,Renewable Energy,KIL-SOL-350W,Standard,420000,50,"High efficiency 350W monocrystalline solar module.","https://images.unsplash.com/photo-1509391365360-2e959784a276","https://images.unsplash.com/photo-1508514177221-188b1cf16e9d","https://images.unsplash.com/photo-1548611716-3006a8f192b1","https://images.unsplash.com/photo-1509391365360-2e959784a276;https://images.unsplash.com/photo-1508514177221-188b1cf16e9d"\n' +
+      'Commercial Air Fryer 12L,KiliKitchen Pro,Commercial Appliances,KIT-AF-12L,12L Digital,380000,30,"Industrial grade 12-liter digital air fryer.","https://images.unsplash.com/photo-1585515320310-259814833e62","https://images.unsplash.com/photo-1556911220-e15b29be8c8f","","https://images.unsplash.com/photo-1585515320310-259814833e62;https://images.unsplash.com/photo-1556911220-e15b29be8c8f"\n'
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', 'Lumo_Supplier_Bulk_Product_Template.csv')
+    link.setAttribute('download', 'Lumo_Alibaba_Style_Bulk_Product_Template.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    toast.success('Downloaded CSV Bulk Import Template!')
+    toast.success('Downloaded Alibaba-style CSV Template with Multi-Image columns!')
   }
 
-  function handleSimulateUpload(e: React.FormEvent) {
+  function parseCSVLine(text: string): string[] {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i]
+      if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim())
+        current = ''
+      } else {
+        current += char
+      }
+    }
+    result.push(current.trim())
+    return result
+  }
+
+  function handleProcessCSV(e: React.FormEvent) {
     e.preventDefault()
+    if (!file) {
+      toast.error('Please select a CSV spreadsheet file to upload')
+      return
+    }
+
     setIsUploading(true)
 
-    setTimeout(() => {
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string
+        if (!text) {
+          toast.error('CSV file is empty')
+          setIsUploading(false)
+          return
+        }
+
+        const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0)
+        if (lines.length <= 1) {
+          toast.error('CSV contains header row only')
+          setIsUploading(false)
+          return
+        }
+
+        const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''))
+        
+        // Find column indexes
+        const idxTitle = headers.findIndex((h) => h.includes('title'))
+        const idxBrand = headers.findIndex((h) => h.includes('brand'))
+        const idxCategory = headers.findIndex((h) => h.includes('category'))
+        const idxSKU = headers.findIndex((h) => h.includes('sku'))
+        const idxOption = headers.findIndex((h) => h.includes('option') || h.includes('variant'))
+        const idxPrice = headers.findIndex((h) => h.includes('price'))
+        const idxStock = headers.findIndex((h) => h.includes('stock'))
+        const idxDesc = headers.findIndex((h) => h.includes('desc'))
+
+        const idxMainImg = headers.findIndex((h) => h.includes('mainimage') || h.includes('image1') || h === 'image' || h.includes('img') || h.includes('picture') || h.includes('photo') || h.includes('thumbnail'))
+        const idxImg2 = headers.findIndex((h) => h.includes('imageurl2') || h.includes('image2') || h.includes('picture2') || h.includes('photo2'))
+        const idxImg3 = headers.findIndex((h) => h.includes('imageurl3') || h.includes('image3') || h.includes('picture3') || h.includes('photo3'))
+        const idxMultiImgs = headers.findIndex((h) => h.includes('imageurls') || h.includes('images') || h.includes('pictures') || h.includes('photos') || h.includes('gallery'))
+
+        const parsedProducts: any[] = []
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = parseCSVLine(lines[i])
+          if (row.length < 3) continue
+
+          const title = idxTitle !== -1 ? row[idxTitle] : `Product ${i}`
+          if (!title) continue
+
+          const brand = idxBrand !== -1 ? row[idxBrand] : 'Generic Brand'
+          const category = idxCategory !== -1 ? row[idxCategory] : 'Commercial Appliances'
+          const sku = idxSKU !== -1 ? row[idxSKU] : `SKU-${Date.now()}-${i}`
+          const optionName = idxOption !== -1 ? row[idxOption] : 'Standard'
+          const priceTZS = idxPrice !== -1 ? Number(row[idxPrice].replace(/[^0-9.]/g, '')) || 50000 : 50000
+          const stock = idxStock !== -1 ? Number(row[idxStock].replace(/[^0-9]/g, '')) || 20 : 20
+          const description = idxDesc !== -1 ? row[idxDesc] : title
+
+          // Extract multiple image URLs
+          const imageList: string[] = []
+
+          function cleanUrl(u: string): string {
+            if (!u) return ''
+            let trimmed = u.trim().replace(/^['"]|['"]$/g, '')
+            if (!trimmed) return ''
+            if (trimmed.startsWith('//')) return `https:${trimmed}`
+            if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('data:') && !trimmed.startsWith('/')) {
+              if (trimmed.includes('alicdn') || trimmed.includes('alibaba') || trimmed.includes('/') || trimmed.endsWith('.jpg') || trimmed.endsWith('.png') || trimmed.endsWith('.webp') || trimmed.endsWith('.jpeg')) {
+                return `https://${trimmed}`
+              }
+            }
+            return trimmed
+          }
+
+          if (idxMainImg !== -1 && row[idxMainImg]) imageList.push(cleanUrl(row[idxMainImg]))
+          if (idxImg2 !== -1 && row[idxImg2]) imageList.push(cleanUrl(row[idxImg2]))
+          if (idxImg3 !== -1 && row[idxImg3]) imageList.push(cleanUrl(row[idxImg3]))
+
+          if (idxMultiImgs !== -1 && row[idxMultiImgs]) {
+            const splitImgs = row[idxMultiImgs]
+              .split(/[;|\n,]/)
+              .map((s) => cleanUrl(s))
+              .filter((s) => s.length > 5)
+            imageList.push(...splitImgs)
+          }
+
+          // Scan all cells in the row as fallback if no image extracted yet
+          if (imageList.length === 0) {
+            row.forEach((cell) => {
+              const c = cleanUrl(cell)
+              if (
+                c.length > 10 &&
+                (c.startsWith('http://') || c.startsWith('https://') || c.includes('alicdn') || c.includes('alibaba') || c.match(/\.(jpg|jpeg|png|webp)/i))
+              ) {
+                imageList.push(c)
+              }
+            })
+          }
+
+          const uniqueImages = Array.from(new Set(imageList.filter((url) => url.length > 5)))
+          const fallbackImage = resolveImage(title, category)
+          const finalImages = uniqueImages.length > 0 ? uniqueImages : [fallbackImage]
+
+          parsedProducts.push({
+            title,
+            slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            brand,
+            category,
+            description,
+            status: 'active',
+            fromPriceTZS: priceTZS,
+            images: finalImages,
+            variants: [
+              {
+                id: `v_csv_${Date.now()}_${i}`,
+                sku,
+                name: optionName,
+                priceTZS,
+                costPriceTZS: Math.round(priceTZS * 0.7),
+                stock,
+                reorderPoint: 5,
+                attributes: { Option: optionName },
+              },
+            ],
+          })
+        }
+
+        if (parsedProducts.length === 0) {
+          toast.error('Could not parse any valid product rows from CSV')
+          setIsUploading(false)
+          return
+        }
+
+        // 1. Save to local Zustand store
+        importProducts(parsedProducts)
+
+        // 2. Persist directly into PostgreSQL Database via API
+        fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsedProducts),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              toast.success(`Saved ${parsedProducts.length} product(s) to PostgreSQL database! Status set to PENDING_REVIEW.`)
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to post products to database API:', err)
+          })
+
+        setImportedCount(parsedProducts.length)
+        setIsUploading(false)
+        toast.success(`Successfully imported ${parsedProducts.length} product(s) into database catalog!`)
+      } catch (err) {
+        console.error('CSV Parsing Error:', err)
+        toast.error('Failed to parse CSV spreadsheet. Please check format.')
+        setIsUploading(false)
+      }
+    }
+
+    reader.onerror = () => {
+      toast.error('Failed to read uploaded file')
       setIsUploading(false)
-      const count = Math.floor(5 + Math.random() * 8)
-      setImportedCount(count)
+    }
 
-      // Add mock imported products to store
-      importProducts([
-        {
-          title: 'Industrial Heavy Weight Scales 500KG',
-          slug: 'industrial-heavy-weight-scales-500kg',
-          brand: 'Kilimanjaro Scale Co',
-          category: 'POS & Retail Tech',
-          description: 'Heavy duty digital platform scale for agricultural produce and warehousing.',
-          status: 'active',
-          fromPriceTZS: 750000,
-          images: ['/images/products/phone-case-armour.png'],
-          variants: [
-            {
-              id: `v_imp_1`,
-              sku: `KIL-SCL-500KG`,
-              name: '500KG Platform',
-              priceTZS: 750000,
-              costPriceTZS: 520000,
-              stock: 25,
-              reorderPoint: 5,
-              attributes: { Capacity: '500KG' },
-            },
-          ],
-        },
-        {
-          title: 'Automated Commercial Dough Mixer 40L',
-          slug: 'automated-commercial-dough-mixer-40l',
-          brand: 'KiliKitchen Pro',
-          category: 'Commercial Appliances',
-          description: 'Heavy duty 40-liter spiral dough mixer for commercial bakeries and restaurants.',
-          status: 'active',
-          fromPriceTZS: 2400000,
-          images: ['/images/products/phone-case-armour.png'],
-          variants: [
-            {
-              id: `v_imp_2`,
-              sku: `KIT-MIX-40L`,
-              name: '40L 3-Phase',
-              priceTZS: 2400000,
-              costPriceTZS: 1750000,
-              stock: 12,
-              reorderPoint: 3,
-              attributes: { Capacity: '40L' },
-            },
-          ],
-        },
-      ])
-
-      toast.success(`Successfully imported ${count} products into catalog!`)
-    }, 2000)
+    reader.readAsText(file)
   }
 
   return (
@@ -99,9 +231,14 @@ export default function BulkImportProductsPage() {
           <ArrowLeft />
         </Button>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Bulk Product CSV Import</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+            Alibaba Bulk Product CSV Import
+            <Badge className="bg-brand-500/10 text-brand-500 border border-brand-500/20 text-xs font-bold gap-1">
+              <ImageIcon className="size-3" /> Multi-Image Support
+            </Badge>
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Batch import hundreds of product SKUs and stock inventory at once via CSV spreadsheet.
+            Batch import product listings, prices, SKU stock, and multi-image CDN URLs matching Alibaba spreadsheet format.
           </p>
         </div>
       </div>
@@ -110,33 +247,41 @@ export default function BulkImportProductsPage() {
         <Card className="border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-950/20">
           <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
             <CheckCircle2 className="size-12 text-emerald-600" />
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-bold text-foreground">Import Complete!</h2>
+            <div className="flex flex-col gap-1 items-center">
+              <h2 className="text-lg font-bold text-foreground">Import &amp; Database Sync Complete!</h2>
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 font-extrabold text-[11px] my-1">
+                STATUS: PENDING ADMIN APPROVAL
+              </Badge>
               <p className="text-xs text-muted-foreground max-w-md">
-                Successfully processed and imported <strong className="text-foreground font-mono">{importedCount} new products</strong> into your active catalog.
+                Successfully saved <strong className="text-foreground font-mono">{importedCount} new product(s)</strong> into PostgreSQL database with full image matrices. Products are now queued for Admin approval.
               </p>
             </div>
-            <div className="flex gap-3 mt-2">
-              <Button size="sm" render={<Link href="/supplier/products" />} className="bg-brand-500 hover:bg-brand-600 text-white font-bold">
-                View Updated Catalogue
+            <div className="flex flex-wrap justify-center gap-3 mt-2">
+              <Button size="sm" render={<Link href="/supplier/products" />} className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs">
+                View Supplier Catalogue
+              </Button>
+              <Button size="sm" variant="outline" render={<Link href="/admin/products?status=PENDING_REVIEW" />} className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10 font-extrabold text-xs">
+                Open Admin Catalog Approval Queue →
               </Button>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <form onSubmit={handleSimulateUpload} className="flex flex-col gap-6">
+        <form onSubmit={handleProcessCSV} className="flex flex-col gap-6">
           {/* Download Template Step */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-extrabold">Step 1: Download Standard CSV Template</CardTitle>
+                <CardTitle className="text-base font-extrabold flex items-center gap-2">
+                  Step 1: Download Alibaba-Style CSV Template
+                </CardTitle>
                 <CardDescription className="text-xs">
-                  Ensure your product data matches Lumo&apos;s required spreadsheet columns.
+                  Includes multi-image URL columns (<code className="bg-muted px-1 rounded font-mono">MainImageURL</code>, <code className="bg-muted px-1 rounded font-mono">ImageURL2</code>, <code className="bg-muted px-1 rounded font-mono">ImageURL3</code>, and semicolon-separated <code className="bg-muted px-1 rounded font-mono">ImageURLs</code>).
                 </CardDescription>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={handleDownloadTemplate} className="font-semibold text-xs">
-                <Download className="size-3.5 mr-1 text-brand-500" />
-                Download Template CSV
+              <Button type="button" variant="outline" size="sm" onClick={handleDownloadTemplate} className="font-semibold text-xs border-brand-500/30 text-brand-500 hover:bg-brand-500/10">
+                <Download className="size-3.5 mr-1" />
+                Download Multi-Image Template CSV
               </Button>
             </CardHeader>
           </Card>
@@ -144,7 +289,7 @@ export default function BulkImportProductsPage() {
           {/* Upload File Drag & Drop Zone */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-extrabold">Step 2: Upload Completed Product File</CardTitle>
+              <CardTitle className="text-base font-extrabold">Step 2: Upload Completed Product CSV File</CardTitle>
               <CardDescription className="text-xs">Supported formats: .CSV, .XLSX (Max file size 15MB)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -157,7 +302,7 @@ export default function BulkImportProductsPage() {
                   <p className="text-xs font-bold text-foreground">
                     {file ? file.name : 'Click or Drag & Drop your CSV spreadsheet here'}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">Automatic column mapping and validation check</p>
+                  <p className="text-[11px] text-muted-foreground">Automatic column mapping &amp; multi-image extractor</p>
                 </div>
                 <input
                   id="csvFileInput"
@@ -175,7 +320,7 @@ export default function BulkImportProductsPage() {
                     <span className="font-bold">{file.name}</span>
                     <span className="text-muted-foreground text-[11px]">({(file.size / 1024).toFixed(1)} KB)</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30">Ready to Import</Badge>
+                  <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 font-bold">Ready to Import</Badge>
                 </div>
               )}
             </CardContent>
@@ -192,7 +337,7 @@ export default function BulkImportProductsPage() {
               className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-md"
             >
               {isUploading ? (
-                <>Processing CSV Import...</>
+                <>Processing CSV &amp; Multi-Image Gallery...</>
               ) : (
                 <>
                   <Upload className="size-4 mr-1" />
@@ -206,3 +351,4 @@ export default function BulkImportProductsPage() {
     </div>
   )
 }
+

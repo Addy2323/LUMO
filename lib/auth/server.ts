@@ -18,6 +18,7 @@ export const DUMMY_PASSWORD_HASH = '$2a$12$e8p1O6JvPzDq20.2sT8cce2V/ZJtD1mC/5eOq
 export interface JWTPayload {
   userId: string
   role: Role
+  activeRole: Role
   email: string
   sessionToken: string
 }
@@ -69,8 +70,10 @@ export async function createSession(
   userRole: Role,
   email: string,
   userAgent?: string,
-  ipAddress?: string
+  ipAddress?: string,
+  activeRole?: Role
 ): Promise<{ token: string; expiresAt: Date }> {
+  const resolvedActiveRole = activeRole ?? userRole
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS)
   const sessionToken = `sess_${crypto.randomUUID()}`
 
@@ -79,6 +82,7 @@ export async function createSession(
       data: {
         userId,
         sessionToken,
+        activeRole: resolvedActiveRole,
         expiresAt,
         userAgent: userAgent || null,
         ipAddress: ipAddress || null,
@@ -92,6 +96,7 @@ export async function createSession(
   const jwt = await signJWT({
     userId,
     role: userRole,
+    activeRole: resolvedActiveRole,
     email,
     sessionToken,
   })
@@ -117,14 +122,15 @@ export async function rotateSession(
   email: string,
   oldSessionToken?: string,
   userAgent?: string,
-  ipAddress?: string
+  ipAddress?: string,
+  activeRole?: Role
 ): Promise<{ token: string; expiresAt: Date }> {
   if (oldSessionToken) {
     await prisma.session.deleteMany({
       where: { sessionToken: oldSessionToken },
     }).catch(() => {})
   }
-  return createSession(userId, userRole, email, userAgent, ipAddress)
+  return createSession(userId, userRole, email, userAgent, ipAddress, activeRole)
 }
 
 /**
@@ -277,6 +283,7 @@ export async function getAuthenticatedUser(req?: NextRequest) {
       return {
         user: dbSession.user,
         sessionToken: dbSession.sessionToken,
+        activeRole: dbSession.activeRole ?? dbSession.user.role,
       }
     }
   } catch (error) {

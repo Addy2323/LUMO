@@ -62,8 +62,8 @@ export async function middleware(req: NextRequest) {
 
     try {
       const verified = await jwtVerify(token, JWT_SECRET_BYTES)
-      const payload = verified.payload as { role?: string; userId?: string }
-      const userRole = (payload?.role || '').toUpperCase()
+      const payload = verified.payload as { role?: string; activeRole?: string; userId?: string }
+      const userRole = (payload?.activeRole || payload?.role || '').toUpperCase()
 
       if (!userRole || !rule.allowedRoles.includes(userRole)) {
         if (pathname.startsWith('/api/')) {

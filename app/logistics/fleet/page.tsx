@@ -19,35 +19,7 @@ type FleetVehicle = {
   status: 'Active' | 'Maintenance' | 'Idle'
 }
 
-const INITIAL_FLEET: FleetVehicle[] = [
-  {
-    id: 'fl_1',
-    registrationNumber: 'TZ 881 ABC',
-    model: 'Scania R500 28-Ton Heavy Hauler',
-    capacity: '28,000 KG / 60 CBM',
-    assignedDriver: 'Juma Hassan',
-    phone: '+255 712 345 678',
-    status: 'Active',
-  },
-  {
-    id: 'fl_2',
-    registrationNumber: 'TZ 492 XYZ',
-    model: 'ISUZU FTR 10-Ton Box Cargo Truck',
-    capacity: '10,000 KG / 25 CBM',
-    assignedDriver: 'Emmanuel Mollel',
-    phone: '+255 755 987 654',
-    status: 'Active',
-  },
-  {
-    id: 'fl_3',
-    registrationNumber: 'TZ 102 EFG',
-    model: 'Toyota HiAce 1.5-Ton City Express Van',
-    capacity: '1,500 KG / 6 CBM',
-    assignedDriver: 'Baraka Saidi',
-    phone: '+255 784 112 233',
-    status: 'Maintenance',
-  },
-]
+const INITIAL_FLEET: FleetVehicle[] = []
 
 export default function LogisticsFleetPage() {
   const [fleet, setFleet] = useState<FleetVehicle[]>(INITIAL_FLEET)

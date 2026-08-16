@@ -1,10 +1,11 @@
 'use client'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequest } from '@/lib/api/client'
-import { useSessionStore, type MockUser } from '@/lib/stores/session-store'
+import { useSessionStore, type SessionUser } from '@/lib/stores/session-store'
 import type { Role } from '@/lib/roles'
 import type { ForgotPasswordInput, SignInInput, SignUpInput } from '@/lib/auth/schemas'
+import { useRouter } from 'next/navigation'
 
 export const DEV_OTP = '123456'
 
@@ -34,15 +35,17 @@ export function useSignIn() {
         body,
       })
 
+      const role = (res.user.role.toLowerCase() as Role) || payload.role
       return {
         id: res.user.id,
         fullName: res.user.name,
         email: res.user.email,
         phone: res.user.phone || '',
-        role: (res.user.role.toLowerCase() as Role) || payload.role,
+        role,
+        activeRole: role,
         verified: true,
         avatarUrl: null,
-      } as MockUser
+      } as SessionUser
     },
     onSuccess: (user) => {
       signIn(user)
@@ -86,15 +89,17 @@ export function useVerifyOtp() {
         },
       })
 
+      const role = (res.user.role.toLowerCase() as Role) || payload.role
       return {
         id: res.user.id,
         fullName: res.user.name,
         email: res.user.email,
         phone: res.user.phone || '',
-        role: (res.user.role.toLowerCase() as Role) || payload.role,
+        role,
+        activeRole: role,
         verified: true,
         avatarUrl: null,
-      } as MockUser
+      } as SessionUser
     },
     onSuccess: (user) => {
       signIn(user)
@@ -121,5 +126,56 @@ export function useForgotPassword() {
         method: 'POST',
         body: { email: payload.identifier },
       }),
+  })
+}
+
+// ──────────────────────────────────────────────
+// Server-Backed Role Management Hooks
+// ──────────────────────────────────────────────
+
+type RoleInfo = {
+  role: string
+  approvedAt: string | null
+}
+
+type RolesResponse = {
+  userId: string
+  activeRole: string
+  roles: RoleInfo[]
+}
+
+/** GET /api/session/roles — fetch user's approved roles */
+export function useRoles() {
+  return useQuery<RolesResponse>({
+    queryKey: ['session', 'roles'],
+    queryFn: () => apiRequest<RolesResponse>('/api/session/roles'),
+    staleTime: 60_000,
+  })
+}
+
+type SwitchRoleResponse = {
+  success: boolean
+  activeRole: string
+  redirectTo: string
+}
+
+/** POST /api/session/active-role — server-validated role switch */
+export function useSwitchRole() {
+  const setActiveRole = useSessionStore((s) => s.setActiveRole)
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: async (role: string) => {
+      return apiRequest<SwitchRoleResponse, { role: string }>('/api/session/active-role', {
+        method: 'POST',
+        body: { role },
+      })
+    },
+    onSuccess: (data) => {
+      setActiveRole(data.activeRole.toLowerCase() as Role)
+      queryClient.invalidateQueries({ queryKey: ['session'] })
+      router.push(data.redirectTo)
+    },
   })
 }

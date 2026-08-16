@@ -35,27 +35,57 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSourcingStore, SourcingItem, SourcingSubmittedDocument } from '@/lib/stores/sourcing-store'
 import { formatTZS, formatDate } from '@/lib/format'
 import { toast } from 'sonner'
+import { SourcingChatThread } from '@/components/sourcing/sourcing-chat-thread'
 
 import { useSessionStore } from '@/lib/stores/session-store'
 
 export default function CustomerSourcingPage() {
   const user = useSessionStore((s) => s.user)
-  const isDemoUser =
-    user?.id === 'usr_cus_001' ||
-    user?.id === 'cust_01' ||
-    user?.email === 'amina.hassan@example.co.tz'
+  const [dbItems, setDbItems] = useState<SourcingItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const allItems = useSourcingStore((s) => s.items)
-  const userItems = user
-    ? allItems.filter(
-        (i) =>
-          !i.customerEmail ||
-          i.customerEmail.toLowerCase() === user.email?.toLowerCase() ||
-          i.customerName?.toLowerCase() === (user.fullName || '').toLowerCase()
-      )
-    : allItems
+  useEffect(() => {
+    // Clear out legacy local store mock items
+    useSourcingStore.getState().clearAll()
 
-  const items = userItems.length > 0 ? userItems : allItems
+    async function fetchSourcing() {
+      try {
+        const res = await fetch('/api/sourcing')
+        if (res.ok) {
+          const data = await res.json()
+          const list = Array.isArray(data) ? data : data.requests || []
+          const mapped: SourcingItem[] = list.map((r: any) => ({
+            id: r.id,
+            reference: `SRC-${r.id.slice(0, 8).toUpperCase()}`,
+            customerName: r.buyer?.name || user?.fullName || 'Customer',
+            customerEmail: r.buyer?.email || user?.email || '',
+            productName: r.description || r.productUrl,
+            productLink: r.productUrl,
+            description: r.description || '',
+            quantity: r.targetQuantity,
+            targetBudget: r.targetPriceTZS || 0,
+            currency: 'TZS',
+            region: 'Dar es Salaam',
+            destination: 'Dar es Salaam',
+            shippingMethod: 'standard_air',
+            addInsurance: true,
+            inspectionRequired: true,
+            status: r.status.toLowerCase() === 'submitted' || r.status.toLowerCase() === 'under_review' ? 'open' : (r.status.toLowerCase() as any),
+            createdAt: r.createdAt,
+            messages: [],
+          }))
+          setDbItems(mapped)
+        }
+      } catch (err) {
+        console.error('[CUSTOMER SOURCING FETCH ERROR]', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSourcing()
+  }, [user])
+
+  const items = dbItems
 
   const downloadDocument = useSourcingStore((s) => s.downloadDocument)
   const addMessage = useSourcingStore((s) => s.addMessage)
@@ -527,48 +557,7 @@ function SourcingDetailDialog({
           )}
 
           {/* Real-Time Interactive Communication Thread */}
-          <div className="space-y-3 pt-2 border-t">
-            <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center justify-between">
-              <span>Sourcing Communication Thread</span>
-              <span className="text-[11px] font-normal text-muted-foreground">{item.messages.length} Messages</span>
-            </h4>
-
-            <div className="space-y-3 max-h-60 overflow-y-auto p-3 rounded-2xl bg-muted/20 border border-border">
-              {item.messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`p-3 rounded-xl max-w-[85%] text-xs space-y-1 ${
-                    msg.senderRole === 'customer'
-                      ? 'ml-auto bg-primary text-primary-foreground'
-                      : msg.senderRole === 'admin'
-                      ? 'mr-auto bg-amber-500/10 border border-amber-500/30 text-foreground'
-                      : 'mr-auto bg-card border text-foreground'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3 text-[10px] opacity-80">
-                    <span className="font-bold">{msg.senderName}</span>
-                    <span>{formatDate(msg.sentAt)}</span>
-                  </div>
-                  <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Send Message Input */}
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <Input
-                placeholder="Ask officer a question or request quotation changes..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                className="text-xs h-10"
-              />
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-10 px-4">
-                <Send className="size-4 mr-1" />
-                Send
-              </Button>
-            </form>
-          </div>
+          <SourcingChatThread sourcingRequestId={item.id} currentRole="BUYER" />
         </div>
       </DialogContent>
     </Dialog>

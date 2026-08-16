@@ -19,32 +19,7 @@ type FreightRate = {
   estimatedDays: string
 }
 
-const INITIAL_RATES: FreightRate[] = [
-  {
-    id: 'r_1',
-    route: 'Guangzhou / Yiwu → Dar es Salaam Port',
-    mode: 'Sea Freight',
-    unitRateUSD: 240, // per CBM
-    unitRateTZS: 624000,
-    estimatedDays: '25-35 Days',
-  },
-  {
-    id: 'r_2',
-    route: 'Shenzhen → JNIA Airport Dar es Salaam',
-    mode: 'Air Freight',
-    unitRateUSD: 8.5, // per KG
-    unitRateTZS: 22100,
-    estimatedDays: '5-7 Days',
-  },
-  {
-    id: 'r_3',
-    route: 'Dar es Salaam Port → Mwanza Inland Hub',
-    mode: 'Local Trucking',
-    unitRateUSD: 45, // per Ton
-    unitRateTZS: 117000,
-    estimatedDays: '2-3 Days',
-  },
-]
+const INITIAL_RATES: FreightRate[] = []
 
 export default function FreightRatesPage() {
   const [rates, setRates] = useState<FreightRate[]>(INITIAL_RATES)

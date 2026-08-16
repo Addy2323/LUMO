@@ -1,12 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
   Barcode,
   CheckCircle2,
   Clock,
-  PackageCheck,
   ShieldCheck,
   Sparkles,
   Truck,
@@ -17,14 +17,55 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StatusBadge } from '@/components/status-badge'
 import { ORDERS } from '@/lib/mock/orders'
 import { formatDate } from '@/lib/format'
+import { useSessionStore } from '@/lib/stores/session-store'
 
 export function LogisticsDashboard() {
-  const carrierName = 'Baraka Freight Ltd'
-  const carrierOrders = ORDERS.filter((o) => o.logistics?.name === carrierName)
+  const user = useSessionStore((s) => s.user)
+  const carrierName = user?.fullName || 'Baraka Freight Ltd'
 
-  const awaitingPickup = carrierOrders.filter((o) => o.status === 'processing')
-  const inTransit = carrierOrders.filter((o) => o.status === 'shipped')
-  const deliveredToday = carrierOrders.filter((o) => o.status === 'delivered')
+  const [serverAssignments, setServerAssignments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchLogisticsAssignments()
+  }, [])
+
+  async function fetchLogisticsAssignments() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/assignments')
+      if (res.ok) {
+        const data = await res.json()
+        setServerAssignments(data.assignments || [])
+      }
+    } catch (err) {
+      console.error('[LOGISTICS DASHBOARD] Failed to fetch server assignments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const mockCarrierOrders = ORDERS.filter((o) => o.logistics?.name === 'Baraka Freight Ltd')
+
+  const displayOrders = serverAssignments.length > 0
+    ? serverAssignments.map((a) => ({
+        id: a.orderId,
+        reference: `ORD-${a.orderId.slice(-6).toUpperCase()}`,
+        status: a.status === 'ACCEPTED' ? 'shipped' : a.status.toLowerCase(),
+        trackingNumber: `TRK-${a.id.slice(-6).toUpperCase()}`,
+        placedAt: a.createdAt,
+        supplier: { name: 'Verified Supplier' },
+        shippingAddress: {
+          recipient: 'Customer',
+          ward: 'Kijitonyama',
+          region: 'Dar es Salaam',
+        },
+      }))
+    : mockCarrierOrders
+
+  const awaitingPickup = displayOrders.filter((o) => o.status === 'processing' || o.status === 'offered')
+  const inTransit = displayOrders.filter((o) => o.status === 'shipped' || o.status === 'accepted')
+  const deliveredToday = displayOrders.filter((o) => o.status === 'delivered' || o.status === 'completed')
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,7 +174,7 @@ export function LogisticsDashboard() {
 
         <CardContent className="p-0">
           <div className="divide-y divide-border">
-            {carrierOrders.map((order) => (
+            {displayOrders.map((order) => (
               <div
                 key={order.id}
                 className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/30 transition-colors"
@@ -148,9 +189,9 @@ export function LogisticsDashboard() {
                   </div>
 
                   <span className="text-xs text-muted-foreground">
-                    From: <strong className="text-foreground">{order.supplier.name}</strong> → To:{' '}
-                    <strong className="text-foreground">{order.shippingAddress.recipient}</strong> ({order.shippingAddress.ward},{' '}
-                    {order.shippingAddress.region})
+                    From: <strong className="text-foreground">{order.supplier?.name}</strong> → To:{' '}
+                    <strong className="text-foreground">{order.shippingAddress?.recipient}</strong> ({order.shippingAddress?.ward},{' '}
+                    {order.shippingAddress?.region})
                   </span>
                 </div>
 
@@ -175,4 +216,3 @@ export function LogisticsDashboard() {
     </div>
   )
 }
-

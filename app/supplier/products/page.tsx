@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Package,
 } from 'lucide-react'
+import { SafeProductImage } from '@/components/ui/product-image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -134,6 +135,25 @@ export default function SupplierProductsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!confirm('Are you sure you want to delete all imported products from catalog and database?')) return
+              try {
+                await fetch('/api/products', { method: 'DELETE' })
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem('lumoo-supplier-store-v2')
+                  localStorage.removeItem('lumo_published_products')
+                  window.dispatchEvent(new Event('lumo_catalog_updated'))
+                  window.location.reload()
+                }
+              } catch {}
+            }}
+            className="text-xs font-bold border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400"
+          >
+            Clear All Products
+          </Button>
           <Button variant="outline" size="sm" render={<Link href="/supplier/products/import" />}>
             Bulk Import CSV
           </Button>
@@ -198,12 +218,13 @@ export default function SupplierProductsPage() {
                     className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border bg-muted">
-                        <Image
-                          src={product.images[0] || '/images/products/phone-case-armour.png'}
+                      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border bg-muted flex items-center justify-center">
+                        <SafeProductImage
+                          src={product.images}
                           alt={product.title}
-                          fill
-                          className="object-cover"
+                          title={product.title}
+                          category={product.category}
+                          className="size-full object-cover rounded-xl"
                         />
                       </div>
                       <div className="flex flex-col gap-1 min-w-0">

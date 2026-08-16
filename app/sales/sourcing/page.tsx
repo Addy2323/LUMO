@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   Download,
+  ExternalLink,
   FileText,
   Globe,
   MessageSquare,
@@ -28,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatTZS, formatDate } from '@/lib/format'
 import { toast } from 'sonner'
+import { SourcingChatThread } from '@/components/sourcing/sourcing-chat-thread'
 
 import { useSourcingStore } from '@/lib/stores/sourcing-store'
 
@@ -68,30 +70,7 @@ export default function SalesSourcingPage() {
         }
       } catch (e) {}
 
-      const storeItems = useSourcingStore.getState().items || []
-      const combined = [...dbRequests]
-
-      storeItems.forEach((st) => {
-        if (!combined.some((c) => c.id === st.id || c.productUrl === st.productLink)) {
-          combined.push({
-            id: st.id,
-            buyerId: st.customerEmail,
-            productUrl: st.productLink || st.productName,
-            targetQuantity: st.quantity,
-            targetPriceTZS: st.targetBudget,
-            description: `${st.productName}: ${st.description || ''}`,
-            status: st.status.toUpperCase(),
-            createdAt: st.createdAt,
-            buyer: {
-              name: st.customerName,
-              email: st.customerEmail,
-              phone: null,
-            },
-          })
-        }
-      })
-
-      setRequests(combined)
+      setRequests(dbRequests)
     } catch (error) {
       console.error('Failed to fetch database sourcing requests:', error)
     } finally {
@@ -227,37 +206,85 @@ export default function SalesSourcingPage() {
       {/* Sourcing Detail Dialog */}
       {selectedItem && (
         <Dialog open onOpenChange={() => setSelectedItemId(null)}>
-          <DialogContent className="max-w-xl p-6 border-border shadow-2xl">
-            <DialogHeader className="border-b pb-3">
+          <DialogContent className="max-w-3xl p-6 border-border shadow-2xl rounded-2xl">
+            <DialogHeader className="border-b pb-3.5">
               <DialogTitle className="flex items-center justify-between text-base font-extrabold">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <Package className="size-5 text-[#FF6B00]" />
                   <span>Inspect Sourcing Ticket</span>
-                  <Badge variant="outline" className="font-mono text-xs text-primary">
+                  <Badge variant="outline" className="font-mono text-xs text-primary bg-primary/5">
                     SRC-{selectedItem.id.slice(0, 8).toUpperCase()}
                   </Badge>
                 </div>
-                <Badge className="capitalize text-xs">{selectedItem.status}</Badge>
+                <Badge className="capitalize text-xs px-3 py-0.5 bg-[#FF6B00] text-white font-bold">{selectedItem.status}</Badge>
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 text-xs mt-2">
-              <div className="p-4 rounded-xl border bg-muted/30 space-y-2">
-                <p className="font-bold text-foreground truncate">Product Link: <a href={selectedItem.productUrl} target="_blank" rel="noreferrer" className="text-primary underline">{selectedItem.productUrl}</a></p>
-                <p className="text-muted-foreground">Buyer: <strong>{selectedItem.buyer?.name || 'Customer'}</strong> ({selectedItem.buyer?.email})</p>
-                <p className="text-muted-foreground">Target Quantity: <strong className="font-mono text-foreground">{selectedItem.targetQuantity} units</strong></p>
-                {selectedItem.description && <p className="text-muted-foreground">Notes: {selectedItem.description}</p>}
+            <div className="space-y-5 text-xs mt-3">
+              {/* Product Specifications & Buyer Summary Grid */}
+              <div className="p-4 rounded-2xl border bg-muted/20 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Globe className="size-4 text-primary shrink-0" />
+                    <span className="font-bold text-foreground shrink-0">Product URL:</span>
+                    <a
+                      href={selectedItem.productUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary hover:underline font-mono text-xs truncate max-w-md bg-card px-2.5 py-1 rounded-lg border inline-flex items-center gap-1.5"
+                    >
+                      <span className="truncate">{selectedItem.productUrl}</span>
+                      <ExternalLink className="size-3 shrink-0" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="p-3 rounded-xl bg-card border space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Buyer Details</span>
+                    <p className="font-bold text-foreground truncate">{selectedItem.buyer?.name || 'Customer'}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{selectedItem.buyer?.email || 'N/A'}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-card border space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Target Quantity</span>
+                    <p className="font-extrabold text-foreground font-mono text-sm">{selectedItem.targetQuantity} <span className="text-xs font-normal text-muted-foreground">units</span></p>
+                    <p className="text-[11px] text-muted-foreground">Required for order fulfillment</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-card border space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Target Price / Budget</span>
+                    <p className="font-extrabold text-[#FF6B00] font-mono text-sm">
+                      {selectedItem.targetPriceTZS ? formatTZS(selectedItem.targetPriceTZS) : 'RFQ / Market Quote'}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">Est. Landed TZS Budget</p>
+                  </div>
+                </div>
+
+                {selectedItem.description && (
+                  <div className="p-3 rounded-xl bg-card border text-muted-foreground text-xs space-y-1">
+                    <span className="text-[10px] font-bold text-foreground uppercase tracking-wider block">Buyer Notes &amp; Specifications</span>
+                    <p className="leading-relaxed text-foreground whitespace-pre-wrap">{selectedItem.description}</p>
+                  </div>
+                )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" size="sm" onClick={() => setSelectedItemId(null)}>Close</Button>
+              {/* Database-Backed Communication Thread */}
+              <SourcingChatThread sourcingRequestId={selectedItem.id} currentRole="SALES" />
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t">
+                <Button variant="outline" size="sm" onClick={() => setSelectedItemId(null)} className="h-9 px-4 font-bold text-xs">
+                  Close
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => {
                     toast.success(`Quote notification dispatched to buyer for ticket SRC-${selectedItem.id.slice(0, 8)}`)
                     setSelectedItemId(null)
                   }}
-                  className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold"
+                  className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold h-9 px-5 shadow-md shadow-orange-500/20 text-xs"
                 >
+                  <Send className="size-3.5 mr-1.5" />
                   Confirm &amp; Send Landed TZS Quote
                 </Button>
               </div>

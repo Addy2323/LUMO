@@ -1,0 +1,23 @@
+erDiagram
+    User ||--o{ UserRoleAssignment : "holds role assignments"
+    User ||--o{ Session : "authenticates"
+    User ||--o{ OrganizationMember : "belongs to"
+    User ||--o{ Order : "places as buyer"
+    User ||--o{ AuditLog : "triggers"
+    User ||--o{ InAppNotification : "receives"
+
+    Organization ||--o{ OrganizationMember : "has active members"
+    Organization ||--o{ OrderAssignment : "receives org assignment"
+
+    Order ||--o{ OrderItem : "contains"
+    Order ||--o{ OrderAssignment : "assigned via"
+    Order ||--o{ Conversation : "has chat threads"
+
+    OrderAssignment ||--o{ AssignmentEvent : "audit events"
+
+    Conversation ||--o{ ConversationParticipant : "has participants"
+    Conversation ||--o{ Message : "contains messages"
+
+    Message ||--o{ MessageAttachment : "has attachments"
+
+    NotificationOutbox ||--o{ InAppNotification : "dispatches"

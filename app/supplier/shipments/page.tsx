@@ -31,7 +31,7 @@ export default function SupplierShipmentsPage() {
 
   // New Shipment Modal
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [orderNumber, setOrderNumber] = useState('LUMO-SUP-905')
+  const [orderNumber, setOrderNumber] = useState('')
   const [destination, setDestination] = useState('Mwanza Distribution Hub')
   const [carrier, setCarrier] = useState('Supercargo Freight TZ')
   const [trackingCode, setTrackingCode] = useState('TZ-EXP-77291')
