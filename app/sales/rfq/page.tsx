@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSourcingStore } from '@/lib/stores/sourcing-store'
+import { useAgentStore } from '@/lib/stores/agent-store'
 import Link from 'next/link'
 import {
   Inbox,
@@ -66,6 +68,32 @@ export default function SalesRfqInboxPage() {
   const [search, setSearch] = useState('')
   const [selectedAgent, setSelectedAgent] = useState('Mwanahawa Juma')
 
+  useEffect(() => {
+    const storeItems = useSourcingStore.getState().items || []
+    const converted: RfqInboxItem[] = storeItems.map((st) => ({
+      id: st.id,
+      reference: st.reference,
+      customerName: `${st.customerName} (${st.customerEmail})`,
+      productName: st.productName,
+      productLink: st.productLink,
+      quantity: st.quantity,
+      targetBudgetUSD: st.currency === 'USD' ? st.targetBudget : Math.round(st.targetBudget / 2600) || 500,
+      destination: st.destination || 'Dar es Salaam, Tanzania',
+      assignedAgent: st.assignedAgent,
+      status: st.assignedAgent ? 'Agent Assigned' : st.quotation ? 'Quoted' : 'Unreviewed',
+      createdAt: new Date(st.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }))
+
+    const combined = [...converted]
+    DEMO_RFQS.forEach((d) => {
+      if (!combined.some((c) => c.id === d.id || c.reference === d.reference)) {
+        combined.push(d)
+      }
+    })
+
+    setRfqs(combined)
+  }, [])
+
   function assignAgent(rfqId: string) {
     setRfqs((prev) =>
       prev.map((item) => {
@@ -75,6 +103,21 @@ export default function SalesRfqInboxPage() {
         return item
       })
     )
+
+    const targetItem = rfqs.find((r) => r.id === rfqId)
+    useSourcingStore.getState().assignOfficer(rfqId, selectedAgent)
+    useAgentStore.getState().addOrder({
+      orderNumber: targetItem?.reference || rfqId,
+      customerName: targetItem?.customerName || 'Lumo Customer',
+      productName: targetItem?.productName || 'Sourced Product',
+      quantityNeeded: targetItem?.quantity || 10,
+      targetBudgetUSD: targetItem?.targetBudgetUSD || 1000,
+      destinationRegion: 'Dar es Salaam',
+      destinationCountry: 'Tanzania',
+      assignedCountry: 'China',
+      priority: 'High',
+    })
+
     toast.success(`Assigned Sourcing Agent ${selectedAgent} to ${rfqId}`)
   }
 

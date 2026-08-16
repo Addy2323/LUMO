@@ -486,33 +486,23 @@ export function getStoredOrders(): Order[] {
     const raw = localStorage.getItem(ORDERS_STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed)) return parsed
     }
   } catch (e) {
     console.error('Failed to read lumo_customer_orders:', e)
   }
-  return DEFAULT_ORDERS
+  return []
 }
 
 export function getOrdersForUser(user: { id?: string; email?: string; fullName?: string } | null): Order[] {
   const allOrders = getStoredOrders()
-  if (!user) return []
+  if (!user || allOrders.length === 0) return []
 
   const userEmail = user.email?.toLowerCase().trim()
   const userName = user.fullName?.toLowerCase().trim()
   const userId = user.id
 
-  // Check if demo user (Amina Hassan / cust_01 / amina.hassan@example.co.tz)
-  const isDemoCustomer =
-    userId === 'usr_cus_001' ||
-    userId === 'cust_01' ||
-    userEmail === 'amina.hassan@example.co.tz'
-
-  if (isDemoCustomer) {
-    return allOrders
-  }
-
-  // Filter for custom / newly registered user
+  // Filter strictly for orders matching current customer
   return allOrders.filter((order) => {
     const custEmail = order.customer?.email?.toLowerCase().trim()
     const custName = order.customer?.name?.toLowerCase().trim()

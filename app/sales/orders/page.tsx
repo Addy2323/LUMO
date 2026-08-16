@@ -39,18 +39,18 @@ export default function SalesOrdersAssignmentPage() {
     setLoading(true)
     try {
       const [ordRes, candRes] = await Promise.all([
-        fetch('/api/sales/overview'),
+        fetch('/api/admin/orders/pipeline'),
         fetch('/api/admin/assignment-candidates?role=AGENT'),
       ])
 
       if (ordRes.ok) {
         const ordData = await ordRes.json()
-        setOrders(ordData.recentOrders || [])
+        setOrders(ordData.data?.orders || ordData.orders || [])
       }
 
       if (candRes.ok) {
         const candData = await candRes.json()
-        setCandidates(candData.candidates || [])
+        setCandidates(candData.data || candData.candidates || [])
       }
     } catch (err) {
       console.error('Failed to fetch orders:', err)
@@ -65,23 +65,25 @@ export default function SalesOrdersAssignmentPage() {
     setAssigning(true)
 
     try {
-      const res = await fetch('/api/admin/orders/assignments', {
-        method: 'POST',
+      const res = await fetch('/api/admin/orders/pipeline', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: selectedOrder.id,
-          assignmentRole: 'AGENT',
+          stage: 'Agent Assigned',
           assigneeId: agentId,
-          reason: `Assigned via Sales Desk to ${agentName}`,
+          assigneeName: agentName,
+          assignmentRole: 'Sourcing Agent',
         }),
       })
 
-      if (res.ok) {
-        toast.success(`Agent ${agentName} assigned to Order #${selectedOrder.orderNumber}!`)
+      const json = await res.json()
+      if (res.ok && json.success) {
+        toast.success(`Agent ${agentName} assigned to Order #${selectedOrder.ref || selectedOrder.orderNumber}!`)
         setSelectedOrder(null)
         fetchData()
       } else {
-        toast.error('Failed to assign agent')
+        toast.error(json.error || 'Failed to assign agent')
       }
     } catch (err) {
       console.error('Error assigning agent:', err)
@@ -92,8 +94,8 @@ export default function SalesOrdersAssignmentPage() {
   }
 
   const filtered = orders.filter((o) =>
-    (o.orderNumber || '').toLowerCase().includes(search.toLowerCase()) ||
-    (o.buyer?.name || '').toLowerCase().includes(search.toLowerCase())
+    (o.ref || o.orderNumber || '').toLowerCase().includes(search.toLowerCase()) ||
+    (o.customer || o.buyer?.name || '').toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -168,14 +170,17 @@ export default function SalesOrdersAssignmentPage() {
                 <tbody className="divide-y divide-slate-100 text-slate-800">
                   {filtered.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-50/80 transition">
-                      <td className="p-3 font-mono font-bold text-[#FF6B00]">#{ord.orderNumber}</td>
-                      <td className="p-3 font-semibold text-slate-900">{ord.buyer?.name || 'Retail Merchant'}</td>
-                      <td className="p-3 font-mono font-bold text-slate-900">{formatTZS(ord.totalAmountTZS)}</td>
+                      <td className="p-3 font-mono font-bold text-[#FF6B00]">#{ord.ref || ord.orderNumber}</td>
+                      <td className="p-3 font-semibold text-slate-900">{ord.customer || ord.buyer?.name || 'Retail Merchant'}</td>
+                      <td className="p-3 font-mono font-bold text-slate-900">{formatTZS(ord.amountTZS || ord.totalAmountTZS)}</td>
                       <td className="p-3 text-slate-600 text-[11px] font-mono">{ord.paymentMethod || 'AzamPay Escrow'}</td>
                       <td className="p-3">
                         <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
-                          {ord.status}
+                          {ord.stage || ord.status}
                         </Badge>
+                        {ord.assigned && (
+                          <div className="text-[9px] text-[#FF6B00] font-bold mt-0.5">{ord.assigned}</div>
+                        )}
                       </td>
                       <td className="p-3 text-right">
                         <Button

@@ -29,6 +29,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatTZS, formatDate } from '@/lib/format'
 import { toast } from 'sonner'
 
+import { useSourcingStore } from '@/lib/stores/sourcing-store'
+
 type DatabaseSourcingRequest = {
   id: string
   buyerId: string
@@ -55,13 +57,41 @@ export default function SalesSourcingPage() {
   const fetchDatabaseRequests = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/sourcing')
-      const data = await res.json()
-      if (Array.isArray(data)) {
-        setRequests(data)
-      } else if (data.requests) {
-        setRequests(data.requests)
-      }
+      let dbRequests: DatabaseSourcingRequest[] = []
+      try {
+        const res = await fetch('/api/sourcing')
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          dbRequests = data
+        } else if (data.requests) {
+          dbRequests = data.requests
+        }
+      } catch (e) {}
+
+      const storeItems = useSourcingStore.getState().items || []
+      const combined = [...dbRequests]
+
+      storeItems.forEach((st) => {
+        if (!combined.some((c) => c.id === st.id || c.productUrl === st.productLink)) {
+          combined.push({
+            id: st.id,
+            buyerId: st.customerEmail,
+            productUrl: st.productLink || st.productName,
+            targetQuantity: st.quantity,
+            targetPriceTZS: st.targetBudget,
+            description: `${st.productName}: ${st.description || ''}`,
+            status: st.status.toUpperCase(),
+            createdAt: st.createdAt,
+            buyer: {
+              name: st.customerName,
+              email: st.customerEmail,
+              phone: null,
+            },
+          })
+        }
+      })
+
+      setRequests(combined)
     } catch (error) {
       console.error('Failed to fetch database sourcing requests:', error)
     } finally {

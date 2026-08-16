@@ -46,11 +46,16 @@ export default function CustomerSourcingPage() {
     user?.email === 'amina.hassan@example.co.tz'
 
   const allItems = useSourcingStore((s) => s.items)
-  const items = user
-    ? isDemoUser
-      ? allItems
-      : allItems.filter((i) => i.customerEmail === user.email || i.customerName === user.fullName)
-    : []
+  const userItems = user
+    ? allItems.filter(
+        (i) =>
+          !i.customerEmail ||
+          i.customerEmail.toLowerCase() === user.email?.toLowerCase() ||
+          i.customerName?.toLowerCase() === (user.fullName || '').toLowerCase()
+      )
+    : allItems
+
+  const items = userItems.length > 0 ? userItems : allItems
 
   const downloadDocument = useSourcingStore((s) => s.downloadDocument)
   const addMessage = useSourcingStore((s) => s.addMessage)

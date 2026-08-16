@@ -287,19 +287,34 @@ export default function AdminOrdersPage() {
                         </td>
 
                         <td className="p-3.5">
-                          <div className="space-y-1">
-                            {ord.items.slice(0, 2).map((item, idx) => (
-                              <div key={idx} className="flex items-center gap-2">
-                                <div className="min-w-0 flex-1">
-                                  <p className="font-bold text-foreground text-[11px] truncate max-w-[200px]">
-                                    {item.product?.title || 'Lumo Item'}
-                                  </p>
-                                  <span className="text-[10px] text-muted-foreground font-mono">
-                                    Qty: {item.quantity} · {formatTZS(item.unitPriceTZS)}
-                                  </span>
+                          <div className="space-y-1.5">
+                            {ord.items.slice(0, 2).map((item, idx) => {
+                              let imgSrc = item.product?.imageUrl || (item as any).image || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=200&q=80'
+                              if (imgSrc.startsWith('//')) {
+                                imgSrc = `https:${imgSrc}`
+                              }
+                              return (
+                                <div key={idx} className="flex items-center gap-2.5">
+                                  <img
+                                    src={imgSrc}
+                                    alt={item.product?.title || 'Paid Product'}
+                                    onError={(e) => {
+                                      e.currentTarget.onerror = null
+                                      e.currentTarget.src = 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=200&q=80'
+                                    }}
+                                    className="size-9 rounded-md border border-slate-200 object-cover shrink-0 bg-slate-100 shadow-xs"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-foreground text-[11px] truncate max-w-[180px]">
+                                      {item.product?.title || (item as any).title || 'Lumo Item'}
+                                    </p>
+                                    <span className="text-[10px] text-muted-foreground font-mono">
+                                      Qty: {item.quantity} · {formatTZS(item.unitPriceTZS || (item as any).unitPrice || 0)}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         </td>
 

@@ -2,38 +2,27 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   ArrowRight,
-  Clock,
-  CreditCard,
+  CheckCircle2,
   Download,
   Headphones,
-  MapPin,
-  Package,
-  RotateCcw,
-  ShieldCheck,
-  ShoppingBag,
-  Truck,
-  UserCheck,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
   MessageSquare,
   PackageSearch,
-  Scale,
-  Sparkles,
-  RefreshCw,
-  ExternalLink,
-  ChevronRight
+  ShieldCheck,
+  ShoppingBag,
+  AlertTriangle,
+  FileText,
+  ChevronRight,
+  Package
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/status-badge'
 import { formatTZS, formatDate } from '@/lib/format'
 import { useSessionStore } from '@/lib/stores/session-store'
-import { toast } from 'sonner'
+import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
 
 export function CustomerDashboard() {
   const user = useSessionStore((s) => s.user)
@@ -44,11 +33,21 @@ export function CustomerDashboard() {
 
   useEffect(() => {
     fetchCustomerData()
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('lumo_orders_updated', fetchCustomerData)
+      return () => {
+        window.removeEventListener('lumo_orders_updated', fetchCustomerData)
+      }
+    }
   }, [])
 
   async function fetchCustomerData() {
     setLoading(true)
     try {
+      let dbOrders: any[] = []
+      let sourcingData: any[] = []
+
       const [ordersRes, sourcingRes] = await Promise.all([
         fetch('/api/orders').catch(() => null),
         fetch('/api/sourcing').catch(() => null)
@@ -56,12 +55,15 @@ export function CustomerDashboard() {
 
       if (ordersRes && ordersRes.ok) {
         const data = await ordersRes.json()
-        setOrders(Array.isArray(data) ? data : data.orders || [])
+        dbOrders = Array.isArray(data) ? data : data.data || data.orders || []
       }
       if (sourcingRes && sourcingRes.ok) {
         const data = await sourcingRes.json()
-        setSourcing(Array.isArray(data) ? data : data.requests || [])
+        sourcingData = Array.isArray(data) ? data : data.requests || []
       }
+
+      setOrders(dbOrders)
+      setSourcing(sourcingData)
     } catch (err) {
       console.error('Failed to load customer data:', err)
     } finally {
@@ -69,10 +71,10 @@ export function CustomerDashboard() {
     }
   }
 
-  // Filter metrics
-  const processingOrders = orders.filter((o) => ['PROCESSING', 'PAID', 'shipped'].includes(o.status || ''))
-  const inTransitOrders = orders.filter((o) => ['IN_TRANSIT', 'SHIPPED', 'out_for_delivery'].includes(o.status || ''))
-  const pendingPayments = orders.filter((o) => ['PENDING', 'UNPAID'].includes(o.paymentMethod || o.status || ''))
+  // Filter metrics strictly from real data
+  const processingOrders = orders.filter((o) => ['PROCESSING', 'PAID', 'SHIPPED', 'PENDING_PAYMENT', 'PENDING'].includes(o.status || ''))
+  const inTransitOrders = orders.filter((o) => ['IN_TRANSIT', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status || ''))
+  const pendingPayments = orders.filter((o) => ['PENDING_PAYMENT', 'UNPAID', 'PENDING'].includes(o.status || ''))
   const pendingQuotations = sourcing.filter((s) => ['QUOTED', 'SUBMITTED'].includes(s.status || ''))
   const totalSpent = orders
     .filter((o) => o.status !== 'CANCELLED')
@@ -89,6 +91,8 @@ export function CustomerDashboard() {
     { label: 'Out for Delivery', key: 'delivery' },
     { label: 'Delivered', key: 'delivered' },
   ]
+
+  const hasActionItems = pendingQuotations.length > 0 || pendingPayments.length > 0
 
   return (
     <div className="flex flex-col gap-6 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen pb-24">
@@ -128,97 +132,90 @@ export function CustomerDashboard() {
         </div>
       </div>
 
-      {/* 2. Top Action Centre (Tasks Needing Attention) */}
-      <Card className="border-amber-200 bg-amber-50/50 p-4 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="size-5 text-amber-600 shrink-0" />
-            <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wide">
-              Customer Action Centre — Tasks Requiring Attention
-            </h3>
-          </div>
-          <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] font-mono">
-            {pendingQuotations.length + pendingPayments.length || 2} Pending Items
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div className="p-3 bg-white border border-amber-200 rounded-xl shadow-xs space-y-2">
-            <div className="flex justify-between items-start">
-              <span className="font-bold text-xs text-slate-900">Approve Sourcing Quotation</span>
-              <span className="text-[10px] text-amber-700 font-mono font-bold">24h Deadline</span>
+      {/* 2. Top Action Centre (Tasks Needing Attention) - Rendered ONLY if real tasks exist */}
+      {hasActionItems && (
+        <Card className="border-amber-200 bg-amber-50/50 p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-amber-600 shrink-0" />
+              <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wide">
+                CUSTOMER ACTION CENTRE — TASKS REQUIRING ATTENTION
+              </h3>
             </div>
-            <p className="text-[11px] text-slate-500">
-              Guangzhou Solar Panel B2B quotation is ready for landed cost review.
-            </p>
-            <Button size="xs" className="w-full bg-[#FF6B00] text-white text-[10px] font-bold h-7" render={<Link href="/account/quotations" />}>
-              Review Landed Quote
-            </Button>
+            <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] font-mono">
+              {pendingQuotations.length + pendingPayments.length} Pending Items
+            </Badge>
           </div>
 
-          <div className="div p-3 bg-white border border-amber-200 rounded-xl shadow-xs space-y-2">
-            <div className="flex justify-between items-start">
-              <span className="font-bold text-xs text-slate-900">Complete AzamPay Payment</span>
-              <span className="text-[10px] text-emerald-700 font-mono font-bold">Protected</span>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              Order #1004 deposit awaiting AzamPay mobile money confirmation.
-            </p>
-            <Button size="xs" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold h-7" render={<Link href="/account/payments" />}>
-              Pay via Mobile Money
-            </Button>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {pendingQuotations.map((q) => (
+              <div key={q.id} className="p-3 bg-white border border-amber-200 rounded-xl shadow-xs space-y-2">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-xs text-slate-900">Approve Sourcing Quotation</span>
+                  <span className="text-[10px] text-amber-700 font-mono font-bold">Quoted</span>
+                </div>
+                <p className="text-[11px] text-slate-500 line-clamp-2">
+                  {q.productName || q.title || 'Sourcing Quotation ready for landed cost review.'}
+                </p>
+                <Button size="xs" className="w-full bg-[#FF6B00] text-white text-[10px] font-bold h-7" render={<Link href="/account/quotations" />}>
+                  Review Landed Quote
+                </Button>
+              </div>
+            ))}
 
-          <div className="p-3 bg-white border border-amber-200 rounded-xl shadow-xs space-y-2">
-            <div className="flex justify-between items-start">
-              <span className="font-bold text-xs text-slate-900">Provide Freight Delivery OTP</span>
-              <span className="text-[10px] text-blue-700 font-mono font-bold">In Transit</span>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              Cargo driver approaching Dar es Salaam port warehouse.
-            </p>
-            <Button size="xs" variant="outline" className="w-full text-slate-800 text-[10px] font-bold h-7" render={<Link href="/account/shipments" />}>
-              Show Delivery OTP (8821)
-            </Button>
+            {pendingPayments.map((p) => (
+              <div key={p.id} className="p-3 bg-white border border-amber-200 rounded-xl shadow-xs space-y-2">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-xs text-slate-900">Complete AzamPay Payment</span>
+                  <span className="text-[10px] text-emerald-700 font-mono font-bold">Pending Payment</span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Order #{p.orderNumber || p.id} deposit awaiting payment confirmation.
+                </p>
+                <Button size="xs" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold h-7" render={<Link href="/account/payments" />}>
+                  Pay via Mobile Money
+                </Button>
+              </div>
+            ))}
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      {/* 3. Actionable KPI Cards (8 Grid) */}
+      {/* 3. Actionable KPI Cards (8 Grid) - 100% Real User Data */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <Link href="/account/orders" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-[#FF6B00] transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Total Orders</span>
-          <div className="text-xl font-black text-slate-900 font-mono">{orders.length || 4}</div>
+          <div className="text-xl font-black text-slate-900 font-mono">{orders.length}</div>
         </Link>
 
         <Link href="/account/orders?status=processing" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-blue-500 transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Processing</span>
-          <div className="text-xl font-black text-blue-600 font-mono">{processingOrders.length || 2}</div>
+          <div className="text-xl font-black text-blue-600 font-mono">{processingOrders.length}</div>
         </Link>
 
         <Link href="/account/shipments" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-indigo-500 transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">In Transit</span>
-          <div className="text-xl font-black text-indigo-600 font-mono">{inTransitOrders.length || 1}</div>
+          <div className="text-xl font-black text-indigo-600 font-mono">{inTransitOrders.length}</div>
         </Link>
 
         <Link href="/account/quotations" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-purple-500 transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Quotations</span>
-          <div className="text-xl font-black text-purple-600 font-mono">{pendingQuotations.length || 3}</div>
+          <div className="text-xl font-black text-purple-600 font-mono">{pendingQuotations.length}</div>
         </Link>
 
         <Link href="/account/payments" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-amber-500 transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Pending Pay</span>
-          <div className="text-xl font-black text-amber-600 font-mono">{pendingPayments.length || 1}</div>
+          <div className="text-xl font-black text-amber-600 font-mono">{pendingPayments.length}</div>
         </Link>
 
         <Link href="/account/returns" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-rose-500 transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Disputes</span>
-          <div className="text-xl font-black text-rose-600 font-mono">0</div>
+          <div className="text-xl font-black text-rose-600 font-mono">{disputes.length}</div>
         </Link>
 
         <Link href="/account/payments" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-emerald-500 transition space-y-1 col-span-2">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Total Purchases</span>
-          <div className="text-lg font-black text-emerald-700 font-mono">{formatTZS(totalSpent || 14500000)}</div>
+          <div className="text-lg font-black text-emerald-700 font-mono">{formatTZS(totalSpent)}</div>
         </Link>
       </div>
 
@@ -242,46 +239,68 @@ export function CustomerDashboard() {
               <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 overflow-x-auto pb-1 gap-2">
                 {timelineStages.map((stg, idx) => (
                   <div key={stg.key} className="flex items-center gap-1 shrink-0">
-                    <span className={`size-2 rounded-full ${idx <= 4 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                    <span className={idx <= 4 ? 'text-slate-900 font-bold' : 'text-slate-400'}>{stg.label}</span>
+                    <span className={`size-2 rounded-full ${idx <= 1 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                    <span className={idx <= 1 ? 'text-slate-900 font-bold' : 'text-slate-400'}>{stg.label}</span>
                     {idx < timelineStages.length - 1 && <ChevronRight className="size-3 text-slate-300" />}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Active Orders Cards */}
+            {/* Active Orders List or Clean Empty State */}
             <div className="divide-y divide-slate-100">
-              {orders.slice(0, 3).map((order) => (
-                <div key={order.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+              {orders.length === 0 ? (
+                <div className="p-8 text-center space-y-3">
+                  <div className="size-12 rounded-full bg-orange-50 text-[#FF6B00] flex items-center justify-center mx-auto">
+                    <Package className="size-6" />
+                  </div>
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-black text-slate-900">Order #{order.orderNumber || order.reference || order.id}</span>
-                      <StatusBadge status={order.status} />
-                    </div>
-                    <p className="text-slate-600 font-semibold">{order.items?.[0]?.title || 'Bulk Import Items'}</p>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
-                      <span>Logistics: Kigola Express Freight</span>
-                      <span>Tracking: TRK-99824</span>
-                      <span>ETA: 3 Days</span>
-                    </div>
+                    <h4 className="font-bold text-slate-900 text-sm">No Active Orders Yet</h4>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      You have not placed any orders yet. Explore our wholesale marketplace or request a custom factory quote.
+                    </p>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right mr-2 hidden sm:block">
-                      <div className="font-mono font-black text-sm text-slate-900">{formatTZS(Number(order.totalAmountTZS || 4500000))}</div>
-                      <span className="text-[10px] text-emerald-600 font-bold">AzamPay Escrow Active</span>
-                    </div>
-
-                    <Button size="xs" variant="outline" className="text-[10px] font-bold h-8" render={<Link href={`/account/orders/${order.id}`} />}>
-                      Track Order
-                    </Button>
-                    <Button size="xs" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-[10px] font-bold h-8" render={<Link href="/account/messages" />}>
-                      Contact Sales
-                    </Button>
-                  </div>
+                  <Button size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-8 mt-2" render={<Link href="/marketplace" />}>
+                    Start Shopping
+                  </Button>
                 </div>
-              ))}
+              ) : (
+                orders.slice(0, 3).map((order) => {
+                  const firstItem = order.items?.[0]
+                  let itemImg = firstItem?.product?.imageUrl || firstItem?.image || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=200&q=80'
+                  if (itemImg.startsWith('//')) {
+                    itemImg = `https:${itemImg}`
+                  }
+                  const itemTitle = firstItem?.product?.title || firstItem?.title || 'Wholesale Products'
+
+                  return (
+                    <div key={order.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                      <div className="flex items-center gap-3.5">
+                        <OrderProductThumbnail src={itemImg} alt={itemTitle} />
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-slate-900">Order #{order.orderNumber || order.reference || order.id}</span>
+                            <StatusBadge status={order.status} />
+                          </div>
+                          <p className="text-slate-700 font-bold text-xs line-clamp-1">{itemTitle}</p>
+                          <p className="text-slate-400 text-[11px]">Placed on {formatDate(order.createdAt)}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="text-right mr-2 hidden sm:block">
+                          <div className="font-mono font-black text-sm text-slate-900">{formatTZS(Number(order.totalAmountTZS || 0))}</div>
+                          <span className="text-[10px] text-emerald-600 font-bold">AzamPay Escrow Protected</span>
+                        </div>
+
+                        <Button size="xs" variant="outline" className="text-[10px] font-bold h-8" render={<Link href={`/account/orders/${order.id}`} />}>
+                          Track Order
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </Card>
         </div>
@@ -307,11 +326,11 @@ export function CustomerDashboard() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-400">Protected Amount:</span>
-                <span className="font-mono font-bold text-emerald-400">{formatTZS(totalSpent || 14500000)}</span>
+                <span className="font-mono font-bold text-emerald-400">{formatTZS(totalSpent)}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-400">Inspection Status:</span>
-                <span className="font-bold text-white">Guangzhou Quality Verified</span>
+                <span className="font-bold text-white">{orders.length > 0 ? 'Verified' : 'No Active Orders'}</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-400">Dispute Coverage:</span>

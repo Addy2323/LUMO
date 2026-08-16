@@ -6,7 +6,8 @@ import { ArrowLeft, Package, MapPin, CreditCard, Clock, CheckCircle2, Truck, Ref
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatTZS, formatDate } from '@/lib/format'
+import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
+import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -88,15 +89,28 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             {order.items && order.items.length > 0 ? (
-              order.items.map((item: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 text-xs">
-                  <div>
-                    <p className="font-bold text-foreground">{item.productTitle || item.title || 'Product'}</p>
-                    <p className="text-muted-foreground">Qty: {item.quantity} · Unit Price: {formatTZS(item.unitPriceTZS || item.price || 0)}</p>
+              order.items.map((item: any, idx: number) => {
+                const title = cleanProductTitle(item.product?.title || item.title || item.productTitle)
+                let img = item.product?.imageUrl || item.image || ''
+                if (img.startsWith('//')) img = `https:${img}`
+                const unitPrice = item.unitPriceTZS || item.price || 0
+                const totalPrice = (item.totalPriceTZS !== undefined ? item.totalPriceTZS : unitPrice * item.quantity)
+
+                return (
+                  <div key={idx} className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-muted/20 text-xs">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <OrderProductThumbnail src={img} alt={title} className="size-12 rounded-lg shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-foreground line-clamp-1">{title}</p>
+                        <p className="text-muted-foreground text-[11px]">
+                          {item.selectedVariant ? `Variant: ${item.selectedVariant} · ` : ''}Qty: <strong className="text-foreground">{item.quantity}</strong> · Unit Price: {formatTZS(unitPrice)}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono font-extrabold text-foreground shrink-0">{formatTZS(totalPrice)}</span>
                   </div>
-                  <span className="font-mono font-bold text-foreground">{formatTZS((item.unitPriceTZS || item.price || 0) * item.quantity)}</span>
-                </div>
-              ))
+                )
+              })
             ) : (
               <div className="p-4 rounded-lg border bg-muted/20 text-xs font-bold text-foreground">
                 Standard Wholesale Order Package

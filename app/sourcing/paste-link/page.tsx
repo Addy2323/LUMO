@@ -34,6 +34,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useSourcingStore } from '@/lib/stores/sourcing-store'
 import { useAgentStore } from '@/lib/stores/agent-store'
+import { useSessionStore } from '@/lib/stores/session-store'
 
 type StepId = 1 | 2 | 3 | 4 | 5
 
@@ -220,9 +221,13 @@ export default function PasteLinkSourcingPage() {
     
     try {
       const parsedBudget = parseFloat(budget.replace(/[^0-9.]/g, '')) || 1000000
+      const sessionUser = useSessionStore.getState().user
+      const custName = sessionUser?.fullName || 'Amina Hassan'
+      const custEmail = sessionUser?.email || 'amina.hassan@example.co.tz'
+
       const ref = useSourcingStore.getState().addRequest({
-        customerName: 'Amina Hassan',
-        customerEmail: 'amina.hassan@example.co.tz',
+        customerName: custName,
+        customerEmail: custEmail,
         productName: productName || 'Custom Sourced Product',
         productLink,
         description,
@@ -244,7 +249,7 @@ export default function PasteLinkSourcingPage() {
       // Automatically dispatch order to Agent Portal Hub
       useAgentStore.getState().addOrder({
         orderNumber: ref,
-        customerName: 'Amina Hassan',
+        customerName: custName,
         productName: productName || 'Custom Sourced Product',
         quantityNeeded: quantity,
         targetBudgetUSD: Math.round(parsedBudget / 2600) || 1000,

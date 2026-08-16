@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { toast } from 'sonner'
+import { useAgentStore } from '@/lib/stores/agent-store'
 
 type DatabaseAgentOrder = {
   id: string
@@ -22,6 +22,8 @@ type DatabaseAgentOrder = {
   status: string
   totalAmountTZS: number
   createdAt: string
+  productName?: string
+  customerName?: string
 }
 
 export default function AgentOrdersPage() {
@@ -32,11 +34,33 @@ export default function AgentOrdersPage() {
   const fetchAgentOrders = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/orders')
-      const data = await res.json()
-      if (Array.isArray(data.data)) {
-        setOrders(data.data)
-      }
+      let dbOrders: DatabaseAgentOrder[] = []
+      try {
+        const res = await fetch('/api/orders')
+        const data = await res.json()
+        if (Array.isArray(data.data)) {
+          dbOrders = data.data
+        }
+      } catch (e) {}
+
+      const storeOrders = useAgentStore.getState().orders || []
+      const combined = [...dbOrders]
+
+      storeOrders.forEach((so) => {
+        if (!combined.some((c) => c.id === so.id || c.orderNumber === so.orderNumber)) {
+          combined.push({
+            id: so.id,
+            orderNumber: so.orderNumber,
+            status: so.status.replace(/_/g, ' '),
+            totalAmountTZS: Math.round(so.targetBudgetUSD * 2600),
+            createdAt: so.createdAt,
+            productName: so.productName,
+            customerName: so.customerName,
+          })
+        }
+      })
+
+      setOrders(combined)
     } catch (error) {
       console.error('Failed to fetch agent database orders:', error)
     } finally {

@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { formatTZS, formatDate } from '@/lib/format'
+import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
+import { useSessionStore } from '@/lib/stores/session-store'
+import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
 
 type DatabaseOrder = {
   id: string
@@ -19,6 +21,7 @@ type DatabaseOrder = {
 }
 
 export default function CustomerOrdersPage() {
+  const user = useSessionStore((s) => s.user)
   const [orders, setOrders] = useState<DatabaseOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -27,12 +30,14 @@ export default function CustomerOrdersPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/orders')
-      const data = await res.json()
-      if (Array.isArray(data.data)) {
-        setOrders(data.data)
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data.data)) {
+          setOrders(data.data)
+        }
       }
     } catch (error) {
-      console.error('Failed to fetch customer orders:', error)
+      console.error('Failed to fetch PostgreSQL customer orders:', error)
     } finally {
       setLoading(false)
     }
@@ -40,7 +45,14 @@ export default function CustomerOrdersPage() {
 
   useEffect(() => {
     fetchCustomerOrders()
-  }, [])
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('lumo_orders_updated', fetchCustomerOrders)
+      return () => {
+        window.removeEventListener('lumo_orders_updated', fetchCustomerOrders)
+      }
+    }
+  }, [user])
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase()
@@ -95,26 +107,84 @@ export default function CustomerOrdersPage() {
                 </Button>
               </div>
             ) : (
-              filtered.map((o) => (
-                <div key={o.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 text-xs">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-extrabold text-foreground">ORDER #{o.orderNumber}</span>
-                      <Badge className={o.status === 'DELIVERED' ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}>
-                        {o.status}
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground text-[11px]">Placed on {formatDate(o.createdAt)}</p>
-                  </div>
+              filtered.map((o) => {
+                const itemsList = o.items || []
+                const totalItemsCount = itemsList.length
+                const totalUnitsCount = itemsList.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+                
+                // Sort items so the primary (highest value) item is displayed as main title & thumbnail
+                const sortedItems = [...itemsList].sort((a: any, b: any) => {
+                  const valA = (a.unitPriceTZS || a.price || 0) * (a.quantity || 1)
+                  const valB = (b.unitPriceTZS || b.price || 0) * (b.quantity || 1)
+                  return valB - valA
+                })
 
-                  <div className="flex items-center gap-4">
-                    <span className="font-mono font-extrabold text-[#FF6B00] text-sm">{formatTZS(o.totalAmountTZS)}</span>
-                    <Button variant="outline" size="sm" render={<Link href={`/account/orders/${o.id}`} />} className="font-bold text-xs">
-                      View Detail <ArrowRight className="size-3.5 ml-1" />
-                    </Button>
+                const primaryItem = sortedItems[0]
+                const rawTitle = primaryItem?.product?.title || primaryItem?.title || primaryItem?.productTitle || 'Wholesale B2B Goods'
+                const itemTitle = cleanProductTitle(rawTitle)
+                
+                let primaryImg = primaryItem?.product?.imageUrl || primaryItem?.image || ''
+                if (primaryImg.startsWith('//')) primaryImg = `https:${primaryImg}`
+
+                return (
+                  <div key={o.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 text-xs">
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      {/* Multi-Thumbnail Preview for Multi-Item Orders */}
+                      <div className="flex items-center shrink-0">
+                        {sortedItems.length > 1 ? (
+                          <div className="flex -space-x-4 items-center">
+                            {sortedItems.slice(0, 2).map((it: any, idx: number) => {
+                              let img = it.product?.imageUrl || it.image || ''
+                              if (img.startsWith('//')) img = `https:${img}`
+                              return (
+                                <OrderProductThumbnail
+                                  key={it.id || idx}
+                                  src={img}
+                                  alt={cleanProductTitle(it.product?.title || it.title)}
+                                  className={`size-11 rounded-lg border-2 border-white shadow-xs ${idx > 0 ? 'z-10' : 'z-20'}`}
+                                />
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <OrderProductThumbnail src={primaryImg} alt={itemTitle} className="size-11 rounded-lg" />
+                        )}
+                      </div>
+
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono font-extrabold text-foreground">ORDER #{o.orderNumber}</span>
+                          <Badge className={['DELIVERED', 'PAID'].includes(o.status) ? 'bg-emerald-600 text-white text-[10px]' : 'bg-amber-500 text-white text-[10px]'}>
+                            {o.status}
+                          </Badge>
+                          {totalItemsCount > 1 && (
+                            <Badge variant="outline" className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+                              + {totalItemsCount - 1} more item{totalItemsCount - 1 > 1 ? 's' : ''} ({totalUnitsCount} units total)
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-foreground font-semibold text-xs line-clamp-1">{itemTitle}</p>
+                        
+                        {totalItemsCount > 1 && sortedItems[1] && (
+                          <p className="text-muted-foreground text-[11px] line-clamp-1 italic">
+                            Also includes: {cleanProductTitle(sortedItems[1].product?.title || sortedItems[1].title)} (x{sortedItems[1].quantity || 1})
+                          </p>
+                        )}
+
+                        <p className="text-muted-foreground text-[11px]">Placed on {formatDate(o.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0">
+                      <span className="font-mono font-extrabold text-[#FF6B00] text-sm">{formatTZS(o.totalAmountTZS)}</span>
+                      <Button variant="outline" size="sm" render={<Link href={`/account/orders/${o.id}`} />} className="font-bold text-xs">
+                        View Detail <ArrowRight className="size-3.5 ml-1" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </CardContent>

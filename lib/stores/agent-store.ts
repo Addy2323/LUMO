@@ -227,7 +227,59 @@ export const DEFAULT_PHOTOS: InspectionPhotoSlot[] = [
   { id: 'p10', label: 'Supplier Invoice', required: true },
 ]
 
-const INITIAL_ORDERS: AgentOrder[] = []
+const INITIAL_ORDERS: AgentOrder[] = [
+  {
+    id: 'agent_ord_demo_01',
+    orderNumber: 'SR-412',
+    customerName: 'Amina Hassan (Kigoma Trading)',
+    destinationRegion: 'Kigoma',
+    destinationCountry: 'Tanzania',
+    assignedCountry: 'China',
+    productName: '500W Portable Solar Power Station',
+    quantityNeeded: 10,
+    targetBudgetUSD: 1250,
+    status: 'customer_approved_quote',
+    priority: 'High',
+    assignedBy: 'John Sourcing (Guangzhou Hub)',
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+    inspectionPhotos: DEFAULT_PHOTOS,
+  },
+  {
+    id: 'agent_ord_demo_02',
+    orderNumber: 'SR-413',
+    customerName: 'Dar Electronics Center',
+    destinationRegion: 'Dar es Salaam',
+    destinationCountry: 'Tanzania',
+    assignedCountry: 'China',
+    productName: 'Series 9 Ultra Smart Watch 256GB',
+    quantityNeeded: 50,
+    targetBudgetUSD: 900,
+    status: 'assigned',
+    priority: 'Urgent',
+    assignedBy: 'LUMO HQ (Dar)',
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    inspectionPhotos: DEFAULT_PHOTOS,
+  },
+  {
+    id: 'agent_ord_demo_03',
+    orderNumber: 'SR-414',
+    customerName: 'Zanzibar Resort & Spa',
+    destinationRegion: 'Zanzibar',
+    destinationCountry: 'Tanzania',
+    assignedCountry: 'Dubai',
+    productName: 'Commercial Outdoor Hotel Pool Loungers',
+    quantityNeeded: 25,
+    targetBudgetUSD: 4500,
+    status: 'assigned',
+    priority: 'High',
+    assignedBy: 'LUMO HQ (Dar)',
+    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
+    inspectionPhotos: DEFAULT_PHOTOS,
+  },
+]
 
 export const useAgentStore = create<AgentState>()(
   persist(

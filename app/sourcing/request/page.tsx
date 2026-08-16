@@ -24,6 +24,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { AuthRequiredModal } from '@/components/auth/auth-required-modal'
 import { useSessionStore } from '@/lib/stores/session-store'
+import { useSourcingStore } from '@/lib/stores/sourcing-store'
+import { useAgentStore } from '@/lib/stores/agent-store'
 
 export default function CustomerSourcingRequestPage() {
   const sessionUser = useSessionStore((s) => s.user)
@@ -117,10 +119,46 @@ export default function CustomerSourcingRequestPage() {
       localStorage.removeItem('lumo_sourcing_draft')
     } catch (e) {}
 
-    const generatedId = `SRC-${Math.floor(100000 + Math.random() * 900000)}`
-    setRequestId(generatedId)
+    const custName = sessionUser?.fullName || 'Amina Hassan'
+    const custEmail = sessionUser?.email || 'amina.hassan@example.co.tz'
+    const parsedBudget = parseFloat(targetPrice) || 1000000
+
+    const generatedRef = useSourcingStore.getState().addRequest({
+      customerName: custName,
+      customerEmail: custEmail,
+      productName: productName || 'Custom Sourced Product',
+      productLink: urlLink,
+      description: specs ? `${specs}\n${notes}` : notes,
+      brand: 'Specified Brand',
+      modelNumber: 'Custom Spec',
+      color: 'Default',
+      sizeDimensions: 'Standard',
+      techSpecs: specs,
+      quantity: Number(quantity) || 10,
+      targetBudget: parsedBudget,
+      currency: targetCurrency || 'USD',
+      region: countryPref || 'China',
+      destination: countryPref || 'China',
+      shippingMethod: 'standard_air',
+      addInsurance: true,
+      inspectionRequired: true,
+    })
+
+    useAgentStore.getState().addOrder({
+      orderNumber: generatedRef,
+      customerName: custName,
+      productName: productName || 'Custom Sourced Product',
+      quantityNeeded: Number(quantity) || 10,
+      targetBudgetUSD: targetCurrency === 'USD' ? parsedBudget : Math.round(parsedBudget / 2600) || 500,
+      destinationRegion: countryPref || 'China',
+      destinationCountry: 'Tanzania',
+      assignedCountry: (countryPref === 'ANY' ? 'China' : countryPref) as any,
+      priority: 'High',
+    })
+
+    setRequestId(generatedRef)
     setIsSubmitted(true)
-    toast.success('Sourcing Request Submitted Successfully!')
+    toast.success(`Sourcing Request ${generatedRef} Submitted Successfully!`)
   }
 
   return (

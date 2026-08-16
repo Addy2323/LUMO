@@ -58,50 +58,45 @@ const INVOICES: InvoiceRecord[] = [
 ]
 
 import { useSessionStore } from '@/lib/stores/session-store'
-import { getOrdersForUser } from '@/lib/mock/orders'
 import { useEffect } from 'react'
 
 export default function CustomerInvoicesPage() {
   const user = useSessionStore((s) => s.user)
-  const isDemoUser =
-    user?.id === 'usr_cus_001' ||
-    user?.id === 'cust_01' ||
-    user?.email === 'amina.hassan@example.co.tz'
-
   const [search, setSearch] = useState('')
   const [invoiceList, setInvoiceList] = useState<InvoiceRecord[]>([])
 
   useEffect(() => {
-    if (!user) {
-      setInvoiceList([])
-      return
-    }
-
-    if (isDemoUser) {
-      setInvoiceList(INVOICES)
-      return
-    }
-
-    // Dynamic calculation from user orders
-    const userOrders = getOrdersForUser(user)
-    const generated: InvoiceRecord[] = userOrders.map((o, idx) => {
-      const subtotal = Math.round(o.total / 1.18)
-      const vat = o.total - subtotal
-      return {
-        id: `inv_usr_${o.id}`,
-        invoiceNumber: `INV-2026-${1000 + idx}`,
-        orderId: o.reference,
-        date: new Date(o.placedAt).toISOString().split('T')[0],
-        description: o.items.map((i) => `${i.quantity}x ${i.title}`).join(', '),
-        subtotalTZS: subtotal,
-        vatTZS: vat,
-        totalTZS: o.total,
-        status: o.status === 'cancelled' ? 'Pending' : 'Paid',
+    async function loadInvoices() {
+      try {
+        const res = await fetch('/api/orders')
+        if (res.ok) {
+          const json = await res.json()
+          const orders = Array.isArray(json.data) ? json.data : []
+          const generated: InvoiceRecord[] = orders.map((o: any, idx: number) => {
+            const total = Number(o.totalAmountTZS) || 0
+            const subtotal = Math.round(total / 1.18)
+            const vat = total - subtotal
+            return {
+              id: `inv_db_${o.id}`,
+              invoiceNumber: `INV-2026-${1000 + idx}`,
+              orderId: o.orderNumber || o.id,
+              date: new Date(o.createdAt || Date.now()).toISOString().split('T')[0],
+              description: o.items?.map((i: any) => `${i.quantity}x ${i.product?.title || 'Product'}`).join(', ') || 'Wholesale Order',
+              subtotalTZS: subtotal,
+              vatTZS: vat,
+              totalTZS: total,
+              status: 'Paid',
+            }
+          })
+          setInvoiceList(generated)
+        }
+      } catch (err) {
+        console.error('Failed to load invoices from PostgreSQL:', err)
       }
-    })
+    }
 
-    setInvoiceList(generated)
-  }, [user, isDemoUser])
+    loadInvoices()
+  }, [user])
 
   const filteredInvoices = invoiceList.filter((inv) => {
     const q = search.toLowerCase()

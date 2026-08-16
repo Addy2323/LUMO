@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { LifeBuoy, LogOut, ShieldCheck, Sparkles } from 'lucide-react'
+import { ChevronDown, LifeBuoy, LogOut, ShieldCheck, Sparkles } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -55,6 +55,16 @@ export function AppSidebar({ role }: { role: Role }) {
   // Track dismissed badge hrefs per session
   const [dismissedBadges, setDismissedBadges] = useState<Set<string>>(new Set())
 
+  // Collapsible dropdown menu state per section group
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
+
+  function toggleGroup(label: string) {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }))
+  }
+
   useEffect(() => {
     async function fetchBadges() {
       try {
@@ -73,7 +83,6 @@ export function AppSidebar({ role }: { role: Role }) {
   }, [])
 
   function handleItemClick(href: string) {
-    // Automatically dismiss/clear notification badge for this route when clicked
     setDismissedBadges((prev) => {
       const next = new Set(prev)
       next.add(href)
@@ -96,7 +105,6 @@ export function AppSidebar({ role }: { role: Role }) {
       return undefined
     }
 
-    // Dynamic Database Badges from /api/navigation/badges
     if (dynamicBadges[itemHref] !== undefined && Number(dynamicBadges[itemHref]) > 0) {
       return String(dynamicBadges[itemHref])
     }
@@ -137,49 +145,63 @@ export function AppSidebar({ role }: { role: Role }) {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3">
-        {groups.map((group) => (
-          <SidebarGroup key={group.label} className="py-2">
-            <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-sidebar-foreground/60 uppercase px-2 mb-1">
-              {group.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const isActive = current === item.href
-                  const badgeText = getDynamicBadge(item.href, item.badge)
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className={`transition-all duration-150 rounded-lg px-2.5 py-2 ${
-                          isActive
-                            ? 'bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-sm border-l-2 border-sidebar-primary'
-                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                        }`}
-                        render={
-                          <Link
-                            href={item.href}
-                            onClick={() => handleItemClick(item.href)}
-                            className="flex items-center gap-2.5"
-                          >
-                            <item.icon className={`size-4 shrink-0 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70'}`} strokeWidth={isActive ? 2.2 : 1.75} />
-                            <span className="text-xs">{item.label}</span>
-                          </Link>
-                        }
-                      />
-                      {badgeText ? (
-                        <SidebarMenuBadge className="bg-brand-500/20 text-brand-500 font-bold text-[10px] px-1.5 rounded-full border border-brand-500/30">
-                          {badgeText}
-                        </SidebarMenuBadge>
-                      ) : null}
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {groups.map((group) => {
+          const isCollapsed = Boolean(collapsedGroups[group.label])
+          return (
+            <SidebarGroup key={group.label} className="py-1">
+              <div
+                onClick={() => toggleGroup(group.label)}
+                className="flex items-center justify-between text-[10px] font-bold tracking-widest text-sidebar-foreground/60 hover:text-sidebar-foreground uppercase px-2 py-1.5 rounded-md hover:bg-sidebar-accent/50 transition-colors cursor-pointer select-none mb-0.5"
+              >
+                <span>{group.label}</span>
+                <ChevronDown
+                  className={`size-3.5 transition-transform duration-200 ${
+                    isCollapsed ? '-rotate-90 text-sidebar-foreground/40' : 'rotate-0 text-sidebar-foreground/80'
+                  }`}
+                />
+              </div>
+
+              {!isCollapsed && (
+                <SidebarGroupContent className="animate-in fade-in slide-in-from-top-1 duration-150">
+                  <SidebarMenu>
+                    {group.items.map((item) => {
+                      const isActive = current === item.href
+                      const badgeText = getDynamicBadge(item.href, item.badge)
+                      return (
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            isActive={isActive}
+                            tooltip={item.label}
+                            className={`transition-all duration-150 rounded-lg px-2.5 py-2 ${
+                              isActive
+                                ? 'bg-sidebar-primary/15 text-sidebar-primary font-semibold shadow-sm border-l-2 border-sidebar-primary'
+                                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                            }`}
+                            render={
+                              <Link
+                                href={item.href}
+                                onClick={() => handleItemClick(item.href)}
+                                className="flex items-center gap-2.5"
+                              >
+                                <item.icon className={`size-4 shrink-0 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70'}`} strokeWidth={isActive ? 2.2 : 1.75} />
+                                <span className="text-xs">{item.label}</span>
+                              </Link>
+                            }
+                          />
+                          {badgeText ? (
+                            <SidebarMenuBadge className="bg-brand-500/20 text-brand-500 font-bold text-[10px] px-1.5 rounded-full border border-brand-500/30">
+                              {badgeText}
+                            </SidebarMenuBadge>
+                          ) : null}
+                        </SidebarMenuItem>
+                      )
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              )}
+            </SidebarGroup>
+          )
+        })}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/80 p-2">

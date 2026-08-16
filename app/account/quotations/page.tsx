@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { formatTZS } from '@/lib/format'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useSourcingStore } from '@/lib/stores/sourcing-store'
 
 export default function CustomerQuotationsPage() {
   const [sourcing, setSourcing] = useState<any[]>([])
@@ -22,12 +23,32 @@ export default function CustomerQuotationsPage() {
   async function fetchQuotations() {
     setLoading(true)
     try {
-      const res = await fetch('/api/sourcing')
-      if (res.ok) {
-        const data = await res.json()
-        const raw = Array.isArray(data) ? data : data.requests || []
-        setSourcing(raw)
-      }
+      let dbItems: any[] = []
+      try {
+        const res = await fetch('/api/sourcing')
+        if (res.ok) {
+          const data = await res.json()
+          dbItems = Array.isArray(data) ? data : data.requests || []
+        }
+      } catch (e) {}
+
+      const storeItems = useSourcingStore.getState().items || []
+      const combined = [...dbItems]
+
+      storeItems.forEach((st) => {
+        if (!combined.some((c) => c.id === st.id || c.reference === st.reference)) {
+          combined.push({
+            id: st.id,
+            productName: st.productName,
+            status: st.status === 'quoted' ? 'Quote Ready' : st.status,
+            quantity: st.quantity,
+            targetPriceTZS: st.targetBudget,
+            quotation: st.quotation,
+          })
+        }
+      })
+
+      setSourcing(combined)
     } catch (err) {
       console.error('Failed to fetch customer quotations:', err)
       toast.error('Failed to load quotations')

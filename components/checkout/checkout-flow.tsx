@@ -331,49 +331,81 @@ export function CheckoutFlow() {
         quantity: line.quantity,
       }))
 
-      // Persist order in store / DB
-      const createdOrder = addCustomerOrder(
-        {
-          reference: result.reference,
-          items: orderItems,
-          subtotal: authoritative.subtotal,
-          shippingFee: authoritative.shippingFee,
-          total: authoritative.total,
-          paymentMethod: methodId,
-          shippingAddress: address,
-          shippingMethod: shipping.name,
-          customer: {
-            id: user.id,
-            name: user.fullName || address.recipient,
-            phone: phoneCheck.normalized,
-            email: user.email,
-          },
+      // PostgreSQL database persistence (Mandatory)
+      let apiOrderData: any = null
+      const dbPayload = {
+        items: active.map((l: any) => ({
+          productId: l.id,
+          quantity: l.quantity,
+          selectedVariant: l.variantLabel,
+          title: l.title,
+          imageUrl: l.image || l.imageUrl,
+          priceTZS: l.unitPrice,
+        })),
+        subtotalTZS: authoritative.subtotal,
+        shippingFeeTZS: authoritative.shippingFee,
+        taxAmountTZS: Math.round(authoritative.subtotal * 0.18),
+        totalAmountTZS: authoritative.total,
+        shippingAddress: {
+          fullName: address.recipient,
+          phone: phoneCheck.normalized,
+          street: address.street,
+          city: address.region || 'Dar es Salaam',
         },
-        user
-      )
+        paymentMethod: method.name,
+        status: 'PAID',
+        paymentStatus: 'SUCCESSFUL',
+      }
 
-      completeIdempotency(key, createdOrder.reference, result.reference)
+      const apiRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbPayload),
+      })
+
+      if (!apiRes.ok) {
+        const errorJson = await apiRes.json().catch(() => ({}))
+        throw new Error(errorJson.error || `Database order persistence failed (${apiRes.status})`)
+      }
+
+      const apiJson = await apiRes.json()
+      if (!apiJson.order) {
+        throw new Error('Server returned invalid order creation response.')
+      }
+
+      apiOrderData = apiJson.order
+
+      const createdReference = apiOrderData?.orderNumber || result.reference
+
+      completeIdempotency(key, createdReference, result.reference)
 
       setLastPaidOrder({
-        reference: createdOrder.reference,
+        reference: createdReference,
         total: authoritative.total,
         methodName: method.name,
         recipient: address.recipient,
-        phone: phoneCheck.formattedDisplay,
+        phone: phoneCheck.normalized,
         ward: address.ward,
         region: address.region,
         shippingName: shipping.name,
       })
 
       setStatus('confirmed')
-      toast.success('Order Successfully Placed!', {
-        description: `Order ${createdOrder.reference} has been logged to your account.`,
-      })
+      setIsAuthorizing(false)
+      isSubmittingRef.current = false
       clear()
-    } catch (err) {
+      toast.success('Order Successfully Placed & Recorded in Database!', {
+        description: `Order ${createdReference} saved to PostgreSQL database under AzamPay Buyer Protection.`,
+      })
+
+
+      clear()
+    } catch (err: any) {
       failIdempotency(key, 'Unexpected client error during payment.')
       setStatus('failed')
-      toast.error('Transaction Error', { description: 'An error occurred while authorizing payment. Please retry.' })
+      const errMsg = err?.message || 'An error occurred while authorizing payment.'
+      console.error('[CHECKOUT ERROR]', errMsg, err)
+      toast.error('Transaction Error', { description: `${errMsg} Please retry.` })
     } finally {
       setIsAuthorizing(false)
       isSubmittingRef.current = false

@@ -27,8 +27,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { formatTZS } from '@/lib/format'
+import { formatTZS, cleanProductTitle } from '@/lib/format'
 import { toast } from 'sonner'
+import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
 
 type PipelineStage =
   | 'New'
@@ -45,11 +46,28 @@ type OrderCard = {
   ref: string
   customer: string
   amountTZS: number
+  subtotalTZS?: number
+  shippingFeeTZS?: number
+  taxAmountTZS?: number
+  paymentMethod?: string
+  paymentStatus?: string
+  createdAt?: string
   location: string
   stage: PipelineStage
   priority: 'High' | 'Normal' | 'Low' | 'Delivered'
   assigned?: string
   dotColor?: string
+  image?: string
+  itemTitle?: string
+  items?: Array<{
+    id: string
+    title: string
+    imageUrl: string
+    quantity: number
+    variant?: string
+    unitPriceTZS: number
+    totalPriceTZS: number
+  }>
 }
 
 type Candidate = {
@@ -98,6 +116,9 @@ export default function AdminOperationsPage() {
   const [search, setSearch] = useState('')
   const [selectedOrder, setSelectedOrder] = useState<OrderCard | null>(null)
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
+  const [assignModalOrderId, setAssignModalOrderId] = useState('')
+  const [assignModalRole, setAssignModalRole] = useState('Agents')
+  const [assignModalCandidateId, setAssignModalCandidateId] = useState('')
 
   // Broadcast SMS Modal State
   const [smsModalOpen, setSmsModalOpen] = useState(false)
@@ -138,7 +159,7 @@ export default function AdminOperationsPage() {
         }
       }
     } catch (err) {
-      console.error('Failed to load admin operations data:', err)
+      console.error('Failed to load admin operations data from PostgreSQL:', err)
     } finally {
       setLoading(false)
     }
@@ -159,8 +180,56 @@ export default function AdminOperationsPage() {
     }
   }
 
-  function handleCreateAssignment() {
-    toast.success('Order Assignment created and dispatched to queue!')
+  async function handleUpdateOrderStage(
+    orderId: string,
+    stage: PipelineStage,
+    assigneeId?: string,
+    assigneeName?: string,
+    assignmentRole?: string
+  ) {
+    try {
+      const res = await fetch('/api/admin/orders/pipeline', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          stage,
+          assigneeId,
+          assigneeName,
+          assignmentRole,
+        }),
+      })
+
+      const json = await res.json()
+      if (res.ok && json.success) {
+        toast.success(`Order ${json.order.orderNumber} stage updated to '${stage}'${assigneeName ? ` (${assigneeName})` : ''}!`)
+        fetchLiveData()
+        if (selectedOrder && (selectedOrder.id === orderId || selectedOrder.ref === orderId)) {
+          setSelectedOrder((prev: any) => (prev ? { ...prev, stage, assigned: json.order.assignedTo || prev.assigned } : null))
+        }
+      } else {
+        toast.error(json.error || 'Failed to update order stage.')
+      }
+    } catch (err) {
+      console.error('Failed to update stage:', err)
+      toast.error('Network error updating order stage.')
+    }
+  }
+
+  async function handleCreateAssignment() {
+    if (!assignModalOrderId) {
+      toast.error('Please select an order to assign.')
+      return
+    }
+
+    const selectedCand = candidates.find((c) => c.id === assignModalCandidateId)
+    await handleUpdateOrderStage(
+      assignModalOrderId,
+      'Agent Assigned',
+      selectedCand?.id,
+      selectedCand?.name || (assignModalCandidateId ? 'Assigned Staff' : undefined),
+      assignModalRole
+    )
     setAssignmentModalOpen(false)
   }
 
@@ -427,21 +496,27 @@ export default function AdminOperationsPage() {
                           No orders
                         </div>
                       ) : (
-                        colOrders.map((ord) => (
+                        colOrders.map((ord: any) => (
                           <Card
                             key={ord.id}
                             onClick={() => setSelectedOrder(ord)}
-                            className="bg-white border-slate-200 p-2 hover:border-[#FF6B00] hover:shadow-md cursor-pointer transition-all space-y-0.5 shadow-sm"
+                            className="bg-white border-slate-200 p-2 hover:border-[#FF6B00] hover:shadow-md cursor-pointer transition-all space-y-1.5 shadow-sm"
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono font-black text-[10px] text-slate-900 truncate">{ord.ref}</span>
+                            <div className="flex items-start gap-2">
+                              <OrderProductThumbnail src={ord.image} alt={ord.itemTitle || ord.ref} className="size-10 rounded-lg shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <span className="font-mono font-black text-[10px] text-slate-900 truncate block">{ord.ref}</span>
+                                <p className="font-bold text-[10px] text-slate-800 line-clamp-1">{cleanProductTitle(ord.itemTitle) || ord.customer}</p>
+                                <p className="text-[9px] text-slate-500 truncate">{ord.customer}</p>
+                              </div>
                             </div>
 
-                            <p className="font-bold text-[10px] text-slate-800 truncate">{ord.customer}</p>
-                            <p className="text-[9px] text-slate-500 font-mono">{formatTZS(ord.amountTZS)}</p>
-                            <p className="text-[9px] text-slate-400 truncate">{ord.location}</p>
+                            <div className="flex items-center justify-between text-[9px]">
+                              <span className="text-slate-500 font-mono font-bold">{formatTZS(ord.amountTZS)}</span>
+                              <span className="text-slate-400 truncate">{ord.location}</span>
+                            </div>
 
-                            <div className="pt-1 flex items-center justify-between border-t border-slate-100 mt-1">
+                            <div className="pt-1 flex items-center justify-between border-t border-slate-100 mt-1" onClick={(e) => e.stopPropagation()}>
                               <span
                                 className={`text-[8px] font-extrabold px-1 py-0.2 rounded uppercase ${
                                   ord.priority === 'High'
@@ -453,10 +528,22 @@ export default function AdminOperationsPage() {
                               >
                                 {ord.priority}
                               </span>
+
+                              <select
+                                value={ord.stage}
+                                onChange={(e) => handleUpdateOrderStage(ord.id, e.target.value as PipelineStage)}
+                                className="text-[9px] bg-slate-50 border border-slate-200 rounded px-1 py-0.5 font-bold text-slate-800 hover:border-[#FF6B00] cursor-pointer"
+                              >
+                                {PIPELINE_STAGES.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
 
                             {ord.assigned && (
-                              <p className="text-[8px] text-slate-500 font-medium pt-0.5 truncate">
+                              <p className="text-[8px] text-[#FF6B00] font-bold pt-0.5 truncate">
                                 {ord.assigned}
                               </p>
                             )}
@@ -682,31 +769,131 @@ export default function AdminOperationsPage() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1">
-                <span className="text-slate-500 font-medium">Customer:</span>
-                <p className="font-bold text-slate-900">{selectedOrder.customer}</p>
+            <div className="space-y-4 text-xs">
+              {/* Payment & Customer Metadata */}
+              <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">Customer</span>
+                  <p className="font-extrabold text-slate-900 text-xs">{selectedOrder.customer}</p>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">Location</span>
+                  <p className="font-bold text-slate-800 text-xs">{selectedOrder.location}</p>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">Payment Guarantee</span>
+                  <p className="font-bold text-emerald-700 text-xs flex items-center gap-1">
+                    <CheckCircle2 className="size-3.5 text-emerald-600" />
+                    {selectedOrder.stage === 'Paid' ? 'PAID (AzamPay Buyer Protection)' : 'Pending Authorization'}
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-slate-500 font-medium">Location:</span>
-                <p className="font-bold text-slate-900">{selectedOrder.location}</p>
+              {/* Product Line Items */}
+              <div className="space-y-2">
+                <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-slate-500">
+                  Paid Line Items ({selectedOrder.items?.length || 1})
+                </h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                    selectedOrder.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 p-2.5 bg-white border border-slate-200 rounded-xl shadow-xs"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <OrderProductThumbnail
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="size-12 rounded-lg shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-900 text-xs line-clamp-1">{cleanProductTitle(item.title)}</p>
+                            <p className="text-[10px] text-slate-500">
+                              {item.variant ? `Variant: ${item.variant} • ` : ''}Qty: <strong className="text-slate-800">{item.quantity}</strong>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <p className="font-mono font-black text-slate-900 text-xs">{formatTZS(item.totalPriceTZS)}</p>
+                          <p className="text-[9px] text-slate-400 font-mono">
+                            {formatTZS(item.unitPriceTZS)} each
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center gap-3 p-2.5 bg-white border border-slate-200 rounded-xl">
+                      <OrderProductThumbnail
+                        src={selectedOrder.image}
+                        alt={selectedOrder.itemTitle || selectedOrder.ref}
+                        className="size-12 rounded-lg shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-900 text-xs">{selectedOrder.itemTitle || 'Wholesale B2B Goods'}</p>
+                        <p className="text-[10px] text-slate-500">Verified Database Order Item</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono font-black text-slate-900 text-xs">{formatTZS(selectedOrder.amountTZS)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-slate-500 font-medium">Priority:</span>
-                <p className="font-bold text-slate-900">{selectedOrder.priority}</p>
+              {/* Financial Math Summary */}
+              <div className="p-3 bg-slate-900 text-white rounded-xl space-y-1.5 font-mono text-xs">
+                <div className="flex justify-between text-slate-300">
+                  <span>Subtotal:</span>
+                  <span>{formatTZS(selectedOrder.subtotalTZS || selectedOrder.amountTZS)}</span>
+                </div>
+                {selectedOrder.shippingFeeTZS !== undefined && (
+                  <div className="flex justify-between text-slate-300">
+                    <span>Doorstep Logistics:</span>
+                    <span>{formatTZS(selectedOrder.shippingFeeTZS)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-emerald-400 font-bold border-t border-slate-800 pt-1.5 text-sm">
+                  <span>Total Settled Amount:</span>
+                  <span>{formatTZS(selectedOrder.amountTZS)}</span>
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="mt-4">
-              <Button variant="outline" size="sm" onClick={() => setSelectedOrder(null)} className="border-slate-300 text-slate-700 text-xs">
-                Close
-              </Button>
-              <Button size="sm" onClick={() => { setSelectedOrder(null); setAssignmentModalOpen(true); }} className="bg-[#FF6B00] text-white font-bold text-xs">
-                Reassign Order
-              </Button>
-            </DialogFooter>
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700">Update Pipeline Stage:</span>
+                <select
+                  value={selectedOrder.stage}
+                  onChange={(e) => handleUpdateOrderStage(selectedOrder.id, e.target.value as PipelineStage)}
+                  className="bg-slate-50 border border-slate-300 rounded px-2 py-1 font-extrabold text-slate-900 cursor-pointer"
+                >
+                  {PIPELINE_STAGES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(null)} className="border-slate-300 text-slate-700 text-xs font-bold">
+                  Close
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setAssignModalOrderId(selectedOrder.id)
+                    setSelectedOrder(null)
+                    setAssignmentModalOpen(true)
+                  }}
+                  className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+                >
+                  + Assign Agent / Staff
+                </Button>
+              </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -723,18 +910,57 @@ export default function AdminOperationsPage() {
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Order Reference</label>
-                <Input placeholder="e.g. LUMO-100982" className="bg-slate-50 border-slate-300 text-slate-900 h-9" />
+                <label className="font-bold text-slate-700">Select Order</label>
+                <select
+                  value={assignModalOrderId}
+                  onChange={(e) => setAssignModalOrderId(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs text-slate-900 font-bold"
+                >
+                  <option value="">-- Choose Active Order --</option>
+                  {orders.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.ref} · {o.customer} ({formatTZS(o.amountTZS)})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1">
                 <label className="font-bold text-slate-700">Assignee Role</label>
-                <select className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs text-slate-900">
-                  <option>Sales Representative</option>
-                  <option>Sourcing Agent</option>
-                  <option>Supplier</option>
-                  <option>Inspector</option>
-                  <option>Logistics Partner</option>
+                <select
+                  value={assignModalRole}
+                  onChange={(e) => {
+                    const r = e.target.value
+                    setAssignModalRole(r)
+                    let roleKey = 'Agents'
+                    if (r.includes('Sales')) roleKey = 'Sales'
+                    else if (r.includes('Supplier')) roleKey = 'Suppliers'
+                    else if (r.includes('Logistics')) roleKey = 'Logistics'
+                    fetchCandidates(roleKey)
+                  }}
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs text-slate-900 font-semibold"
+                >
+                  <option value="Sourcing Agent">Sourcing Agent</option>
+                  <option value="Sales Representative">Sales Representative</option>
+                  <option value="Supplier">Supplier</option>
+                  <option value="Inspector">Inspector</option>
+                  <option value="Logistics Partner">Logistics Partner</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Select Registered Candidate User</label>
+                <select
+                  value={assignModalCandidateId}
+                  onChange={(e) => setAssignModalCandidateId(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs text-slate-900 font-semibold"
+                >
+                  <option value="">-- Unassigned (General Queue) --</option>
+                  {candidates.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.role}) · Workload: {c.workloadCount}/{c.maxCapacity}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

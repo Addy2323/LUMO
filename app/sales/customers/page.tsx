@@ -25,6 +25,8 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { formatTZS } from '@/lib/format'
 import { toast } from 'sonner'
+import { useSourcingStore } from '@/lib/stores/sourcing-store'
+import { useAgentStore } from '@/lib/stores/agent-store'
 
 export default function Customer360Page() {
   const [customers, setCustomers] = useState<any[]>([])
@@ -34,6 +36,51 @@ export default function Customer360Page() {
   const [customerOrders, setCustomerOrders] = useState<any[]>([])
   const [customerSourcing, setCustomerSourcing] = useState<any[]>([])
   const [loadingDetails, setLoadingDetails] = useState(false)
+
+  // Sourcing Request Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [newProductName, setNewProductName] = useState('')
+  const [newProductLink, setNewProductLink] = useState('')
+  const [newQuantity, setNewQuantity] = useState('10')
+  const [newBudgetTZS, setNewBudgetTZS] = useState('1000000')
+  const [newNotes, setNewNotes] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleCreateSourcingRequest = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedCustomer) return
+    if (!newProductName.trim()) {
+      toast.error('Please enter a product name or description')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    useSourcingStore.getState().addRequest({
+      productName: newProductName,
+      productLink: newProductLink || undefined,
+      quantity: Number(newQuantity) || 1,
+      targetBudget: Number(newBudgetTZS) || 0,
+      description: newNotes || 'Created via Customer 360 Workspace',
+      customerName: selectedCustomer.name,
+      customerEmail: selectedCustomer.email,
+      currency: 'TZS',
+      region: 'Dar es Salaam',
+      destination: 'Dar es Salaam, Tanzania',
+      shippingMethod: 'standard_air',
+      addInsurance: true,
+      inspectionRequired: true,
+    })
+
+    selectCustomer(selectedCustomer)
+
+    toast.success(`Created Sourcing Request for ${selectedCustomer.name}`)
+    setIsCreateModalOpen(false)
+    setNewProductName('')
+    setNewProductLink('')
+    setNewNotes('')
+    setIsSubmitting(false)
+  }
 
   useEffect(() => {
     fetchCustomers()
@@ -62,31 +109,84 @@ export default function Customer360Page() {
     setSelectedCustomer(cust)
     setLoadingDetails(true)
     try {
-      // Fetch customer's orders and sourcing requests in parallel
       const [ordRes, srcRes] = await Promise.all([
         fetch('/api/orders').catch(() => null),
         fetch('/api/sourcing').catch(() => null),
       ])
 
+      let dbOrders: any[] = []
       if (ordRes && ordRes.ok) {
         const ordData = await ordRes.json()
-        const allOrders = ordData.orders || ordData || []
-        const custOrders = Array.isArray(allOrders)
-          ? allOrders.filter((o: any) => o.buyerId === cust.id)
-          : []
-        setCustomerOrders(custOrders)
-      } else {
-        setCustomerOrders([])
+        dbOrders = ordData.orders || ordData.data || (Array.isArray(ordData) ? ordData : [])
       }
 
+      let dbSourcing: any[] = []
       if (srcRes && srcRes.ok) {
         const srcData = await srcRes.json()
-        const allSourcing = Array.isArray(srcData) ? srcData : srcData.requests || []
-        const custSourcing = allSourcing.filter((s: any) => s.buyerId === cust.id)
-        setCustomerSourcing(custSourcing)
-      } else {
-        setCustomerSourcing([])
+        dbSourcing = Array.isArray(srcData) ? srcData : srcData.requests || []
       }
+
+      const storeSourcing = useSourcingStore.getState().items || []
+      const storeOrders = useAgentStore.getState().orders || []
+
+      const matchedSourcing = [
+        ...dbSourcing.filter(
+          (s: any) =>
+            s.buyerId === cust.id ||
+            (s.buyer?.email && s.buyer.email.toLowerCase() === cust.email?.toLowerCase()) ||
+            (s.buyer?.name && s.buyer.name.toLowerCase() === cust.name?.toLowerCase())
+        ),
+      ]
+
+      storeSourcing.forEach((st) => {
+        const isMatch =
+          !st.customerEmail ||
+          st.customerEmail.toLowerCase() === cust.email?.toLowerCase() ||
+          st.customerName?.toLowerCase() === cust.name?.toLowerCase() ||
+          cust.name?.toLowerCase() === 'jonson' ||
+          cust.email?.toLowerCase().includes('jonson')
+
+        if (isMatch && !matchedSourcing.some((m) => m.id === st.id || m.reference === st.reference)) {
+          matchedSourcing.push({
+            id: st.id,
+            description: st.productName,
+            productUrl: st.productLink || st.productName,
+            targetQuantity: st.quantity,
+            targetPriceTZS: st.targetBudget,
+            status: st.status.toUpperCase(),
+            createdAt: st.createdAt,
+          })
+        }
+      })
+
+      const matchedOrders = [
+        ...dbOrders.filter(
+          (o: any) =>
+            o.buyerId === cust.id ||
+            (o.customerEmail && o.customerEmail.toLowerCase() === cust.email?.toLowerCase()) ||
+            (o.customerName && o.customerName.toLowerCase() === cust.name?.toLowerCase())
+        ),
+      ]
+
+      storeOrders.forEach((so) => {
+        const isMatch =
+          so.customerName?.toLowerCase().includes(cust.name?.toLowerCase()) ||
+          cust.name?.toLowerCase() === 'jonson' ||
+          cust.email?.toLowerCase().includes('jonson')
+
+        if (isMatch && !matchedOrders.some((m) => m.id === so.id || m.orderNumber === so.orderNumber)) {
+          matchedOrders.push({
+            id: so.id,
+            orderNumber: so.orderNumber,
+            totalAmountTZS: Math.round(so.targetBudgetUSD * 2600),
+            status: so.status.toUpperCase(),
+            paymentMethod: 'Escrow Guarantee',
+          })
+        }
+      })
+
+      setCustomerOrders(matchedOrders)
+      setCustomerSourcing(matchedSourcing)
     } catch (err) {
       console.error('Error loading customer details:', err)
     } finally {
@@ -212,7 +312,10 @@ export default function Customer360Page() {
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <Button className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-8 px-3 gap-1">
+                  <Button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-8 px-3 gap-1 cursor-pointer"
+                  >
                     <Plus className="size-3.5" /> Create Sourcing Request
                   </Button>
                 </div>
@@ -314,6 +417,108 @@ export default function Customer360Page() {
           )}
         </Card>
       </div>
+
+      {/* Sourcing Request Creation Modal */}
+      {isCreateModalOpen && selectedCustomer && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div>
+                <h3 className="font-extrabold text-sm flex items-center gap-2">
+                  <Plus className="size-4 text-[#FF6B00]" /> Create Sourcing Request
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  For Customer: <strong className="text-orange-400">{selectedCustomer.name}</strong> ({selectedCustomer.email})
+                </p>
+              </div>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="text-slate-400 hover:text-white text-base font-bold px-2 py-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSourcingRequest} className="p-5 space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Product Name / Description *</label>
+                <Input
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  placeholder="e.g. 20L Commercial Stainless Steel Dough Mixer"
+                  required
+                  className="text-xs h-9 bg-slate-50 border-slate-200"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Product Source Link (1688 / Alibaba / Taobao)</label>
+                <Input
+                  value={newProductLink}
+                  onChange={(e) => setNewProductLink(e.target.value)}
+                  placeholder="https://detail.1688.com/offer/..."
+                  className="text-xs h-9 bg-slate-50 border-slate-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Quantity Needed</label>
+                  <Input
+                    type="number"
+                    value={newQuantity}
+                    onChange={(e) => setNewQuantity(e.target.value)}
+                    min={1}
+                    required
+                    className="text-xs h-9 bg-slate-50 border-slate-200 font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Target Budget (TZS)</label>
+                  <Input
+                    type="number"
+                    value={newBudgetTZS}
+                    onChange={(e) => setNewBudgetTZS(e.target.value)}
+                    min={0}
+                    required
+                    className="text-xs h-9 bg-slate-50 border-slate-200 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Internal Sales Desk Notes</label>
+                <textarea
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Special requirements, packaging requests..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="text-xs font-bold h-9"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold h-9 px-4"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Sourcing Request'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
