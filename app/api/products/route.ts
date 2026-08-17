@@ -12,10 +12,18 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * perPage
 
     const where: any = {}
+    const andConditions: any[] = []
 
-    // Status filtering logic: return all catalog products by default so all admin section items are visible
+    // Status filtering logic: return published/approved items for Marketplace by default, or all items for Admin when statusParam === 'ALL'
     if (statusParam && statusParam !== 'ALL' && statusParam !== '*') {
       where.status = statusParam
+    } else if (!statusParam) {
+      andConditions.push({
+        OR: [
+          { status: 'PUBLISHED' },
+          { isApproved: true },
+        ],
+      })
     }
 
     if (categorySlug && categorySlug !== 'ALL') {
@@ -31,12 +39,18 @@ export async function GET(req: NextRequest) {
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { productCode: { contains: search, mode: 'insensitive' } },
-        { brand: { contains: search, mode: 'insensitive' } },
-      ]
+      andConditions.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { productCode: { contains: search, mode: 'insensitive' } },
+          { brand: { contains: search, mode: 'insensitive' } },
+        ],
+      })
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions
     }
 
     const [products, total] = await Promise.all([
@@ -217,8 +231,8 @@ export async function POST(req: NextRequest) {
           priceTZS,
           priceUSD,
           stock: item.stock || (item.variants?.[0]?.stock) || 50,
-          status: 'PUBLISHED',
-          isApproved: true,
+          status: item.status || 'PENDING_REVIEW',
+          isApproved: item.isApproved ?? false,
           sourceType: 'LUMO_SUPPLIER',
           sourceHub: 'Supplier Direct Portal',
           imageUrl: gallery[0],

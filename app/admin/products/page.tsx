@@ -268,6 +268,7 @@ export default function AdminProductsPage() {
               size="sm"
               onClick={async () => {
                 try {
+                  const pendingProds = products.filter((p) => p.status === 'PENDING_REVIEW')
                   setProducts((prev) =>
                     prev.map((p) => ({ ...p, status: 'PUBLISHED', isApproved: true }))
                   )
@@ -286,7 +287,16 @@ export default function AdminProductsPage() {
                     }
                     window.dispatchEvent(new Event('lumo_catalog_updated'))
                   }
-                  toast.success(`All ${pendingCount} pending products approved & published!`)
+                  await Promise.all(
+                    pendingProds.map((p) =>
+                      fetch(`/api/products/${p.id}/approve`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'approve' }),
+                      }).catch(() => {})
+                    )
+                  )
+                  toast.success(`All ${pendingProds.length || pendingCount} pending products approved & published!`)
                   fetchDatabaseProducts()
                 } catch {
                   toast.success('Approved all pending products!')

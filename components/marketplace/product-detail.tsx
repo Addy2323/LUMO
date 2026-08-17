@@ -173,12 +173,14 @@ export function ProductDetail({
   }
 
   // Country Flag helper
+  const supplierCountry = product.supplier?.country || 'China'
+  const supplierName = product.supplier?.name || 'Verified Factory Supplier'
   const countryFlag =
-    product.supplier.country === 'China'
+    supplierCountry === 'China'
       ? '🇨🇳'
-      : product.supplier.country === 'UAE'
+      : supplierCountry === 'UAE'
         ? '🇦🇪'
-        : product.supplier.country === 'Turkey'
+        : supplierCountry === 'Turkey'
           ? '🇹🇷'
           : '🇹🇿'
 

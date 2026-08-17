@@ -143,8 +143,7 @@ export default function SupplierProductsPage() {
               try {
                 await fetch('/api/products', { method: 'DELETE' })
                 if (typeof window !== 'undefined') {
-                  localStorage.removeItem('lumoo-supplier-store-v2')
-                  localStorage.removeItem('lumo_published_products')
+                  localStorage.clear()
                   window.dispatchEvent(new Event('lumo_catalog_updated'))
                   window.location.reload()
                 }

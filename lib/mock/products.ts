@@ -342,17 +342,17 @@ export function resolveImage(title: string, category: string): string {
   if (t.includes('monitor') || t.includes('laptop') || c.includes('electronics') || t.includes('display')) {
     return '/categories/electronics.png'
   }
-  if (c.includes('industrial') || c.includes('tools')) {
-    return '/categories/industrial-tools.png'
+  if (c.includes('jacket') || c.includes('coat') || c.includes('clothing') || c.includes('men') || t.includes('jacket') || t.includes('coat')) {
+    return 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=500&q=80'
   }
-  if (c.includes('beauty') || c.includes('health') || c.includes('care')) {
-    return '/categories/beauty-health.png'
+  if (c.includes('shoe') || c.includes('heel') || c.includes('pump') || c.includes('footwear') || c.includes('sneaker') || t.includes('shoe') || t.includes('heel')) {
+    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=80'
   }
-  if (c.includes('sports') || c.includes('outdoors')) {
-    return '/categories/sports-outdoors.png'
+  if (c.includes('gaming') || c.includes('monitor') || t.includes('monitor')) {
+    return 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=500&q=80'
   }
 
-  return 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?auto=format&fit=crop&w=500&q=80'
+  return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80'
 }
 
 export function sanitizeProductImage(url: string | undefined, title: string, categoryId: string): string {
@@ -398,18 +398,22 @@ export function getStoredProducts(): Product[] {
         const supplierProducts: any[] = parsedSupplierStore?.state?.products || []
 
         const publishedSupplierProducts = supplierProducts
-          .filter((sp) => sp.status === 'PUBLISHED' || sp.status === 'ACTIVE' || sp.isApproved === true)
+          .filter((sp) => {
+            const st = String(sp.status || '').toUpperCase()
+            return st === 'PUBLISHED' || st === 'ACTIVE' || sp.isApproved === true
+          })
           .map((sp) => {
             const rawUrl = Array.isArray(sp.images) ? sp.images[0] : sp.images
             const cleanUrl = typeof rawUrl === 'string' ? rawUrl : rawUrl?.url || resolveImage(sp.title, sp.category)
             const title = sp.title || 'Direct Factory Product'
-            let categoryId = (sp.category || sp.categoryId || 'electronics').toLowerCase()
-            if (categoryId.includes('chair') || categoryId.includes('furniture')) categoryId = 'home-kitchen'
-            else if (categoryId.includes('phone')) categoryId = 'phones-accessories'
-            else if (categoryId.includes('beauty')) categoryId = 'health-beauty'
-            else if (categoryId.includes('fashion') || categoryId.includes('apparel')) categoryId = 'fashion'
-            else if (categoryId.includes('solar')) categoryId = 'solar-power'
-            else categoryId = 'electronics'
+            let rawCat = (sp.category || sp.categoryId || 'electronics').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            let categoryId = rawCat
+            if (rawCat.includes('chair') || rawCat.includes('furniture')) categoryId = 'furniture'
+            else if (rawCat.includes('phone') || rawCat.includes('case')) categoryId = 'phones-accessories'
+            else if (rawCat.includes('beauty') || rawCat.includes('care')) categoryId = 'health-beauty'
+            else if (rawCat.includes('shoe') || rawCat.includes('sneaker')) categoryId = 'shoes'
+            else if (rawCat.includes('jacket') || rawCat.includes('clothing') || rawCat.includes('men')) categoryId = 'mens-clothing'
+            else if (rawCat.includes('solar') || rawCat.includes('power')) categoryId = 'solar-power'
 
             return {
               id: sp.id,

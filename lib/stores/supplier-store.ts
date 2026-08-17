@@ -314,7 +314,7 @@ export const useSupplierStore = create<SupplierState>()(
       merge: (persistedState: any, currentState) => {
         if (persistedState && Array.isArray(persistedState.products)) {
           const sanitizedProducts = persistedState.products.map((p: any) => {
-            let cleanImages = (p.images || []).map((u: any) => {
+            const cleanImages = (p.images || []).map((u: any) => {
               let str = typeof u === 'string' ? u : (u?.url || u?.src || '')
               if (!str) return ''
               str = str.trim().replace(/^['"]|['"]$/g, '')
@@ -327,7 +327,7 @@ export const useSupplierStore = create<SupplierState>()(
 
             return {
               ...p,
-              images: cleanImages.length > 0 ? cleanImages : p.images || [],
+              images: cleanImages,
             }
           })
           return {

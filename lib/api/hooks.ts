@@ -72,7 +72,7 @@ export function useProducts(query: ProductQuery = {}) {
     queryFn: async (): Promise<Product[]> => {
       let dbProducts: Product[] = []
       try {
-        const res = await apiRequest<any>('/products', { mock: () => filterProducts(query), latency: 300 })
+        const res = await apiRequest<any>('/api/products', { mock: () => filterProducts(query), latency: 300 })
         if (Array.isArray(res)) {
           dbProducts = res
         } else if (res && Array.isArray(res.data)) {
@@ -134,7 +134,7 @@ export function useProduct(slug: string) {
     queryKey: ['product', slug],
     queryFn: async (): Promise<Product | null> => {
       try {
-        const res = await apiRequest<any>(`/products/${slug}`, {
+        const res = await apiRequest<any>(`/api/products/${slug}`, {
           mock: () => getStoredProducts().find((p) => p.slug === slug || p.id === slug) ?? null,
           latency: 300,
         })
