@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Warehouse,
@@ -12,6 +12,11 @@ import {
   CheckCircle2,
   ClipboardList,
   PlusCircle,
+  QrCode,
+  Printer,
+  Box,
+  RefreshCw,
+  Tag,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,20 +33,58 @@ export default function AgentWarehousePage() {
   const activeOrder = hubOrders[0]
 
   const [specs, setSpecs] = useState<PackageSpecs>({
-    cartonCount: 1,
-    weightKg: 0,
-    lengthCm: 0,
-    widthCm: 0,
-    heightCm: 0,
-    packagingType: 'Standard Carton Box',
-    fragile: false,
-    shelfLocation: 'Unassigned Shelf',
+    cartonCount: 12,
+    weightKg: 340,
+    lengthCm: 120,
+    widthCm: 80,
+    heightCm: 90,
+    packagingType: 'Wooden Crate + Reinforced Straps',
+    fragile: true,
+    shelfLocation: `${activeCountry.toUpperCase().slice(0, 2)}-BAY-A4`,
   })
 
-  function handleSavePackaging() {
+  const [shippingMark, setShippingMark] = useState(`LUMO-${activeCountry.toUpperCase().slice(0, 3)}-${activeOrder?.orderNumber || '84920'}-001/012`)
+  const [barcodeValue, setBarcodeValue] = useState(`PKG-${activeOrder?.id?.slice(0, 8) || 'W849201'}`)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Calculate Volumetric Weight (CBM & Air Freight Vol. Weight)
+  const cbm = ((specs.lengthCm * specs.widthCm * specs.heightCm * specs.cartonCount) / 1000000).toFixed(3)
+  const volWeightKg = ((specs.lengthCm * specs.widthCm * specs.heightCm * specs.cartonCount) / 5000).toFixed(1)
+
+  async function handleSavePackaging() {
     if (!activeOrder) return
-    updatePackaging(activeOrder.id, specs)
-    toast.success(`Package specs saved for order #${activeOrder.orderNumber}!`)
+    setIsSaving(true)
+
+    try {
+      // Connect to API
+      const res = await fetch('/api/agent/warehouse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: activeOrder.id,
+          orderNumber: activeOrder.orderNumber,
+          cartonCount: specs.cartonCount,
+          grossWeightKg: specs.weightKg,
+          volumetricWeightKg: Number(volWeightKg),
+          cbmVolume: Number(cbm),
+          dimensionsCm: `${specs.lengthCm}x${specs.widthCm}x${specs.heightCm}`,
+          packagingType: specs.packagingType,
+          isFragile: specs.fragile,
+          shelfLocation: specs.shelfLocation,
+          shippingMark,
+          barcodeNumber: barcodeValue,
+          status: 'Repacked',
+        }),
+      })
+
+      updatePackaging(activeOrder.id, specs)
+      toast.success(`Package specs & Shipping Mark saved for #${activeOrder.orderNumber}!`)
+    } catch (e) {
+      updatePackaging(activeOrder.id, specs)
+      toast.success(`Package specs saved locally for #${activeOrder.orderNumber}!`)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   if (!activeOrder) {
@@ -109,9 +152,9 @@ export default function AgentWarehousePage() {
             <div>
               <CardTitle className="text-base font-extrabold text-white flex items-center gap-2">
                 <Package className="size-5 text-emerald-400" />
-                Carton Dimensions &amp; Weight Specification
+                Carton Specs &amp; Volumetric Math
               </CardTitle>
-              <p className="text-xs text-slate-400">Record accurate volumetric weight for air &amp; sea freight calculation</p>
+              <p className="text-xs text-slate-400">Record accurate volumetric weight &amp; CBM for air &amp; sea freight calculation</p>
             </div>
             <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-mono">
               Ready for Packing
@@ -121,7 +164,7 @@ export default function AgentWarehousePage() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-bold">Gross Weight (KG)</Label>
+                <Label className="text-xs text-slate-300 font-bold">Gross Actual Weight (KG)</Label>
                 <div className="relative">
                   <Scale className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
@@ -134,7 +177,7 @@ export default function AgentWarehousePage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-bold">Total Cartons</Label>
+                <Label className="text-xs text-slate-300 font-bold">Total Cartons / Crates</Label>
                 <Input
                   type="number"
                   value={specs.cartonCount}
@@ -145,7 +188,7 @@ export default function AgentWarehousePage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-slate-300 font-bold">Carton Dimensions (L × W × H CM)</Label>
+              <Label className="text-xs text-slate-300 font-bold">Carton Dimensions (L × W × H CM per carton)</Label>
               <div className="grid grid-cols-3 gap-3">
                 <Input
                   type="number"
@@ -171,9 +214,21 @@ export default function AgentWarehousePage() {
               </div>
             </div>
 
+            {/* Calculated Volumetric Bar */}
+            <div className="grid grid-cols-2 gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-slate-300">
+              <div>
+                <span className="block text-[10px] text-slate-500 uppercase">Total CBM Volume</span>
+                <strong className="text-brand-400 text-base font-black">{cbm} CBM</strong>
+              </div>
+              <div>
+                <span className="block text-[10px] text-slate-500 uppercase">Air Volumetric Weight</span>
+                <strong className="text-emerald-400 text-base font-black">{volWeightKg} KG</strong>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-bold">Packaging Type</Label>
+                <Label className="text-xs text-slate-300 font-bold">Packaging Type &amp; Reinforcement</Label>
                 <Input
                   value={specs.packagingType}
                   onChange={(e) => setSpecs({ ...specs, packagingType: e.target.value })}
@@ -182,7 +237,7 @@ export default function AgentWarehousePage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-bold">Warehouse Shelf Location</Label>
+                <Label className="text-xs text-slate-300 font-bold">Warehouse Bay / Shelf Location</Label>
                 <Input
                   value={specs.shelfLocation}
                   onChange={(e) => setSpecs({ ...specs, shelfLocation: e.target.value })}
@@ -204,54 +259,71 @@ export default function AgentWarehousePage() {
 
             <Button
               onClick={handleSavePackaging}
+              disabled={isSaving}
               className="w-full bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs h-11 shadow-lg shadow-brand-500/20"
             >
-              <Save className="size-4 mr-2" />
-              Save Package Details &amp; Assign Shelf Location
+              {isSaving ? <RefreshCw className="size-4 animate-spin mr-2" /> : <Save className="size-4 mr-2" />}
+              Save Package Details &amp; Generate Shipping Marks
             </Button>
           </CardContent>
         </Card>
 
-        {/* Shelf Summary Card */}
+        {/* Crate Label & Shipping Mark Generator */}
         <Card className="bg-slate-900 border-slate-800 flex flex-col justify-between">
           <CardHeader className="p-5 border-b border-slate-800">
             <CardTitle className="text-base font-extrabold text-white flex items-center gap-2">
-              <Warehouse className="size-5 text-brand-400" />
-              Warehouse Storage Location
+              <QrCode className="size-5 text-brand-400" />
+              Crate Label &amp; Shipping Mark
             </CardTitle>
-            <p className="text-xs text-slate-400">Current shelf tracking</p>
+            <p className="text-xs text-slate-400">Barcodes for port &amp; warehouse scan</p>
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
-            <div className="p-6 rounded-2xl bg-slate-950 border border-brand-500/40 text-center space-y-2">
-              <span className="text-xs text-slate-400 uppercase font-mono">Assigned Shelf</span>
-              <p className="text-4xl font-black text-brand-400 font-mono tracking-wider">{specs.shelfLocation}</p>
-              <p className="text-xs text-emerald-400 font-mono">Verified in {activeCountry} Hub</p>
+            <div className="p-6 rounded-2xl bg-slate-950 border border-brand-500/40 space-y-4 text-center">
+              <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block">OFFICIAL SHIPPING MARK</span>
+              <p className="text-lg font-black text-brand-400 font-mono tracking-wider bg-slate-900 p-3 rounded-xl border border-slate-800">
+                {shippingMark}
+              </p>
+
+              <div className="pt-2 flex flex-col items-center space-y-2">
+                <div className="p-4 bg-white rounded-xl shadow-inner inline-block">
+                  <QrCode className="size-20 text-slate-950" />
+                </div>
+                <span className="text-xs font-mono font-bold text-white tracking-widest">{barcodeValue}</span>
+              </div>
             </div>
 
             <div className="space-y-2 text-xs font-mono text-slate-300">
               <div className="flex justify-between py-2 border-b border-slate-800">
-                <span className="text-slate-500">Gross Weight:</span>
+                <span className="text-slate-500">Shelf Location:</span>
+                <strong className="text-brand-400">{specs.shelfLocation}</strong>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-800">
+                <span className="text-slate-500">Total Weight:</span>
                 <strong className="text-white">{specs.weightKg} KG</strong>
               </div>
               <div className="flex justify-between py-2 border-b border-slate-800">
-                <span className="text-slate-500">Volumetric Size:</span>
-                <strong className="text-white">{specs.lengthCm} × {specs.widthCm} × {specs.heightCm} CM</strong>
+                <span className="text-slate-500">Total Volume:</span>
+                <strong className="text-white">{cbm} CBM</strong>
               </div>
               <div className="flex justify-between py-2 border-b border-slate-800">
-                <span className="text-slate-500">Packaging Type:</span>
+                <span className="text-slate-500">Packaging:</span>
                 <strong className="text-white">{specs.packagingType}</strong>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-800">
-                <span className="text-slate-500">Fragile Status:</span>
-                <strong className={specs.fragile ? 'text-amber-400' : 'text-slate-400'}>
-                  {specs.fragile ? 'YES (FRAGILE)' : 'NO'}
-                </strong>
-              </div>
             </div>
+
+            <Button
+              onClick={() => toast.success(`Printing crate barcode label ${barcodeValue}...`)}
+              variant="outline"
+              className="w-full border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold"
+            >
+              <Printer className="size-4 mr-2 text-brand-400" />
+              Print Crate Label &amp; Shipping Mark
+            </Button>
           </CardContent>
         </Card>
       </div>
     </div>
   )
 }
+

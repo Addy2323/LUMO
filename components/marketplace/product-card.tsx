@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Heart, ShoppingCart, Store } from 'lucide-react'
+import { Check, Heart, Scale, ShoppingCart, Store } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,6 +13,9 @@ import { formatTZS } from '@/lib/format'
 import type { Product } from '@/lib/mock/products'
 import { SafeProductImage } from '@/components/ui/product-image'
 import { useCartStore } from '@/lib/stores/cart-store'
+import { useWishlistStore } from '@/lib/stores/wishlist-store'
+import { useCompareStore } from '@/lib/stores/compare-store'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 export function ProductCard({
@@ -31,6 +34,60 @@ export function ProductCard({
   const discount = product.compareAtPrice
     ? Math.round((1 - product.fromPrice / product.compareAtPrice) * 100)
     : 0
+
+  const isInWishlist = useWishlistStore((s) => s.isInWishlist(product.id))
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem)
+
+  const isInCompare = useCompareStore((s) => s.isInCompare(product.id))
+  const toggleCompare = useCompareStore((s) => s.toggleItem)
+
+  function handleToggleWishlist(e: React.MouseEvent) {
+    e.stopPropagation()
+    const added = toggleWishlist({
+      id: `w_${product.id}`,
+      productId: product.id,
+      title: product.title,
+      slug: product.slug,
+      image: product.images[0]?.url || '',
+      priceTZS: product.fromPrice,
+      inStock: totalStock > 0,
+      supplierName: product.supplier?.name || 'Verified Supplier',
+      notifyOnPriceDrop: true,
+    })
+    if (added) {
+      toast.success(`Saved "${product.title}" to Wishlist!`)
+    } else {
+      toast.info(`Removed "${product.title}" from Wishlist.`)
+    }
+  }
+
+  function handleToggleCompare(e: React.MouseEvent) {
+    e.stopPropagation()
+    const result = toggleCompare({
+      id: `c_${product.id}`,
+      productId: product.id,
+      title: product.title,
+      slug: product.slug,
+      image: product.images[0]?.url || '',
+      priceTZS: product.fromPrice,
+      compareAtPrice: product.compareAtPrice,
+      inStock: totalStock > 0,
+      rating: product.rating ?? 4.9,
+      reviewCount: product.reviewCount ?? 18,
+      supplierName: product.supplier?.name || 'Verified Supplier',
+      supplierCountry: product.supplier?.country || 'China',
+      supplierFlag: product.supplier?.flag || '🇨🇳',
+      supplierVerified: Boolean((product.supplier as any)?.verified),
+      category: product.categoryId,
+    })
+    if (result.limitReached) {
+      toast.error('Comparison limit reached (max 4 products).')
+    } else if (result.added) {
+      toast.success(`Added "${product.title}" to Product Comparison matrix!`)
+    } else {
+      toast.info(`Removed "${product.title}" from Product Comparison.`)
+    }
+  }
 
   function handleAddToCart(e: React.MouseEvent) {
     e.stopPropagation()
@@ -100,7 +157,7 @@ export function ProductCard({
         {product.supplier?.flag ? (
           <div className="absolute top-2 left-2 rounded-lg bg-slate-900/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white flex items-center gap-1.5 shadow-md z-10 border border-amber-500/40">
             <span>{product.supplier.flag}</span>
-            <span>{product.supplier.country}</span>
+            <span>{product.supplier?.country || 'China'}</span>
             {Boolean((product.supplier as { verified?: boolean }).verified) && (
               <span className="text-[9px] text-amber-400 font-extrabold tracking-wider border-l border-amber-500/30 pl-1.5">
                 ★ VERIFIED
@@ -113,15 +170,39 @@ export function ProductCard({
           </Badge>
         ) : null}
 
-        <Button
-          variant="secondary"
-          size="icon"
-          aria-label={`Save ${product.title} to wishlist`}
-          className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 z-10 size-7 rounded-full bg-background/80 backdrop-blur"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Heart className="size-3.5" />
-        </Button>
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 z-10">
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label={`Compare ${product.title}`}
+            title={isInCompare ? 'In Product Comparison' : 'Add to Product Comparison'}
+            className={cn(
+              'size-7 rounded-full backdrop-blur shadow-sm transition-colors',
+              isInCompare
+                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                : 'bg-background/80 text-foreground hover:bg-background'
+            )}
+            onClick={handleToggleCompare}
+          >
+            <Scale className="size-3.5" />
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label={`Save ${product.title} to wishlist`}
+            title={isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+            className={cn(
+              'size-7 rounded-full backdrop-blur shadow-sm transition-colors',
+              isInWishlist
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : 'bg-background/80 text-foreground hover:bg-background'
+            )}
+            onClick={handleToggleWishlist}
+          >
+            <Heart className={cn('size-3.5', isInWishlist ? 'fill-white' : '')} />
+          </Button>
+        </div>
 
         {/* Quick Add floating image cart button */}
         <button
@@ -167,7 +248,7 @@ export function ProductCard({
             </Link>
           )}
 
-          <Rating value={product.rating} reviewCount={product.reviewCount} size="sm" />
+          <Rating value={product.rating ?? 4.9} reviewCount={product.reviewCount ?? 18} size="sm" />
 
           <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
             <span className="text-sm font-extrabold tnum text-foreground">{formatTZS(product.fromPrice)}</span>
@@ -180,11 +261,11 @@ export function ProductCard({
 
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-0.5 border-t border-border/50">
             <Store aria-hidden="true" className="size-3 shrink-0 text-brand-500" strokeWidth={2} />
-            <span className="truncate font-medium">{product.supplier.name}</span>
+            <span className="truncate font-medium">{product.supplier?.name || 'Verified Supplier'}</span>
           </div>
 
           <div className="flex items-center justify-between gap-2 text-[11px]">
-            <span className="text-muted-foreground font-medium">{product.soldCount.toLocaleString()} sold</span>
+            <span className="text-muted-foreground font-medium">{(product.soldCount ?? 0).toLocaleString()} sold</span>
             {totalStock === 0 ? (
               <span className="font-bold text-danger">Out of stock</span>
             ) : lowStock ? (

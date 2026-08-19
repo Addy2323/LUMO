@@ -1844,3 +1844,277 @@ model InAppNotification {
   @@map("in_app_notifications")
 }
 
+// ──────────────────────────────────────────────
+// Agent Portal Operational Models
+// ──────────────────────────────────────────────
+
+model AgentProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  agentCode    String   @unique
+  fullName     String
+  phone        String?
+  activeHub    String   @default("China") // China, Dubai, Turkey, India
+  allowedHubs  String[] @default(["China", "Dubai", "Turkey", "India"])
+  status       String   @default("APPROVED")
+  gpsLocation  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("agent_profiles")
+}
+
+model SupplierLead {
+  id                      String   @id @default(uuid())
+  agentId                 String?
+  orderId                 String?
+  companyName             String
+  storeName               String?
+  marketplaceUrl          String?
+  country                 String   @default("China")
+  city                    String?
+  contactName             String?
+  contactPhone            String?
+  contactEmail            String?
+  verificationStatus      String   @default("Unverified") // Unverified, Verification Pending, Verified, Restricted, Rejected
+  riskRating              String   @default("Low")
+  categories              String[] @default([])
+  unitPriceUSD            Decimal? @db.Decimal(12, 2)
+  moq                     Int      @default(1)
+  leadTimeDays            Int      @default(7)
+  sampleCostUSD           Decimal? @db.Decimal(12, 2)
+  domesticTransportUSD    Decimal? @db.Decimal(12, 2)
+  packagingCostUSD        Decimal? @db.Decimal(12, 2)
+  inspectionCostUSD       Decimal? @db.Decimal(12, 2)
+  internationalFreightUSD Decimal? @db.Decimal(12, 2)
+  dutyEstimateUSD         Decimal? @db.Decimal(12, 2)
+  landedCostUSD           Decimal? @db.Decimal(12, 2)
+  sizeVariants            String[] @default([])
+  colorVariants           String[] @default([])
+  materialVariants        String[] @default([])
+  modelVariants           String[] @default([])
+  notes                   String?
+  documents               Json?
+  images                  Json?
+  isRecommended           Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("supplier_leads")
+}
+
+model CollectionRecord {
+  id             String   @id @default(uuid())
+  collectionRef  String   @unique
+  orderId        String
+  agentId        String?
+  hub            String   @default("China")
+  supplierName   String
+  pickupAddress  String
+  contactPerson  String
+  contactPhone   String
+  scheduledDate  DateTime
+  driverName     String?
+  driverPhone    String?
+  vehiclePlate   String?
+  status         String   @default("Draft") // Draft, Scheduled, Driver Assigned, En Route, Arrived, Partially Collected, Collected, Delivered to Warehouse, Failed, Cancelled
+  packageCount   Int      @default(0)
+  grossWeightKg  Float?
+  volumeCbm      Float?
+  photos         Json?
+  notes          String?
+  proofOtp       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("collection_records")
+}
+
+model QualityInspection {
+  id                 String   @id @default(uuid())
+  inspectionRef      String   @unique
+  orderId            String
+  collectionId       String?
+  supplierId         String?
+  agentId            String?
+  hub                String   @default("China")
+  inspectionType     String   @default("Pre-shipment") // Sample, Pre-production, During-production, Pre-shipment, Container-loading, Warehouse Receipt, Reinspection, Custom
+  lotSize            Int      @default(100)
+  orderedQty         Int      @default(100)
+  receivedQty        Int      @default(100)
+  sampleSize         Int      @default(80)
+  inspectedQty       Int      @default(80)
+  passedQty          Int      @default(80)
+  failedQty          Int      @default(0)
+  missingQty         Int      @default(0)
+  damagedQty         Int      @default(0)
+  inspectionLevel    String   @default("Level II")
+  aqlConfig          Json?    // Critical=0, Major=2.5, Minor=4.0 thresholds & accept/reject numbers
+  criticalDefects    Int      @default(0)
+  majorDefects       Int      @default(0)
+  minorDefects       Int      @default(0)
+  checklist          Json?    // Detailed specification & category checklist responses
+  specsSnapshot      Json?    // Expected vs Actual specification snapshot
+  evidencePhotos     Json?    // Array of photo slots
+  evidenceVideos     Json?    // Video proof metadata
+  status             String   @default("Draft") // Draft, In Progress, Ready for Submission, Submitted, Under HQ Review, Passed, Conditionally Passed, Failed, Reinspection Required, Approved by HQ, Rejected by HQ
+  result             String   @default("Pending") // Pending, Passed, Conditionally Passed, Failed, Incomplete
+  hqDecision         String?  // Approved, Conditionally Approved, Rejected, Clarification Requested
+  hqReviewNotes      String?
+  hqReviewerId       String?
+  hqReviewedAt       DateTime?
+  reinspectionRef    String?
+  parentInspectionId String?
+  reportPdfUrl       String?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  defects           InspectionDefect[]
+  evidences         InspectionEvidence[]
+  correctiveActions InspectionCorrectiveAction[]
+  auditLogs         InspectionAuditLog[]
+
+  @@index([orderId])
+  @@index([agentId])
+  @@index([hub])
+  @@map("quality_inspections")
+}
+
+model InspectionDefect {
+  id                     String   @id @default(uuid())
+  inspectionId           String
+  defectRef              String
+  category               String   @default("General") // Packaging, Dimensions, Power, Aesthetics, Stitching, Finish
+  severity               String   @default("Major") // Critical, Major, Minor
+  description            String
+  quantityAffected       Int      @default(1)
+  supplierResponsibility Boolean  @default(true)
+  recommendedAction      String   @default("Rework") // Rework, Replace, Scrapped, Discount
+  status                 String   @default("Recorded") // Recorded, Supplier Notified, Reworked, Resolved
+  photoUrl               String?
+  videoUrl               String?
+  checklistKey           String?
+  createdAt              DateTime @default(now())
+
+  inspection QualityInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@map("inspection_defects")
+}
+
+model InspectionEvidence {
+  id           String   @id @default(uuid())
+  inspectionId String
+  slotId       String   // p1, p2, ..., p10, video
+  slotLabel    String   // 1. Front View, 2. Back View...
+  isRequired   Boolean  @default(true)
+  fileUrl      String
+  fileName     String
+  fileSize     Int
+  mimeType     String   @default("image/png")
+  width        Int?
+  height       Int?
+  caption      String?
+  annotations  Json?
+  uploaderId   String?
+  uploadedAt   DateTime @default(now())
+
+  inspection QualityInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId, slotId])
+  @@map("inspection_evidences")
+}
+
+model InspectionCorrectiveAction {
+  id               String    @id @default(uuid())
+  inspectionId     String
+  actionRef        String    @unique
+  supplierName     String
+  defectSummary    String
+  requiredAction   String
+  deadline         DateTime?
+  status           String    @default("Draft") // Draft, Sent to Supplier, Supplier Acknowledged, Rework in Progress, Replacement in Progress, Awaiting Verification, Resolved, Rejected
+  supplierResponse String?
+  replacementQty   Int       @default(0)
+  resolvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  inspection QualityInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@map("inspection_corrective_actions")
+}
+
+model InspectionAuditLog {
+  id             String   @id @default(uuid())
+  inspectionId   String
+  actorId        String
+  actorName      String
+  role           String   @default("AGENT")
+  action         String   // CREATED, DRAFT_UPDATED, DEFECT_ADDED, EVIDENCE_UPLOADED, SUBMITTED, HQ_REVIEWED, REINSPECTION_CREATED
+  previousStatus String?
+  newStatus      String?
+  reason         String?
+  createdAt      DateTime @default(now())
+
+  inspection QualityInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@map("inspection_audit_logs")
+}
+
+model WarehousePackage {
+  id             String   @id @default(uuid())
+  packageRef     String   @unique
+  orderId        String
+  collectionId   String?
+  hub            String   @default("China")
+  locationRack   String   @default("A-01-01")
+  packageCount   Int      @default(1)
+  weightKg       Float    @default(10.0)
+  dimensions     String   @default("40x30x30 cm")
+  packagingType  String   @default("Standard Carton")
+  repackCostUSD  Decimal  @default(0) @db.Decimal(12, 2)
+  status         String   @default("Received") // Expected, Received, Verification Pending, Stored, Repacking, Consolidation Pending, Packed, Ready to Ship, Released, Exception
+  inboundPhotos  Json?
+  labelsPrinted  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("warehouse_packages")
+}
+
+model ShipmentRecord {
+  id                  String    @id @default(uuid())
+  shipmentRef         String    @unique
+  orderId             String
+  packageId           String?
+  hub                 String    @default("China")
+  mode                String    @default("AIR") // AIR, SEA, ROAD, RAIL, COURIER, MULTIMODAL
+  logisticsProvider   String    @default("LUMO Express Logistics")
+  trackingNumber      String    @unique
+  origin              String    @default("Guangzhou / Shenzhen")
+  destination         String    @default("Dar es Salaam Port")
+  incoterm            String    @default("FOB")
+  chargeableWeightKg  Float     @default(15.0)
+  freightCostUSD      Decimal   @default(150.00) @db.Decimal(12, 2)
+  insuranceCostUSD    Decimal   @default(15.00) @db.Decimal(12, 2)
+  estimatedDeparture  DateTime?
+  estimatedArrival    DateTime?
+  status              String    @default("Booked") // Draft, Quotation Requested, Booked, Awaiting Pickup, Picked Up, Export Clearance, In Transit, Transshipment, Import Clearance, Out for Delivery, Delivered, Delayed, Exception, Cancelled
+  milestones          Json?
+  documents           Json?
+  podUrl              String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([orderId])
+  @@map("shipment_records")
+}
+
+

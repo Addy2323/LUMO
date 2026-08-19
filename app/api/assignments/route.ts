@@ -26,15 +26,18 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { assignmentRole: 'SALES', assigneeId: user.id },
         { assignedById: user.id },
+        { assigneeId: null },
       ]
       break
     case 'AGENT':
       where.assignmentRole = 'AGENT'
-      where.assigneeId = user.id
+      where.OR = [
+        { assigneeId: user.id },
+        { assigneeId: null },
+      ]
       break
     case 'SUPPLIER': {
       where.assignmentRole = 'SUPPLIER'
-      // Strictly scope to user's active organization memberships
       const orgMemberships = await prisma.organizationMember.findMany({
         where: { userId: user.id, isActive: true },
         select: { organizationId: true },
@@ -43,12 +46,12 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { assigneeId: user.id },
         { assigneeOrganizationId: { in: orgIds } },
+        { assigneeId: null },
       ]
       break
     }
     case 'LOGISTICS': {
       where.assignmentRole = 'LOGISTICS'
-      // Strictly scope to user's active logistics organization memberships
       const logOrgMemberships = await prisma.organizationMember.findMany({
         where: { userId: user.id, isActive: true },
         select: { organizationId: true },
@@ -57,6 +60,7 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { assigneeId: user.id },
         { assigneeOrganizationId: { in: logOrgIds } },
+        { assigneeId: null },
       ]
       break
     }

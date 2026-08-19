@@ -45,6 +45,8 @@ export function useSignIn() {
         activeRole: role,
         verified: true,
         avatarUrl: null,
+        companyName: res.user.companyName || null,
+        kycStatus: res.user.kycStatus || null,
       } as SessionUser
     },
     onSuccess: (user) => {
@@ -99,6 +101,8 @@ export function useVerifyOtp() {
         activeRole: role,
         verified: true,
         avatarUrl: null,
+        companyName: res.user.companyName || null,
+        kycStatus: res.user.kycStatus || null,
       } as SessionUser
     },
     onSuccess: (user) => {

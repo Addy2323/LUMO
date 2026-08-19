@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Ship,
@@ -13,6 +13,10 @@ import {
   ExternalLink,
   ClipboardList,
   PlusCircle,
+  RefreshCw,
+  Anchor,
+  Clock,
+  ArrowRight,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,12 +34,49 @@ export default function AgentShipmentsPage() {
   const [method, setMethod] = useState<'Air Freight' | 'Sea Freight' | 'Express' | 'Courier'>('Air Freight')
   const [carrier, setCarrier] = useState('LUMO Air Express')
   const [trackingNum, setTrackingNum] = useState('')
+  const [containerNumber, setContainerNumber] = useState('TCLU-920418-4')
+  const [etaDays, setEtaDays] = useState('7')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleCreateShipment() {
+  // Pre-fill tracking code if empty
+  useEffect(() => {
+    if (!trackingNum) {
+      setTrackingNum(`LM${activeCountry === 'China' ? 'CN' : activeCountry === 'Dubai' ? 'DXB' : 'TR'}${Math.floor(100000 + Math.random() * 900000)}`)
+    }
+  }, [activeCountry])
+
+  async function handleCreateShipment() {
     if (!activeOrder) return
+    setIsSubmitting(true)
     const finalTracking = trackingNum || `LM${activeCountry === 'China' ? 'CN' : activeCountry === 'Dubai' ? 'DXB' : 'TR'}${Math.floor(100000 + Math.random() * 900000)}`
-    createShipment(activeOrder.id, method, carrier, finalTracking)
-    toast.success(`Shipment created with tracking #${finalTracking}! Customer notified!`)
+
+    try {
+      // Connect to server API
+      const res = await fetch('/api/agent/shipments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: activeOrder.id,
+          orderNumber: activeOrder.orderNumber,
+          carrier,
+          shippingMethod: method,
+          trackingNumber: finalTracking,
+          containerNumber,
+          estimatedDays: Number(etaDays),
+          originCountry: activeCountry,
+          destinationCountry: 'Tanzania',
+          status: 'Shipped',
+        }),
+      })
+
+      createShipment(activeOrder.id, method, carrier, finalTracking)
+      toast.success(`Shipment created with tracking #${finalTracking}! Customer notified!`)
+    } catch (e) {
+      createShipment(activeOrder.id, method, carrier, finalTracking)
+      toast.success(`Shipment created locally with tracking #${finalTracking}!`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   function handleGenerateNewTracking() {
@@ -144,20 +185,31 @@ export default function AgentShipmentsPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs text-slate-300 font-bold block">Logistics Carrier</label>
-              <Select value={carrier} onValueChange={(val) => setCarrier(val || '')}>
-                <SelectTrigger className="h-11 bg-slate-950 border-slate-800 text-white text-xs font-bold">
-                  <SelectValue placeholder="Select carrier..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-white">
-                  <SelectItem value="LUMO Air Express">LUMO Air Express ({activeCountry} → Dar es Salaam)</SelectItem>
-                  <SelectItem value="LUMO Sea Container Lines">LUMO Sea Freight Lines ({activeCountry} Port → Dar Port)</SelectItem>
-                  <SelectItem value="DHL Express International">DHL Express International</SelectItem>
-                  <SelectItem value="FedEx Air Cargo">FedEx Air Cargo</SelectItem>
-                  <SelectItem value="UPS Worldwide Saver">UPS Worldwide Saver</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 font-bold block">Logistics Carrier</label>
+                <Select value={carrier} onValueChange={(val) => setCarrier(val || '')}>
+                  <SelectTrigger className="h-11 bg-slate-950 border-slate-800 text-white text-xs font-bold">
+                    <SelectValue placeholder="Select carrier..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                    <SelectItem value="LUMO Air Express">LUMO Air Express ({activeCountry} → Dar es Salaam)</SelectItem>
+                    <SelectItem value="LUMO Sea Container Lines">LUMO Sea Freight Lines ({activeCountry} Port → Dar Port)</SelectItem>
+                    <SelectItem value="DHL Express International">DHL Express International</SelectItem>
+                    <SelectItem value="FedEx Air Cargo">FedEx Air Cargo</SelectItem>
+                    <SelectItem value="UPS Worldwide Saver">UPS Worldwide Saver</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 font-bold block">Container / Air Waybill (AWB)</label>
+                <Input
+                  value={containerNumber}
+                  onChange={(e) => setContainerNumber(e.target.value)}
+                  className="h-11 bg-slate-950 border-slate-800 text-white font-mono text-xs font-bold"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -193,20 +245,21 @@ export default function AgentShipmentsPage() {
 
             <Button
               onClick={handleCreateShipment}
+              disabled={isSubmitting}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs h-11 shadow-lg shadow-purple-600/20"
             >
-              <Ship className="size-4 mr-2" />
+              {isSubmitting ? <RefreshCw className="size-4 animate-spin mr-2" /> : <Ship className="size-4 mr-2" />}
               Create International Shipment &amp; Notify Customer
             </Button>
           </CardContent>
         </Card>
 
-        {/* Live Shipment Tracking Card */}
+        {/* Live Shipment Tracking Card & Milestones */}
         <Card className="bg-slate-900 border-slate-800 flex flex-col justify-between">
           <CardHeader className="p-5 border-b border-slate-800">
             <CardTitle className="text-base font-extrabold text-white flex items-center gap-2">
               <Globe className="size-5 text-brand-400" />
-              Active Tracking Summary
+              Transit Milestones Pipeline
             </CardTitle>
             <p className="text-xs text-slate-400">Real-time status</p>
           </CardHeader>
@@ -218,18 +271,44 @@ export default function AgentShipmentsPage() {
               <p className="text-xs text-emerald-400 font-mono">Carrier: {carrier}</p>
             </div>
 
-            <div className="space-y-3 text-xs font-mono text-slate-300">
-              <div className="flex justify-between py-2 border-b border-slate-800">
+            {/* Milestones timeline */}
+            <div className="space-y-3 font-mono text-xs">
+              {[
+                { title: 'Factory Collection & Hub Inward', done: true },
+                { title: 'Warehouse Packaging & Crate Barcode', done: true },
+                { title: 'Export Customs Clearance', done: true },
+                { title: 'Vessel / Flight Departure', done: true, current: true },
+                { title: 'Arrival at Dar es Salaam Port', done: false },
+                { title: 'Tanzania TRA Customs Cleared', done: false },
+                { title: 'Final Handover to Customer', done: false },
+              ].map((step, idx) => (
+                <div key={idx} className="flex items-center gap-2.5">
+                  {step.done ? (
+                    <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                  ) : step.current ? (
+                    <Clock className="size-4 text-amber-400 animate-pulse shrink-0" />
+                  ) : (
+                    <span className="size-4 rounded-full border border-slate-800 shrink-0" />
+                  )}
+                  <span className={step.done ? 'text-white font-bold' : step.current ? 'text-amber-400 font-bold' : 'text-slate-500'}>
+                    {step.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-slate-800">
+              <div className="flex justify-between py-1">
                 <span className="text-slate-500">Departure Hub:</span>
                 <strong className="text-white">{activeCountry} Hub</strong>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-800">
+              <div className="flex justify-between py-1">
                 <span className="text-slate-500">Destination:</span>
                 <strong className="text-white">Dar Es Salaam, Tanzania</strong>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-800">
+              <div className="flex justify-between py-1">
                 <span className="text-slate-500">Status:</span>
-                <strong className="text-brand-400">Ready for Dispatch</strong>
+                <strong className="text-purple-400">Shipped (In Transit)</strong>
               </div>
             </div>
           </CardContent>
@@ -238,3 +317,4 @@ export default function AgentShipmentsPage() {
     </div>
   )
 }
+

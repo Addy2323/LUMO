@@ -14,6 +14,7 @@ import {
   Minus,
   Plus,
   RotateCcw,
+  Scale,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -38,6 +39,8 @@ import { useProduct, usePriceTiers, useRecommendedProducts } from '@/lib/api/hoo
 import { CATEGORIES, defaultSelection, findVariant, variantLabel } from '@/lib/mock/products'
 import { formatDate, formatTZS } from '@/lib/format'
 import { useCartStore } from '@/lib/stores/cart-store'
+import { useWishlistStore } from '@/lib/stores/wishlist-store'
+import { useCompareStore } from '@/lib/stores/compare-store'
 import { useSessionStore } from '@/lib/stores/session-store'
 import { AuthRequiredModal } from '@/components/auth/auth-required-modal'
 import { cn } from '@/lib/utils'
@@ -54,6 +57,62 @@ export function ProductDetail({
   const { data: product, isLoading } = useProduct(slug)
   const { data: dbTiers } = usePriceTiers(product?.id)
   const addToCart = useCartStore((state) => state.add)
+
+  const isInWishlist = useWishlistStore((s) => s.isInWishlist(product?.id || ''))
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem)
+
+  const isInCompare = useCompareStore((s) => s.isInCompare(product?.id || ''))
+  const toggleCompare = useCompareStore((s) => s.toggleItem)
+
+  function handleToggleWishlist(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!product) return
+    const added = toggleWishlist({
+      id: `w_${product.id}`,
+      productId: product.id,
+      title: product.title,
+      slug: product.slug,
+      image: product.images[0]?.url || '',
+      priceTZS: product.fromPrice,
+      inStock: (product.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0) > 0,
+      supplierName: product.supplier?.name || 'Verified Supplier',
+      notifyOnPriceDrop: true,
+    })
+    if (added) {
+      toast.success(`Saved "${product.title}" to Wishlist!`)
+    } else {
+      toast.info(`Removed "${product.title}" from Wishlist.`)
+    }
+  }
+
+  function handleToggleCompare(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!product) return
+    const result = toggleCompare({
+      id: `c_${product.id}`,
+      productId: product.id,
+      title: product.title,
+      slug: product.slug,
+      image: product.images[0]?.url || '',
+      priceTZS: product.fromPrice,
+      compareAtPrice: product.compareAtPrice,
+      inStock: (product.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0) > 0,
+      rating: product.rating ?? 4.9,
+      reviewCount: product.reviewCount ?? 18,
+      supplierName: product.supplier?.name || 'Verified Supplier',
+      supplierCountry: product.supplier?.country || 'China',
+      supplierFlag: product.supplier?.flag || '🇨🇳',
+      supplierVerified: Boolean((product.supplier as any)?.verified),
+      category: product.categoryId,
+    })
+    if (result.limitReached) {
+      toast.error('Comparison limit reached (max 4 products).')
+    } else if (result.added) {
+      toast.success(`Added "${product.title}" to Product Comparison matrix!`)
+    } else {
+      toast.info(`Removed "${product.title}" from Product Comparison.`)
+    }
+  }
 
   const [selection, setSelection] = useState<Record<string, string> | null>(null)
   const [quantity, setQuantity] = useState(1)
@@ -172,9 +231,10 @@ export function ProductDetail({
     })
   }
 
-  // Country Flag helper
-  const supplierCountry = product.supplier?.country || 'China'
-  const supplierName = product.supplier?.name || 'Verified Factory Supplier'
+  // Country Flag & Supplier helper (bulletproof null fallback)
+  const supplierObj = product.supplier || {}
+  const supplierCountry = (supplierObj as any).country || 'China'
+  const supplierName = (supplierObj as any).name || 'Verified Factory Supplier'
   const countryFlag =
     supplierCountry === 'China'
       ? '🇨🇳'
@@ -225,13 +285,39 @@ export function ProductDetail({
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 priority
               />
-              <button
-                type="button"
-                className="absolute top-3 right-3 rounded-full bg-background/80 p-2 text-foreground shadow-sm backdrop-blur hover:bg-background transition-colors"
-                aria-label="Save to wishlist"
-              >
-                <Heart className="size-4" />
-              </button>
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  aria-label="Compare product"
+                  title={isInCompare ? 'In Product Comparison' : 'Add to Product Comparison'}
+                  className={cn(
+                    'rounded-full backdrop-blur shadow-sm transition-colors',
+                    isInCompare
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'bg-background/80 text-foreground hover:bg-background'
+                  )}
+                  onClick={handleToggleCompare}
+                >
+                  <Scale className="size-3.5" />
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  aria-label="Save to wishlist"
+                  title={isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                  className={cn(
+                    'rounded-full backdrop-blur shadow-sm transition-colors',
+                    isInWishlist
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-background/80 text-foreground hover:bg-background'
+                  )}
+                  onClick={handleToggleWishlist}
+                >
+                  <Heart className={cn('size-3.5', isInWishlist ? 'fill-white' : '')} />
+                </Button>
+              </div>
             </div>
 
             {/* Thumbnail List */}
@@ -264,9 +350,9 @@ export function ProductDetail({
                     <Store className="size-4" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs sm:text-sm truncate">{product.supplier.name}</span>
+                    <span className="font-bold text-xs sm:text-sm truncate">{supplierName}</span>
                     <span className="text-muted-foreground flex items-center gap-1 font-medium text-[11px]">
-                      {product.supplier.country} {countryFlag} · Verified Supplier
+                      {supplierCountry} {countryFlag} · Verified Supplier
                     </span>
                   </div>
                 </div>
@@ -298,7 +384,7 @@ export function ProductDetail({
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-muted-foreground text-[10px]">Origin</span>
-                <span className="font-semibold text-xs">{product.supplier.country} {countryFlag}</span>
+                <span className="font-semibold text-xs">{supplierCountry} {countryFlag}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-muted-foreground text-[10px]">Logistics</span>
@@ -321,7 +407,7 @@ export function ProductDetail({
               </Badge>
               <span className="text-xs text-muted-foreground">•</span>
               <span className="text-xs font-semibold text-muted-foreground">
-                {product.soldCount.toLocaleString()} sold
+                {(product.soldCount ?? 0).toLocaleString()} sold
               </span>
             </div>
 
@@ -330,7 +416,7 @@ export function ProductDetail({
             </h1>
 
             <div className="flex items-center gap-2 text-xs pt-0.5">
-              <Rating value={product.rating} reviewCount={product.reviewCount} size="sm" />
+              <Rating value={product.rating ?? 4.9} reviewCount={product.reviewCount ?? 18} size="sm" />
             </div>
           </div>
 
@@ -368,7 +454,7 @@ export function ProductDetail({
 
           {/* Variant Attribute Pickers */}
           <div className="flex flex-col gap-3">
-            {product.attributes.map((attribute) => (
+            {(product.attributes || []).map((attribute) => (
               <fieldset key={attribute.name} className="flex flex-col gap-1.5">
                 <legend className="text-xs font-bold text-foreground">
                   {attribute.name}:{' '}
@@ -490,7 +576,7 @@ export function ProductDetail({
                 size="default"
                 variant="secondary"
                 className="w-full font-semibold text-xs text-muted-foreground h-10"
-                onClick={() => toast.info(`Opened chat inquiry with ${product.supplier.name}`)}
+                onClick={() => toast.info(`Opened chat inquiry with ${supplierName}`)}
               >
                 <MessageSquare className="size-3.5 mr-1" />
                 Chat Supplier
@@ -585,7 +671,7 @@ export function ProductDetail({
                 size="lg"
                 variant="secondary"
                 className="w-full font-semibold text-xs text-muted-foreground"
-                onClick={() => toast.info(`Opened chat inquiry with ${product.supplier.name}`)}
+                onClick={() => toast.info(`Opened chat inquiry with ${supplierName}`)}
               >
                 <MessageSquare className="size-4 mr-1" />
                 Chat Now with Supplier
@@ -601,7 +687,7 @@ export function ProductDetail({
           <TabsList>
             <TabsTrigger value="description">Product Overview</TabsTrigger>
             <TabsTrigger value="specifications">Full Specifications</TabsTrigger>
-            <TabsTrigger value="reviews">Customer Reviews ({product.reviews.length})</TabsTrigger>
+            <TabsTrigger value="reviews">Customer Reviews ({(product.reviews || []).length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="description">
@@ -619,7 +705,7 @@ export function ProductDetail({
               <CardContent className="px-0">
                 <Table>
                   <TableBody>
-                    {product.specifications.map((spec) => (
+                    {(product.specifications || []).map((spec) => (
                       <TableRow key={spec.label}>
                         <TableCell className="w-48 font-semibold">{spec.label}</TableCell>
                         <TableCell className="text-muted-foreground">{spec.value}</TableCell>
@@ -633,7 +719,7 @@ export function ProductDetail({
 
           <TabsContent value="reviews">
             <div className="flex flex-col gap-3">
-              {product.reviews.map((review) => (
+              {(product.reviews || []).map((review) => (
                 <Card key={review.id}>
                   <CardContent className="p-4 flex flex-col gap-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">

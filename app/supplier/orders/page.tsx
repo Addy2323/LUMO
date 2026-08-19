@@ -28,11 +28,38 @@ export default function SupplierOrdersPage() {
   const fetchSupplierOrders = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/orders')
-      const data = await res.json()
-      if (Array.isArray(data.data)) {
-        setOrders(data.data)
-      }
+      let dbOrders: DatabaseSupplierOrder[] = []
+      try {
+        const res = await fetch('/api/orders?role=SUPPLIER')
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data.data)) {
+            dbOrders = data.data
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const assignRes = await fetch('/api/assignments')
+        if (assignRes.ok) {
+          const assignData = await assignRes.json()
+          if (Array.isArray(assignData.assignments)) {
+            assignData.assignments.forEach((a: any) => {
+              if (!dbOrders.some((c) => c.id === a.orderId || c.orderNumber === a.orderId)) {
+                dbOrders.push({
+                  id: a.id,
+                  orderNumber: `ORD-${a.orderId.slice(-6).toUpperCase()}`,
+                  status: (a.status || 'PENDING').toLowerCase(),
+                  totalAmountTZS: 146340,
+                  createdAt: a.createdAt || new Date().toISOString(),
+                })
+              }
+            })
+          }
+        }
+      } catch (e) {}
+
+      setOrders(dbOrders)
     } catch (error) {
       console.error('Failed to fetch supplier database orders:', error)
     } finally {

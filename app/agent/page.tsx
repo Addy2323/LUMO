@@ -42,11 +42,41 @@ export default function AgentDashboardPage() {
   async function fetchAgentAssignments() {
     setLoading(true)
     try {
-      const res = await fetch('/api/assignments')
-      if (res.ok) {
-        const data = await res.json()
-        setServerAssignments(data.assignments || [])
-      }
+      let combined: any[] = []
+
+      // Fetch assignments
+      try {
+        const res = await fetch('/api/assignments')
+        if (res.ok) {
+          const data = await res.json()
+          combined = data.assignments || []
+        }
+      } catch (err) {}
+
+      // Fetch DB orders
+      try {
+        const ordRes = await fetch('/api/orders?role=AGENT')
+        if (ordRes.ok) {
+          const ordData = await ordRes.json()
+          if (Array.isArray(ordData.data)) {
+            ordData.data.forEach((o: any) => {
+              if (!combined.some((c: any) => c.orderId === o.id || c.id === o.id)) {
+                combined.push({
+                  id: o.id,
+                  orderId: o.id,
+                  orderNumber: o.orderNumber,
+                  instructions: o.productName || o.items?.[0]?.product?.title,
+                  status: (o.status || 'PAID').toLowerCase(),
+                  customerName: o.customerName || o.buyer?.companyName || o.buyer?.name,
+                  targetBudgetUSD: Math.round(Number(o.totalAmountTZS || 0) / 2600),
+                })
+              }
+            })
+          }
+        }
+      } catch (err) {}
+
+      setServerAssignments(combined)
     } catch (err) {
       console.error('[AGENT DASHBOARD] Failed to fetch server assignments:', err)
     } finally {
@@ -67,13 +97,13 @@ export default function AgentDashboardPage() {
   const displayOrders = serverAssignments.length > 0
     ? serverAssignments.map((a) => ({
         id: a.id,
-        orderNumber: `ORD-${a.orderId.slice(-6).toUpperCase()}`,
+        orderNumber: a.orderNumber || `ORD-${(a.orderId || a.id).slice(-6).toUpperCase()}`,
         priority: 'Normal',
-        status: a.status.toLowerCase(),
+        status: (a.status || 'assigned').toLowerCase(),
         productName: a.instructions || 'Sourcing & Inspection Assignment',
-        customerName: 'Tanzanian Buyer',
+        customerName: a.customerName || 'Tanzanian Buyer',
         quantityNeeded: 100,
-        targetBudgetUSD: 1500,
+        targetBudgetUSD: a.targetBudgetUSD || 1500,
         destinationRegion: 'Dar es Salaam',
         destinationCountry: 'Tanzania',
         assignedCountry: activeCountry,

@@ -34,14 +34,64 @@ export async function GET(req: NextRequest) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
 
-  const { user } = auth
+  const { user, activeRole } = auth
+  const effectiveRole = activeRole || user.role
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1', 10)
   const perPage = parseInt(searchParams.get('perPage') || '20', 10)
   const skip = (page - 1) * perPage
 
+  const requestedRole = searchParams.get('role') || effectiveRole
+
   const where: Prisma.OrderWhereInput = {}
-  if (user.role !== 'ADMIN' && user.role !== 'SALES') {
+  if (requestedRole === 'ADMIN' || requestedRole === 'SALES') {
+    // Unrestricted access for Admin & Sales
+  } else if (requestedRole === 'AGENT') {
+    const agentAssignments = await prisma.orderAssignment.findMany({
+      where: { assignmentRole: 'AGENT' },
+      select: { orderId: true },
+    })
+    const assignedOrderIds = agentAssignments.map((a) => a.orderId).filter(Boolean)
+
+    where.OR = [
+      ...(assignedOrderIds.length > 0
+        ? [{ id: { in: assignedOrderIds } }, { orderNumber: { in: assignedOrderIds } }]
+        : []),
+      { status: 'PAID' },
+      { status: 'PROCESSING' },
+      { status: 'SHIPPED' },
+    ]
+  } else if (requestedRole === 'SUPPLIER') {
+    const supplierAssignments = await prisma.orderAssignment.findMany({
+      where: { assignmentRole: 'SUPPLIER' },
+      select: { orderId: true },
+    })
+    const assignedOrderIds = supplierAssignments.map((a) => a.orderId).filter(Boolean)
+
+    where.OR = [
+      ...(assignedOrderIds.length > 0
+        ? [{ id: { in: assignedOrderIds } }, { orderNumber: { in: assignedOrderIds } }]
+        : []),
+      { status: 'PAID' },
+      { status: 'PROCESSING' },
+      { status: 'SHIPPED' },
+    ]
+  } else if (requestedRole === 'LOGISTICS') {
+    const logisticsAssignments = await prisma.orderAssignment.findMany({
+      where: { assignmentRole: 'LOGISTICS' },
+      select: { orderId: true },
+    })
+    const assignedOrderIds = logisticsAssignments.map((a) => a.orderId).filter(Boolean)
+
+    where.OR = [
+      ...(assignedOrderIds.length > 0
+        ? [{ id: { in: assignedOrderIds } }, { orderNumber: { in: assignedOrderIds } }]
+        : []),
+      { status: 'PAID' },
+      { status: 'PROCESSING' },
+      { status: 'SHIPPED' },
+    ]
+  } else {
     where.buyerId = user.id
   }
 
@@ -52,6 +102,7 @@ export async function GET(req: NextRequest) {
       skip,
       orderBy: { createdAt: 'desc' },
       include: {
+        buyer: { select: { name: true, companyName: true } },
         items: {
           include: {
             product: {
@@ -66,40 +117,45 @@ export async function GET(req: NextRequest) {
     prisma.order.count({ where }),
   ])
 
-  const formatted = orders.map((o) => ({
-    ...o,
-    subtotalTZS: Number(o.subtotalTZS),
-    shippingFeeTZS: Number(o.shippingFeeTZS),
-    taxAmountTZS: Number(o.taxAmountTZS),
-    discountTZS: Number(o.discountTZS),
-    totalAmountTZS: Number(o.totalAmountTZS),
-    items: o.items
-      ? o.items.map((i) => {
-          let rawImg = i.product?.imageUrl || ''
-          if (rawImg.includes('unsplash.com')) {
-            rawImg = ''
-          }
-          const sanitizedImg = rawImg.startsWith('//')
-            ? `https:${rawImg}`
-            : rawImg
-          return {
-            ...i,
-            unitPriceTZS: Number(i.unitPriceTZS),
-            totalPriceTZS: Number(i.totalPriceTZS),
-            product: i.product
-              ? {
-                  ...i.product,
-                  imageUrl: sanitizedImg,
-                }
-              : {
-                  title: 'Wholesale B2B Goods',
-                  imageUrl: '',
-                  slug: 'general-wholesale',
-                },
-          }
-        })
-      : [],
-  }))
+  const formatted = orders.map((o) => {
+    const firstItem = o.items?.[0]
+    return {
+      ...o,
+      subtotalTZS: Number(o.subtotalTZS),
+      shippingFeeTZS: Number(o.shippingFeeTZS),
+      taxAmountTZS: Number(o.taxAmountTZS),
+      discountTZS: Number(o.discountTZS),
+      totalAmountTZS: Number(o.totalAmountTZS),
+      customerName: o.buyer?.companyName || o.buyer?.name || 'LUMO Merchant',
+      productName: firstItem?.product?.title || 'Wholesale B2B Goods',
+      items: o.items
+        ? o.items.map((i) => {
+            let rawImg = i.product?.imageUrl || ''
+            if (rawImg.includes('unsplash.com')) {
+              rawImg = ''
+            }
+            const sanitizedImg = rawImg.startsWith('//')
+              ? `https:${rawImg}`
+              : rawImg
+            return {
+              ...i,
+              unitPriceTZS: Number(i.unitPriceTZS),
+              totalPriceTZS: Number(i.totalPriceTZS),
+              product: i.product
+                ? {
+                    ...i.product,
+                    imageUrl: sanitizedImg,
+                  }
+                : {
+                    title: 'Wholesale B2B Goods',
+                    imageUrl: '',
+                    slug: 'general-wholesale',
+                  },
+            }
+          })
+        : [],
+    }
+  })
 
   return NextResponse.json({
     data: formatted,

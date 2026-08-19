@@ -114,7 +114,7 @@ const COMMAND_ITEMS: CommandItem[] = [
   {
     id: 'cmd_10',
     title: 'Payment Methods & Wallets',
-    subtitle: 'M-Pesa, Tigo Pesa, Airtel & Cards',
+    subtitle: 'M-Pesa, Mix by Yas, Airtel & Cards',
     category: 'Navigation',
     href: '/account/payment-methods',
     icon: CreditCard,

@@ -213,7 +213,7 @@ export default function CustomerPaymentMethodsPage() {
                   className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs font-bold"
                 >
                   <option value="mpesa">Vodacom M-Pesa</option>
-                  <option value="tigopesa">Tigo Pesa</option>
+                  <option value="tigopesa">Mix by Yas (Tigo Pesa)</option>
                   <option value="airtel">Airtel Money</option>
                   <option value="card">Credit / Debit Card (Visa / Mastercard)</option>
                 </select>

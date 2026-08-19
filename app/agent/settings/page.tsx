@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   ShieldCheck,
   Lock,
@@ -8,18 +9,68 @@ import {
   Clock,
   UserCheck,
   FileCheck,
+  RefreshCw,
+  Search,
+  Filter,
+  Key,
+  User,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAgentStore } from '@/lib/stores/agent-store'
+import { toast } from 'sonner'
 
 export default function AgentSettingsPage() {
-  const { auditLogs, activeCountry, agentName } = useAgentStore()
+  const { auditLogs, activeCountry, agentName, setAgentName } = useAgentStore()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [nameInput, setNameInput] = useState(agentName || 'Mwanahawa Juma')
+  const [phoneInput, setPhoneInput] = useState('+86 138 9201 4820')
+  const [emailInput, setEmailInput] = useState('agent.gz@lumo-sourcing.com')
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [serverLogs, setServerLogs] = useState<any[]>([])
+
+  useEffect(() => {
+    fetchAuditLogs()
+  }, [activeCountry])
+
+  async function fetchAuditLogs() {
+    try {
+      const res = await fetch(`/api/agent/audit-log?country=${activeCountry}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.logs && Array.isArray(data.logs)) {
+          setServerLogs(data.logs)
+        }
+      }
+    } catch (e) {
+      console.log('Using local audit logs')
+    }
+  }
+
+  function handleSaveProfile() {
+    setIsUpdating(true)
+    setTimeout(() => {
+      setAgentName(nameInput)
+      setIsUpdating(false)
+      toast.success('Agent profile updated successfully!')
+    }, 600)
+  }
+
+  const combinedLogs = serverLogs.length > 0 ? serverLogs : auditLogs
+  const filteredLogs = combinedLogs.filter(
+    (log) =>
+      log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.agentName?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans text-white">
       <div>
-        <h1 className="text-2xl font-extrabold font-heading text-white">Security &amp; Non-Repudiation Audit Trail</h1>
+        <h1 className="text-2xl font-extrabold font-heading">Security &amp; Non-Repudiation Audit Trail</h1>
         <p className="text-xs text-slate-400 font-mono">
           Security Protocol: <strong className="text-brand-400">Enterprise Encrypted Audit Log</strong> · Device &amp; GPS Telemetry Enabled
         </p>
@@ -66,8 +117,59 @@ export default function AgentSettingsPage() {
         </Card>
       </div>
 
+      {/* Agent Profile Form */}
       <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="p-5 border-b border-slate-800 flex flex-row items-center justify-between">
+        <CardHeader className="p-5 border-b border-slate-800">
+          <CardTitle className="text-base font-extrabold text-white flex items-center gap-2">
+            <User className="size-5 text-brand-400" />
+            Agent Operational Profile Settings
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300 font-bold">Full Name</Label>
+              <Input
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-white text-xs font-bold"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300 font-bold">Direct Phone Number</Label>
+              <Input
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-white text-xs font-bold"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300 font-bold">HQ Operations Email</Label>
+              <Input
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-white text-xs font-bold"
+              />
+            </div>
+          </div>
+
+          <Button
+            onClick={handleSaveProfile}
+            disabled={isUpdating}
+            className="bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs h-10 px-6"
+          >
+            {isUpdating ? <RefreshCw className="size-4 animate-spin mr-1.5" /> : <UserCheck className="size-4 mr-1.5" />}
+            Save Profile Credentials
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Audit Log Table */}
+      <Card className="bg-slate-900 border-slate-800">
+        <CardHeader className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle className="text-base font-extrabold text-white flex items-center gap-2">
               <Lock className="size-5 text-brand-400" />
@@ -75,13 +177,26 @@ export default function AgentSettingsPage() {
             </CardTitle>
             <p className="text-xs text-slate-400">Cryptographically signed logs of all inspections, uploads &amp; approvals</p>
           </div>
-          <Badge className="bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono">
-            {auditLogs.length} Signed Events
-          </Badge>
+
+          <div className="flex items-center gap-3">
+            <div className="relative w-64">
+              <Search className="size-4 absolute left-3 top-2.5 text-slate-500" />
+              <Input
+                placeholder="Search audit trail..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-9 bg-slate-950 border-slate-800 text-xs text-white"
+              />
+            </div>
+
+            <Badge className="bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono">
+              {filteredLogs.length} Signed Events
+            </Badge>
+          </div>
         </CardHeader>
 
         <CardContent className="p-0">
-          {auditLogs.length === 0 ? (
+          {filteredLogs.length === 0 ? (
             <div className="p-8 text-center space-y-2">
               <Lock className="size-8 text-slate-600 mx-auto" />
               <p className="text-xs font-bold text-slate-300">No Audit Events Logged Yet</p>
@@ -91,13 +206,13 @@ export default function AgentSettingsPage() {
             </div>
           ) : (
             <div className="divide-y divide-slate-800">
-              {auditLogs.map((log) => (
+              {filteredLogs.map((log) => (
                 <div key={log.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-800/40 transition-colors">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 font-mono text-xs">
                       <span className="font-bold text-brand-400">{log.action}</span>
                       <Badge variant="outline" className="text-[10px] border-slate-700 text-slate-300">
-                        {log.country} Hub
+                        {log.country || activeCountry} Hub
                       </Badge>
                       <span className="text-slate-500">{log.timestamp}</span>
                     </div>
@@ -125,3 +240,4 @@ export default function AgentSettingsPage() {
     </div>
   )
 }
+

@@ -222,8 +222,11 @@ export default function AdminProductsPage() {
     const stock = parseInt(formStock) || 100
 
     try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
+      const endpoint = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products'
+      const method = editingProduct ? 'PUT' : 'POST'
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formTitle,
@@ -239,13 +242,38 @@ export default function AdminProductsPage() {
         }),
       })
 
-      if (res.ok) {
-        toast.success(editingProduct ? 'Product updated in database!' : 'New product created in PostgreSQL!')
-        setIsAddModalOpen(false)
-        fetchDatabaseProducts()
-      } else {
-        toast.error('Failed to save product to database')
+      // Also update local storage supplier store if product exists locally
+      if (typeof window !== 'undefined') {
+        const rawStore = localStorage.getItem('lumoo-supplier-store-v2')
+        if (rawStore) {
+          const parsed = JSON.parse(rawStore)
+          if (parsed?.state?.products) {
+            if (editingProduct) {
+              parsed.state.products = parsed.state.products.map((p: any) =>
+                p.id === editingProduct.id
+                  ? {
+                      ...p,
+                      title: formTitle,
+                      category: formCategory,
+                      categoryId: formCategory,
+                      brand: formBrand,
+                      fromPrice: price,
+                      priceTZS: price,
+                      images: formImageUrls,
+                      supplier: { ...p.supplier, name: formSupplier, country: formCountry },
+                    }
+                  : p
+              )
+            }
+            localStorage.setItem('lumoo-supplier-store-v2', JSON.stringify(parsed))
+            window.dispatchEvent(new Event('lumo_catalog_updated'))
+          }
+        }
       }
+
+      toast.success(editingProduct ? 'Product updated in database!' : 'New product created in PostgreSQL!')
+      setIsAddModalOpen(false)
+      fetchDatabaseProducts()
     } catch (error) {
       toast.error('Network error saving product')
     }

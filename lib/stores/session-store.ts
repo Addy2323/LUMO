@@ -20,6 +20,8 @@ export type SessionUser = {
   activeRole: Role
   verified: boolean
   avatarUrl: string | null
+  companyName?: string | null
+  kycStatus?: string | null
 }
 
 type SessionState = {
