@@ -1,13 +1,8 @@
-/** Tanzanian Shilling is the only currency in Phase 1 — no currency selector. */
-const tzs = new Intl.NumberFormat('en-TZ', {
-  style: 'currency',
-  currency: 'TZS',
-  maximumFractionDigits: 0,
-})
+import { formatCurrency } from '@/lib/i18n/format'
 
-/** Formats an amount held in whole shillings, e.g. 1250000 -> "TZS 1,250,000". */
+/** Formats an amount held in whole shillings (base TZS) into active selected currency string */
 export function formatTZS(amount: number): string {
-  return tzs.format(amount).replace('TSh', 'TZS')
+  return formatCurrency(amount)
 }
 
 export function formatDate(value?: string | Date | null): string {

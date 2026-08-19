@@ -14,6 +14,7 @@ import { useSessionStore } from '@/lib/stores/session-store'
 import { AuthRequiredModal } from '@/components/auth/auth-required-modal'
 import { useLocaleStore, useT } from '@/lib/i18n/use-locale'
 import { formatCurrency } from '@/lib/i18n/format'
+import { useFormatPrice } from '@/lib/stores/currency-store'
 
 const DELIVERY_FEE = 8000
 const FREE_DELIVERY_THRESHOLD = 250000
@@ -21,6 +22,7 @@ const FREE_DELIVERY_THRESHOLD = 250000
 export function CartView() {
   const t = useT()
   const locale = useLocaleStore((state) => state.locale)
+  const formatPrice = useFormatPrice()
   const router = useRouter()
   const user = useSessionStore((state) => state.user)
   const lines = useCartStore((state) => state.lines)
@@ -122,23 +124,23 @@ export function CartView() {
         <CardContent className="flex flex-col gap-3 text-sm">
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">{t('cart.subtotal')}</span>
-            <span className="font-medium tabular-nums">{formatCurrency(subtotal, locale)}</span>
+            <span className="font-medium tabular-nums">{formatPrice(subtotal)}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">{t('cart.deliveryFee')}</span>
             <span className="font-medium tabular-nums">
-              {delivery === 0 ? 'Free' : formatCurrency(delivery, locale)}
+              {delivery === 0 ? 'Free' : formatPrice(delivery)}
             </span>
           </div>
           {remainingForFreeDelivery > 0 ? (
             <p className="rounded-md bg-info-subtle px-3 py-2 text-xs text-info-strong">
-              Add {formatCurrency(remainingForFreeDelivery, locale)} more for free delivery.
+              Add {formatPrice(remainingForFreeDelivery)} more for free delivery.
             </p>
           ) : null}
           <Separator />
           <div className="flex items-center justify-between gap-2 text-base">
             <span className="font-medium">{t('cart.total')}</span>
-            <span className="font-semibold tabular-nums">{formatCurrency(subtotal + delivery, locale)}</span>
+            <span className="font-semibold tabular-nums">{formatPrice(subtotal + delivery)}</span>
           </div>
           <p className="text-xs text-muted-foreground">
             Pay with M-Pesa, Mixx by Yas, Airtel Money, HaloPesa, card or bank transfer.
@@ -186,6 +188,7 @@ function CartRow({
 }) {
   const t = useT()
   const locale = useLocaleStore((state) => state.locale)
+  const formatPrice = useFormatPrice()
 
   return (
     <div className="flex gap-4 p-4">
@@ -209,7 +212,7 @@ function CartRow({
             <span className="text-xs text-muted-foreground">SKU {line.sku}</span>
           </div>
           <span className="font-medium tabular-nums">
-            {formatCurrency(line.unitPrice * line.quantity, locale)}
+            {formatPrice(line.unitPrice * line.quantity)}
           </span>
         </div>
 

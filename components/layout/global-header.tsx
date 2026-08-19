@@ -4,16 +4,20 @@ import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
+  Boxes,
   ChevronDown,
   ChevronRight,
   Globe,
   Heart,
   HelpCircle,
+  Info,
+  LayoutGrid,
   Link2,
   LogIn,
   LogOut,
   Menu,
   PackageSearch,
+  PhoneCall,
   ShieldCheck,
   ShoppingBag,
   ShoppingCart,
@@ -28,6 +32,7 @@ import { Logo } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LanguageToggle } from '@/components/language-toggle'
+import { CurrencySelector } from '@/components/ui/currency-selector'
 import { DevRoleSwitcher as RoleSwitcher } from '@/components/dev/dev-role-switcher'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -61,11 +66,13 @@ export interface GlobalHeaderProps {
 export function useMainNavItems() {
   const t = useT()
   return [
-    { label: t('navigation.marketplace'), href: '/marketplace' },
-    { label: t('navigation.sourceProduct'), href: '/sourcing/request' },
-    { label: t('navigation.trackOrder'), href: '/track-freight' },
-    { label: t('navigation.suppliers'), href: '/supplier' },
-    { label: t('navigation.help'), href: '/help' },
+    { label: t('navigation.marketplace'), href: '/marketplace', icon: LayoutGrid },
+    { label: t('navigation.sourceProduct'), href: '/sourcing/request', icon: PackageSearch },
+    { label: t('navigation.trackOrder'), href: '/track-freight', icon: Truck },
+    { label: t('navigation.suppliers'), href: '/supplier', icon: Boxes },
+    { label: t('navigation.aboutUs'), href: '/about', icon: Info },
+    { label: t('navigation.contactUs'), href: '/contact', icon: PhoneCall },
+    { label: t('navigation.help'), href: '/help', icon: HelpCircle },
   ]
 }
 
@@ -97,8 +104,13 @@ export function GlobalHeader({
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const prevCartCount = useRef(0)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Auth & Session state
   const sessionUser = useSessionStore((s) => s.user)
@@ -219,17 +231,8 @@ export function GlobalHeader({
 
           {/* Right Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Currency Selector Pill (Visible on mobile & desktop) */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-slate-900 border border-[#D9E2EC] dark:border-slate-700 shadow-xs text-xs font-bold text-[#0B1F3A] dark:text-slate-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <svg className="size-4 rounded-full overflow-hidden shrink-0 border border-slate-200" viewBox="0 0 36 24" aria-hidden="true">
-                <rect width="36" height="24" fill="#1EB53A" />
-                <path d="M0,24 L36,0 L36,24 Z" fill="#00A3E0" />
-                <path d="M0,24 L36,0" stroke="#FCD116" strokeWidth="7" />
-                <path d="M0,24 L36,0" stroke="#000000" strokeWidth="4.5" />
-              </svg>
-              <span>TZS</span>
-              <ChevronDown className="size-3 text-slate-500" aria-hidden="true" />
-            </div>
+            {/* Currency Selector Pill */}
+            <CurrencySelector />
 
             {/* Language & Theme Controls */}
             <div className="hidden xl:flex items-center gap-2">
@@ -241,12 +244,14 @@ export function GlobalHeader({
             <Link href="/cart">
               <div
                 className="relative flex items-center justify-center p-2 rounded-xl text-[#0B1F3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label={`Cart with ${cartCount || 2} items`}
+                aria-label={`Cart with ${cartCount} items`}
               >
                 <ShoppingCart className="size-6 text-[#0B4385] dark:text-sky-400" aria-hidden="true" />
-                <span className="absolute -top-1 -right-1 size-5 rounded-full bg-[#FF6B00] text-[10px] font-extrabold text-white flex items-center justify-center shadow-xs border-2 border-white dark:border-[#0B1F3A]">
-                  {cartCount > 0 ? cartCount : 2}
-                </span>
+                {mounted && cartCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 size-5 rounded-full bg-[#FF6B00] text-[10px] font-extrabold text-white flex items-center justify-center shadow-xs border-2 border-white dark:border-[#0B1F3A]">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                ) : null}
               </div>
             </Link>
 
@@ -404,89 +409,141 @@ export function GlobalHeader({
                   </Button>
                 }
               />
-              <SheetContent side="right" className="w-[85vw] max-w-xs p-5 flex flex-col gap-6 bg-slate-900 border-slate-800 text-slate-100">
-                <SheetHeader className="p-0 border-b border-slate-800 pb-4">
-                  <SheetTitle>
-                    <Logo />
-                  </SheetTitle>
-                </SheetHeader>
+              <SheetContent side="right" className="fixed inset-y-0 top-0 bottom-0 right-0 z-50 h-screen max-h-screen w-[82vw] max-w-[300px] p-4 flex flex-col justify-between bg-gradient-to-b from-[#1a0c02] via-[#0f172a] to-[#1a0c02] border-l border-orange-500/30 text-slate-100 shadow-2xl overflow-hidden">
+                {/* Background Ambient Orange Glows - clipped by overflow-hidden */}
+                <div className="absolute -top-24 -right-24 size-64 rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 size-64 rounded-full bg-orange-600/15 blur-3xl pointer-events-none" />
 
-                <nav className="flex flex-col gap-3 text-sm font-semibold">
-                  {mainNavItems.map((item) => {
-                    const active = isNavActive(item.href)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={active ? 'page' : undefined}
-                        onClick={() => setMobileOpen(false)}
-                        className={
-                          active
-                            ? 'p-2.5 rounded-lg bg-orange-500/10 text-orange-400 font-bold border border-orange-500/20'
-                            : 'p-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-200'
-                        }
-                      >
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-                </nav>
+                {/* Top Section - Header & Scrollable Nav */}
+                <div className="flex flex-col gap-3 relative z-10 min-h-0 flex-1 overflow-hidden">
+                  {/* Top Header Logo */}
+                  <SheetHeader className="p-0 border-b border-orange-500/25 pb-3 text-left shrink-0">
+                    <SheetTitle className="flex items-center gap-2">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white font-black text-base shadow-md shadow-orange-500/30">
+                        L
+                      </span>
+                      <span className="text-xl font-black tracking-tight text-white">
+                        Lumo
+                      </span>
+                    </SheetTitle>
+                  </SheetHeader>
 
-                <div className="mt-auto border-t border-slate-800 pt-4 flex flex-col gap-3">
+                  {/* Navigation Links - Scrollable if screen is short */}
+                  <nav className="flex flex-col gap-1.5 text-sm font-semibold overflow-y-auto pr-1 flex-1">
+                    {mainNavItems.map((item) => {
+                      const active = isNavActive(item.href)
+                      const IconComp = item.icon
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          aria-current={active ? 'page' : undefined}
+                          onClick={() => setMobileOpen(false)}
+                          className={
+                            active
+                              ? 'group flex items-center justify-between p-2.5 rounded-xl bg-orange-500 text-white font-extrabold shadow-md shadow-orange-500/25 border border-orange-400 shrink-0'
+                              : 'group flex items-center justify-between p-2 rounded-xl hover:bg-slate-900 transition-all text-slate-100 hover:text-white font-semibold shrink-0'
+                          }
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className={
+                                active
+                                  ? 'flex size-7 items-center justify-center rounded-lg bg-white/20 text-white'
+                                  : 'flex size-7 items-center justify-center rounded-lg bg-orange-500/15 text-orange-400 border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-colors'
+                              }
+                            >
+                              {IconComp && <IconComp className="size-3.5" />}
+                            </span>
+                            <span className={active ? 'text-white font-black text-sm' : 'text-slate-100 font-bold group-hover:text-white text-sm'}>
+                              {item.label}
+                            </span>
+                          </div>
+                          <ChevronRight
+                            className={
+                              active
+                                ? 'size-3.5 text-white opacity-90'
+                                : 'size-3.5 text-slate-500 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all'
+                            }
+                          />
+                        </Link>
+                      )
+                    })}
+                  </nav>
+                </div>
+
+                {/* Bottom Section - Pinned Static (Not Scrollable) */}
+                <div className="border-t border-orange-500/25 pt-3 flex flex-col gap-2.5 relative z-10 shrink-0 mt-2">
                   {!authUser ? (
                     <div className="flex flex-col gap-2">
                       <Link href="/login" onClick={() => setMobileOpen(false)}>
-                        <Button variant="outline" className="w-full font-bold text-xs border-slate-700">
-                          <LogIn className="size-4 mr-2" aria-hidden="true" />
+                        <Button variant="outline" className="w-full font-bold text-xs h-9 border-orange-500/30 bg-slate-900/90 text-slate-100 hover:bg-slate-800 hover:text-white rounded-xl">
+                          <LogIn className="size-3.5 mr-2 text-orange-400" aria-hidden="true" />
                           {t('navigation.signIn')}
                         </Button>
                       </Link>
                       <Link href="/register" onClick={() => setMobileOpen(false)}>
-                        <Button className="w-full font-bold text-xs bg-orange-500 hover:bg-orange-600 text-white">
-                          <UserPlus className="size-4 mr-2" aria-hidden="true" />
+                        <Button className="w-full font-bold text-xs h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-md shadow-orange-500/25">
+                          <UserPlus className="size-3.5 mr-2" aria-hidden="true" />
                           {t('navigation.createAccount')}
                         </Button>
                       </Link>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-xs text-white truncate">
-                            {authUser.fullName || authUser.name}
-                          </span>
-                          <span className="text-[10px] text-slate-400 truncate">
-                            {authUser.email}
-                          </span>
+                    <div className="flex flex-col gap-2.5">
+                      {/* User Profile Info Card - Vibrant Orange */}
+                      <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/25 flex items-center justify-between border border-orange-400">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Avatar className="size-8 ring-2 ring-white/40 shrink-0">
+                            <AvatarFallback className="bg-white text-orange-600 font-black text-[11px]">
+                              {getInitials(authUser.fullName || authUser.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-black text-xs text-white truncate drop-shadow-xs">
+                              {authUser.fullName || authUser.name}
+                            </span>
+                            <span className="text-[10px] text-orange-100 font-medium truncate opacity-90">
+                              {authUser.email}
+                            </span>
+                          </div>
                         </div>
                         {roleConfig ? (
-                          <span className="text-[9px] font-extrabold bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full border border-orange-500/30">
+                          <span className="text-[9px] font-black bg-slate-950/80 text-white px-2 py-0.5 rounded-full shrink-0 border border-white/20 shadow-xs">
                             {roleConfig.label}
                           </span>
                         ) : null}
                       </div>
-                      <Link href="/account" onClick={() => setMobileOpen(false)}>
-                        <Button variant="outline" size="sm" className="w-full font-bold text-xs border-slate-700">
-                          {t('account.myAccount')}
+
+                      {/* Account Action Buttons */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link href="/account" onClick={() => setMobileOpen(false)}>
+                          <Button
+                            size="sm"
+                            className="w-full font-black text-xs h-9 rounded-xl bg-white hover:bg-slate-100 text-slate-950 shadow-md border-0 cursor-pointer"
+                          >
+                            <User className="size-3.5 mr-1 text-slate-900" />
+                            {t('account.myAccount')}
+                          </Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setMobileOpen(false)
+                            handleSignOut()
+                          }}
+                          className="w-full font-extrabold text-xs h-9 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white border border-red-500/30 cursor-pointer"
+                        >
+                          <LogOut className="size-3.5 mr-1" aria-hidden="true" />
+                          {t('navigation.signOut')}
                         </Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => {
-                          setMobileOpen(false)
-                          handleSignOut()
-                        }}
-                        className="w-full font-bold text-xs"
-                      >
-                        <LogOut className="size-3.5 mr-1" aria-hidden="true" />
-                        {t('navigation.signOut')}
-                      </Button>
+                      </div>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-2 pt-2">
-                    <span className="text-xs text-slate-400 font-semibold">{t('navigation.preferences')}</span>
+                  {/* Preferences Bar */}
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-orange-500/20">
+                    <span className="text-[11px] text-slate-400 font-semibold">{t('navigation.preferences')}</span>
                     <div className="flex items-center gap-1.5">
                       <LanguageToggle />
                       <ThemeToggle />

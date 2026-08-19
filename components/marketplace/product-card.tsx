@@ -15,6 +15,7 @@ import { SafeProductImage } from '@/components/ui/product-image'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { useWishlistStore } from '@/lib/stores/wishlist-store'
 import { useCompareStore } from '@/lib/stores/compare-store'
+import { useFormatPrice } from '@/lib/stores/currency-store'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ export function ProductCard({
   onSelect?: (product: Product) => void
 }) {
   const [isAdded, setIsAdded] = useState(false)
+  const formatPrice = useFormatPrice()
 
   const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0)
   const lowStock = totalStock > 0 && totalStock <= 20
@@ -251,10 +253,10 @@ export function ProductCard({
           <Rating value={product.rating ?? 4.9} reviewCount={product.reviewCount ?? 18} size="sm" />
 
           <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
-            <span className="text-sm font-extrabold tnum text-foreground">{formatTZS(product.fromPrice)}</span>
+            <span className="text-sm font-extrabold tnum text-foreground">{formatPrice(product.fromPrice)}</span>
             {product.compareAtPrice ? (
               <span className="text-[11px] text-muted-foreground line-through tnum">
-                {formatTZS(product.compareAtPrice)}
+                {formatPrice(product.compareAtPrice)}
               </span>
             ) : null}
           </div>

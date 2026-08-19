@@ -105,11 +105,11 @@ export function HomeProducts() {
         <div className="mt-10 text-center">
           <Button
             size="lg"
-            className="bg-[#0B1F3A] hover:bg-[#164E8C] text-white font-bold text-sm px-8 rounded-xl shadow-sm"
+            className="bg-gradient-to-r from-orange-500 via-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm px-8 py-3.5 rounded-2xl shadow-lg shadow-orange-500/25 border border-orange-400/30 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
             render={<Link href="/marketplace" />}
           >
-            Explore Complete Lumo Sourcing Marketplace
-            <ChevronRight className="size-4 ml-1" />
+            <span>Explore Complete Lumo Sourcing Marketplace</span>
+            <ChevronRight className="size-4 ml-1.5 shrink-0" />
           </Button>
         </div>
       </div>

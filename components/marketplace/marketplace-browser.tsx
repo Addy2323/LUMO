@@ -18,6 +18,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { FilterPanel, type FilterState } from '@/components/marketplace/filter-panel'
 import { ProductCard, ProductCardSkeleton } from '@/components/marketplace/product-card'
+import { AmazingConfirmModal } from '@/components/ui/amazing-confirm-modal'
 import { useProducts, type ProductQuery } from '@/lib/api/hooks'
 import { useT } from '@/lib/i18n/use-locale'
 
@@ -43,6 +44,7 @@ export function MarketplaceBrowser() {
 
   const [search, setSearch] = useState(initialQuery)
   const [sort, setSort] = useState<NonNullable<ProductQuery['sort']>>(initialSort)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [filters, setFilters] = useState<FilterState>({
     inStockOnly: false,
     categoryId: initialCategory,
@@ -142,18 +144,7 @@ export function MarketplaceBrowser() {
             <Button
               variant="outline"
               size="sm"
-              onClick={async () => {
-                if (!confirm('Are you sure you want to completely delete all imported products from catalog & database?')) return
-                try {
-                  await fetch('/api/products', { method: 'DELETE' })
-                  if (typeof window !== 'undefined') {
-                    localStorage.removeItem('lumoo-supplier-store-v2')
-                    localStorage.removeItem('lumo_published_products')
-                    window.dispatchEvent(new Event('lumo_catalog_updated'))
-                    window.location.reload()
-                  }
-                } catch {}
-              }}
+              onClick={() => setShowClearConfirm(true)}
               className="text-xs font-bold border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/40 cursor-pointer"
             >
               Clear All Products
@@ -297,6 +288,29 @@ export function MarketplaceBrowser() {
           </Empty>
         )}
       </div>
+
+      <AmazingConfirmModal
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        title="Clear Entire Catalog & Database?"
+        description="Are you sure you want to completely delete all imported products from catalog & database? This action cannot be undone."
+        confirmText="Yes, Clear All Products"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={async () => {
+          try {
+            await fetch('/api/products', { method: 'DELETE' })
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('lumoo-supplier-store-v2')
+              localStorage.removeItem('lumo_published_products')
+              window.dispatchEvent(new Event('lumo_catalog_updated'))
+              window.location.reload()
+            }
+          } catch (err) {
+            console.error('Failed to delete catalog:', err)
+          }
+        }}
+      />
     </div>
   )
 }

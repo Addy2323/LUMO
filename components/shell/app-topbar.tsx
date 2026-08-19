@@ -61,25 +61,23 @@ export function AppTopbar() {
   const isSupplier = user?.role === 'supplier'
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-4">
-      <SidebarTrigger />
-      <Separator orientation="vertical" className="mr-1 h-6" />
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-1 sm:gap-2 border-b border-border bg-background/95 px-2.5 sm:px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-0.5 sm:mr-1 h-5 sm:h-6" />
 
-      {/* Enterprise Global Command Palette Launcher */}
-      <div className="flex-1 max-w-md">
-        <CommandPalette />
+        {/* Enterprise Global Command Palette Launcher */}
+        <div className="max-w-[160px] sm:max-w-md">
+          <CommandPalette />
+        </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
-        <Button variant="ghost" size="icon" className="md:hidden" aria-label="Search">
-          <Search className="size-4" />
-        </Button>
-
+      <div className="ml-auto flex items-center gap-1 sm:gap-1.5 shrink-0">
         {/* Quick Context Action Button based on Role */}
         {isCustomer ? (
           <Button
             size="sm"
-            className="hidden sm:inline-flex bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs gap-1.5 shadow-sm rounded-lg px-3"
+            className="hidden md:inline-flex bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs gap-1.5 shadow-sm rounded-lg px-3"
             nativeButton={false}
             render={
               <Link href="/sourcing/paste-link">
@@ -91,7 +89,7 @@ export function AppTopbar() {
         ) : isSupplier ? (
           <Button
             size="sm"
-            className="hidden sm:inline-flex bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs gap-1.5 shadow-sm rounded-lg px-3"
+            className="hidden md:inline-flex bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs gap-1.5 shadow-sm rounded-lg px-3"
             nativeButton={false}
             render={
               <Link href="/supplier/products/new">
@@ -106,14 +104,14 @@ export function AppTopbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative"
+            className="relative size-8 sm:size-9"
             nativeButton={false}
             aria-label={`Cart, ${cartCount} items`}
             render={
               <Link href="/cart">
                 <ShoppingCart className="size-4 text-foreground/80" />
                 {cartCount > 0 ? (
-                  <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-xs animate-in zoom-in-50">
+                  <span className="absolute top-0.5 right-0.5 flex size-4 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-xs animate-in zoom-in-50">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 ) : null}
@@ -126,12 +124,12 @@ export function AppTopbar() {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications (${unreadCount} unread)`}>
+              <Button variant="ghost" size="icon" className="relative size-8 sm:size-9" aria-label={`Notifications (${unreadCount} unread)`}>
                 <Bell className="size-4 text-foreground/80" />
                 {unreadCount > 0 ? (
                   <span
                     aria-hidden="true"
-                    className="absolute top-1.5 right-1.5 size-2 rounded-full bg-danger animate-pulse"
+                    className="absolute top-1 right-1 size-2 rounded-full bg-danger animate-pulse"
                   />
                 ) : null}
               </Button>
@@ -186,9 +184,12 @@ export function AppTopbar() {
         </DropdownMenu>
 
         <LanguageToggle />
-        <ThemeToggle />
 
-        <Separator orientation="vertical" className="mx-1.5 h-6" />
+        <div className="hidden sm:block">
+          <ThemeToggle />
+        </div>
+
+        <Separator orientation="vertical" className="mx-1 h-5 sm:h-6 hidden sm:block" />
 
         {/* Role Badge Pill */}
         {user ? (

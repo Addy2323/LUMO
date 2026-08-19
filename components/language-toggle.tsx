@@ -38,13 +38,13 @@ export function LanguageToggle() {
             variant="ghost"
             size="sm"
             aria-label={`Change language, active language is ${LOCALE_LABELS[locale]}`}
-            className="text-xs font-bold gap-1.5 hover:bg-slate-800 text-slate-200 transition-colors"
+            className="text-xs font-black gap-1.5 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 transition-colors border border-slate-300/60 dark:border-slate-700/60 bg-slate-100/80 dark:bg-slate-800/40 rounded-xl px-2.5"
           >
-            <GlobeIcon className="size-3.5 text-orange-400" aria-hidden="true" />
-            <span className="uppercase font-extrabold tracking-wide">{locale}</span>
+            <GlobeIcon className="size-3.5 text-orange-500 shrink-0" aria-hidden="true" />
+            <span className="uppercase font-extrabold tracking-wide text-slate-900 dark:text-slate-100">{locale}</span>
             <ChevronDown
               className={cn(
-                'size-3 text-slate-400 transition-transform duration-200',
+                'size-3 text-slate-600 dark:text-slate-400 transition-transform duration-200',
                 open && 'rotate-180',
               )}
               aria-hidden="true"

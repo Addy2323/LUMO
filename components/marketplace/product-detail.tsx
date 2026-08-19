@@ -42,6 +42,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { useWishlistStore } from '@/lib/stores/wishlist-store'
 import { useCompareStore } from '@/lib/stores/compare-store'
 import { useSessionStore } from '@/lib/stores/session-store'
+import { useFormatPrice } from '@/lib/stores/currency-store'
 import { AuthRequiredModal } from '@/components/auth/auth-required-modal'
 import { cn } from '@/lib/utils'
 
@@ -54,6 +55,7 @@ export function ProductDetail({
 }) {
   const router = useRouter()
   const user = useSessionStore((state) => state.user)
+  const formatPrice = useFormatPrice()
   const { data: product, isLoading } = useProduct(slug)
   const { data: dbTiers } = usePriceTiers(product?.id)
   const addToCart = useCartStore((state) => state.add)
@@ -423,7 +425,7 @@ export function ProductDetail({
           {/* Wholesale Tiered Pricing Table */}
           <div className="rounded-xl border bg-card p-3 shadow-xs">
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-              Wholesale Tiered Pricing (TZS)
+              Wholesale Tiered Pricing
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               {displayTiers.map((tier, idx) => {
@@ -441,9 +443,8 @@ export function ProductDetail({
                         : 'bg-muted/30',
                     )}
                   >
-                    <span className="text-[9px] text-muted-foreground font-bold uppercase">TZS</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-foreground leading-none">
-                      {tier.price.toLocaleString()}
+                    <span className="text-xs font-extrabold text-foreground leading-none">
+                      {formatPrice(tier.price)}
                     </span>
                     <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{tier.label}</span>
                   </button>
@@ -535,7 +536,7 @@ export function ProductDetail({
                 <span className="text-muted-foreground font-normal">Est. 5–8 days</span>
               </div>
               <p className="text-muted-foreground leading-normal">
-                Air Freight fee: <span className="font-bold text-foreground">{formatTZS(calculatedShippingFee)}</span> to Tanzania. Customs cleared.
+                Air Freight fee: <span className="font-bold text-foreground">{formatPrice(calculatedShippingFee)}</span> to Tanzania. Customs cleared.
               </p>
             </CardContent>
           </Card>
@@ -557,7 +558,7 @@ export function ProductDetail({
               onClick={() => handleAddToCart(true)}
             >
               <Zap className="size-4 mr-1" />
-              Start Order ({formatTZS(activeUnitPrice * quantity)})
+              Start Order ({formatPrice(activeUnitPrice * quantity)})
             </Button>
 
             <div className="grid grid-cols-2 gap-2">
@@ -616,7 +617,7 @@ export function ProductDetail({
                     Standard Lumo / Baraka Air Freight
                   </span>
                   <span className="text-muted-foreground leading-relaxed">
-                    Shipping fee: <span className="font-bold text-foreground">{formatTZS(calculatedShippingFee)}</span> for {quantity} pcs
+                    Shipping fee: <span className="font-bold text-foreground">{formatPrice(calculatedShippingFee)}</span> for {quantity} pcs
                   </span>
                   <span className="text-muted-foreground">
                     Est. Delivery: <span className="font-bold text-foreground">5–8 working days</span> to Dar es Salaam, Arusha &amp; Dodoma.
@@ -653,7 +654,7 @@ export function ProductDetail({
                 onClick={() => handleAddToCart(true)}
               >
                 <Zap className="size-4 mr-1" />
-                Start Order ({formatTZS(activeUnitPrice * quantity)})
+                Start Order ({formatPrice(activeUnitPrice * quantity)})
               </Button>
 
               <Button

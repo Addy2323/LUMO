@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
+  Box,
   Building2,
   CheckCircle2,
   DollarSign,
@@ -14,8 +15,11 @@ import {
   Image as ImageIcon,
   Link2,
   PackageCheck,
+  Plane,
   Send,
+  Ship,
   Sparkles,
+  Tag,
   Truck,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -186,96 +190,137 @@ export default function CustomerSourcingRequestPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+    <div className="max-w-4xl mx-auto py-4 sm:py-8 px-3 sm:px-6 space-y-5">
       {/* Auth Required Modal Card Popup */}
       <AuthRequiredModal
         open={showAuthModal}
         onOpenChange={setShowAuthModal}
         title="Sign In to Submit Sourcing Request"
-        description="Please you must register or login to submit your request."
+        description="Please register or login to submit your request."
         redirectUrl="/sourcing/request"
       />
 
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" render={<Link href="/marketplace" />}>
-          <ArrowLeft className="size-4 mr-1" /> Marketplace
-        </Button>
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Global Product Sourcing Request</h1>
-          <p className="text-xs text-muted-foreground">
-            Can't find a product in our catalog? Our field procurement agents in China, Dubai, and Turkey will source it direct from verified factory floors for you.
-          </p>
+      {/* Modern Mobile Hero Header Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-[#1e0f05] to-slate-950 text-white p-5 sm:p-7 border border-orange-500/30 shadow-xl">
+        {/* Background Radial Glow */}
+        <div className="absolute -top-20 -right-20 size-56 rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 size-56 rounded-full bg-orange-600/15 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/marketplace">
+              <Button size="sm" className="bg-slate-900/90 hover:bg-orange-500 text-slate-200 hover:text-white border border-orange-500/30 font-bold text-xs rounded-xl transition-all">
+                <ArrowLeft className="size-3.5 mr-1.5" /> Marketplace
+              </Button>
+            </Link>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 font-extrabold text-[11px]">
+              <Sparkles className="size-3.5 text-orange-400" />
+              <span>Direct Factory Sourcing</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-sm">
+              Global Product Sourcing Request
+            </h1>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Can't find a product in our catalog? Our field procurement agents in <span className="text-orange-400 font-bold">China</span>, <span className="text-orange-400 font-bold">Dubai</span>, and <span className="text-orange-400 font-bold">Turkey</span> will source it direct from verified factory floors for you.
+            </p>
+          </div>
         </div>
       </div>
 
       {!isSubmitted ? (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="border-brand-200">
-            <CardHeader className="bg-brand-50/50">
-              <CardTitle className="text-base font-bold text-brand-900 flex items-center gap-2">
-                <Sparkles className="size-4 text-brand-600" />
-                1. Product & Sourcing Details
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Step 1 Card */}
+          <Card className="border-orange-500/20 bg-card shadow-md overflow-hidden rounded-2xl">
+            <CardHeader className="bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border-b border-orange-500/10 p-4 sm:p-5">
+              <CardTitle className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
+                <span className="flex size-7 items-center justify-center rounded-xl bg-orange-500 text-white font-black text-xs shadow-md shadow-orange-500/20">
+                  1
+                </span>
+                <span>Product & Sourcing Details</span>
               </CardTitle>
-              <CardDescription className="text-xs">
-                Provide product specifications or paste a link from 1688, Alibaba, Taobao, Made-in-China, Amazon, or supplier websites.
+              <CardDescription className="text-xs text-muted-foreground">
+                Enter product specifications or paste a link from 1688, Alibaba, Taobao, Made-in-China, or supplier websites.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-4 text-xs">
+            <CardContent className="p-4 sm:p-6 space-y-4 text-xs">
+              {/* Product Title Input */}
               <div>
-                <label className="font-bold block mb-1">Product Title / Name *</label>
-                <Input
-                  required
-                  placeholder="e.g. Industrial Solar Powered Ceiling Fans 12V DC"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                />
+                <label className="font-extrabold text-foreground block mb-1.5">
+                  Product Title / Name <span className="text-orange-500">*</span>
+                </label>
+                <div className="relative">
+                  <PackageCheck className="absolute left-3 top-3 size-4 text-orange-400" />
+                  <Input
+                    required
+                    placeholder="e.g. Industrial Solar Powered Ceiling Fans 12V DC"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                    className="pl-9 h-10 rounded-xl border-slate-200 dark:border-slate-800 focus-visible:ring-orange-500 text-xs font-semibold"
+                  />
+                </div>
               </div>
 
+              {/* Reference Link Input */}
               <div>
-                <label className="font-bold block mb-1">Supplier / Reference Web Link (Optional)</label>
+                <label className="font-extrabold text-foreground block mb-1.5">
+                  Supplier / Reference Web Link <span className="text-muted-foreground font-normal">(Optional)</span>
+                </label>
                 <div className="relative">
-                  <Link2 className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                  <Link2 className="absolute left-3 top-3 size-4 text-slate-400" />
                   <Input
                     placeholder="https://detail.1688.com/offer/... or https://alibaba.com/product/..."
                     value={urlLink}
                     onChange={(e) => setUrlLink(e.target.value)}
-                    className="pl-8"
+                    className="pl-9 h-10 rounded-xl border-slate-200 dark:border-slate-800 focus-visible:ring-orange-500 text-xs font-medium"
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  You can paste any URL from 1688, Taobao, Alibaba, Made-In-China, or any global supplier catalog.
+                <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <Globe className="size-3 text-orange-500 shrink-0" />
+                  <span>Paste any link from 1688, Taobao, Alibaba, Made-In-China, or global supplier catalogs.</span>
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Grid Inputs: Hub, Quantity, Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
                 <div>
-                  <label className="font-bold block mb-1">Preferred Sourcing Hub *</label>
-                  <select
-                    value={countryPref}
-                    onChange={(e) => setCountryPref(e.target.value)}
-                    className="w-full p-2 border rounded-md bg-background text-xs"
-                  >
-                    <option value="China">China (Guangzhou / Yiwu / Shenzhen)</option>
-                    <option value="Turkey">Turkey (Istanbul / Bursa / Izmir)</option>
-                    <option value="Dubai">Dubai (Dragon Mart / Deira)</option>
-                    <option value="ANY">Any Verified LUMO Sourcing Hub</option>
-                  </select>
+                  <label className="font-extrabold text-foreground block mb-1.5">
+                    Sourcing Hub <span className="text-orange-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={countryPref}
+                      onChange={(e) => setCountryPref(e.target.value)}
+                      className="w-full h-10 pl-3 pr-8 border border-slate-200 dark:border-slate-800 rounded-xl bg-background text-xs font-semibold focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all cursor-pointer"
+                    >
+                      <option value="China">China (Guangzhou / Yiwu)</option>
+                      <option value="Turkey">Turkey (Istanbul / Bursa)</option>
+                      <option value="Dubai">Dubai (Dragon Mart / Deira)</option>
+                      <option value="ANY">Any Verified LUMO Hub</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="font-bold block mb-1">Target Quantity Needed *</label>
+                  <label className="font-extrabold text-foreground block mb-1.5">
+                    Target Quantity <span className="text-orange-500">*</span>
+                  </label>
                   <Input
                     required
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="e.g. 100"
+                    className="h-10 rounded-xl border-slate-200 dark:border-slate-800 focus-visible:ring-orange-500 text-xs font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold block mb-1">Target Price per Unit (Optional)</label>
+                  <label className="font-extrabold text-foreground block mb-1.5">
+                    Target Price per Unit <span className="text-muted-foreground font-normal">(Optional)</span>
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
@@ -283,11 +328,12 @@ export default function CustomerSourcingRequestPage() {
                       placeholder="e.g. 15.00"
                       value={targetPrice}
                       onChange={(e) => setTargetPrice(e.target.value)}
+                      className="h-10 rounded-xl border-slate-200 dark:border-slate-800 focus-visible:ring-orange-500 text-xs font-semibold flex-1"
                     />
                     <select
                       value={targetCurrency}
                       onChange={(e) => setTargetCurrency(e.target.value)}
-                      className="p-2 border rounded-md bg-background text-xs"
+                      className="h-10 px-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-background text-xs font-extrabold cursor-pointer"
                     >
                       <option value="USD">USD</option>
                       <option value="TZS">TZS</option>
@@ -298,63 +344,112 @@ export default function CustomerSourcingRequestPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <FileText className="size-4 text-brand-600" />
-                2. Specifications & Custom Requirements
+          {/* Step 2 Card */}
+          <Card className="border-orange-500/20 bg-card shadow-md overflow-hidden rounded-2xl">
+            <CardHeader className="bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border-b border-orange-500/10 p-4 sm:p-5">
+              <CardTitle className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
+                <span className="flex size-7 items-center justify-center rounded-xl bg-orange-500 text-white font-black text-xs shadow-md shadow-orange-500/20">
+                  2
+                </span>
+                <span>Specifications & Custom Requirements</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4 text-xs">
+            <CardContent className="p-4 sm:p-6 space-y-4 text-xs">
               <div>
-                <label className="font-bold block mb-1">Color, Size, Material, or Custom Branding Requirements</label>
+                <label className="font-extrabold text-foreground block mb-1.5">
+                  Color, Size, Material, or Custom Branding Requirements
+                </label>
                 <textarea
                   rows={3}
                   placeholder="e.g. Need Matte Black finish, custom logo printed on box, European standard plug..."
                   value={specs}
                   onChange={(e) => setSpecs(e.target.value)}
-                  className="w-full p-2.5 border rounded-md bg-background text-xs"
+                  className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-background text-xs font-medium focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all"
                 />
               </div>
 
+              {/* Quick Spec Requirement Chips */}
+              <div className="space-y-2">
+                <label className="font-extrabold text-foreground block text-[11px] text-muted-foreground uppercase tracking-wider">
+                  Quick Requirement Tags (Tap to Add)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'Air Freight Preferred', icon: Plane, text: 'Shipping Preference: Fast Air Freight.' },
+                    { label: 'Sea Freight (Bulk)', icon: Ship, text: 'Shipping Preference: Sea Freight (Cost Effective).' },
+                    { label: 'Custom Logo / Branding', icon: Tag, text: 'Custom Branding: Private label logo required on product & box.' },
+                    { label: 'Factory Sample Needed', icon: Box, text: 'Sample Request: Please confirm factory sample price before bulk order.' },
+                  ].map((chip) => {
+                    const ChipIcon = chip.icon
+                    return (
+                      <button
+                        key={chip.label}
+                        type="button"
+                        onClick={() => {
+                          if (!notes.includes(chip.text)) {
+                            setNotes((prev) => (prev ? `${prev}\n${chip.text}` : chip.text))
+                            toast.success(`Added tag: ${chip.label}`)
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-orange-500/15 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-500/30 text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <ChipIcon className="size-3.5 text-orange-500 shrink-0" />
+                        <span>{chip.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div>
-                <label className="font-bold block mb-1">Additional Notes for LUMO Sourcing Agents</label>
+                <label className="font-extrabold text-foreground block mb-1.5">
+                  Additional Notes for LUMO Sourcing Agents
+                </label>
                 <textarea
-                  rows={2}
-                  placeholder="Any deadline expectations, shipping preference (Air vs Sea Freight), or sample requirements..."
+                  rows={2.5}
+                  placeholder="Any deadline expectations, shipping preference, or sample requirements..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full p-2.5 border rounded-md bg-background text-xs"
+                  className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-background text-xs font-medium focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all"
                 />
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button type="submit" size="lg" className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold gap-2 px-8 shadow-lg shadow-orange-500/20 cursor-pointer">
-              <Send className="size-4" /> Submit Sourcing Request
+          {/* Submit Action Button */}
+          <div className="pt-2 flex justify-end">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-sm h-12 px-8 rounded-xl shadow-lg shadow-orange-500/25 cursor-pointer transition-all"
+            >
+              <Send className="size-4 mr-2" /> Submit Sourcing Request
             </Button>
           </div>
         </form>
       ) : (
         /* Submission Success Card */
-        <Card className="border-success-200 bg-success-50/40">
-          <CardContent className="p-8 text-center space-y-4">
-            <div className="inline-flex items-center justify-center size-16 rounded-full bg-success-100 text-success-600 mb-2">
-              <CheckCircle2 className="size-10" />
+        <Card className="border-orange-500/30 bg-card shadow-xl overflow-hidden rounded-2xl">
+          <CardContent className="p-6 sm:p-10 text-center space-y-4">
+            <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-orange-500 text-white font-black shadow-lg shadow-orange-500/30 mb-2">
+              <CheckCircle2 className="size-9" />
             </div>
 
-            <h2 className="text-2xl font-extrabold text-foreground">Sourcing Request Submitted!</h2>
-            <p className="text-xs text-muted-foreground max-w-lg mx-auto">
-              Your request ID is <span className="font-mono font-bold text-brand-600">{requestId}</span>. Our dedicated field sourcing agent in <span className="font-bold text-foreground">{countryPref}</span> has received your ticket and will verify factory pricing within 24 hours.
-            </p>
+            <div className="space-y-1.5">
+              <h2 className="text-xl sm:text-2xl font-black text-foreground">Sourcing Request Submitted!</h2>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+                Your request reference ID is <span className="font-mono font-black text-orange-500">{requestId}</span>. Our field sourcing agent in <span className="font-bold text-foreground">{countryPref}</span> has received your ticket and will verify factory pricing within 24 hours.
+              </p>
+            </div>
 
-            <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
-              <Button render={<Link href="/account/sourcing" />} className="bg-brand-600 hover:bg-brand-700 text-white text-xs">
-                Track Sourcing Status
-              </Button>
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/account/sourcing" className="w-full sm:w-auto">
+                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs h-10 px-6 rounded-xl shadow-md">
+                  Track Sourcing Status
+                </Button>
+              </Link>
 
-              <Button variant="outline" onClick={() => setIsSubmitted(false)} className="text-xs">
+              <Button variant="outline" onClick={() => setIsSubmitted(false)} className="w-full sm:w-auto text-xs h-10 rounded-xl border-slate-300 dark:border-slate-700">
                 Submit Another Request
               </Button>
             </div>

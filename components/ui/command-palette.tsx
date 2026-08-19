@@ -160,12 +160,12 @@ export function CommandPalette() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs text-muted-foreground transition-all shadow-xs group"
+        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs text-muted-foreground transition-all shadow-xs group"
         title="Search platform (Cmd+K)"
       >
-        <Search className="size-3.5 text-muted-foreground group-hover:text-brand-500 transition-colors" />
-        <span className="font-medium hidden sm:inline">Search or jump to...</span>
-        <kbd className="font-mono text-[10px] font-bold bg-muted px-1.5 py-0.5 rounded border border-border text-foreground ml-2">
+        <Search className="size-3.5 text-muted-foreground group-hover:text-brand-500 transition-colors shrink-0" />
+        <span className="font-medium hidden sm:inline">Search...</span>
+        <kbd className="font-mono text-[10px] font-bold bg-muted px-1.5 py-0.5 rounded border border-border text-foreground ml-1.5 hidden md:inline-block">
           ⌘K
         </kbd>
       </button>
