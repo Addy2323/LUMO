@@ -235,7 +235,7 @@ export default function AgentOrdersPage() {
           <div className="divide-y divide-slate-800">
             {loading ? (
               <div className="p-12 text-center text-xs text-slate-400">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading assigned orders...
               </div>
             ) : filteredOrders.length === 0 ? (

@@ -30,7 +30,7 @@ export function CheckoutTrustBadges() {
           <span>256-Bit SSL Encrypted</span>
         </div>
         <div className="flex items-center gap-1.5 rounded-full bg-white border border-[#E2E8F0] px-3 py-1.5 shadow-2xs text-xs font-semibold text-[#0F172A]">
-          <Truck className="size-3.5 text-[#F95700]" />
+          <Truck className="size-3.5 text-primary" />
           <span>Guaranteed Delivery</span>
         </div>
       </div>

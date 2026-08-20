@@ -107,7 +107,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
             onClick={() => setLang(lang === 'en' ? 'sw' : 'en')}
             className="flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <Globe className="size-3.5 text-[#F95700]" />
+            <Globe className="size-3.5 text-primary" />
             <span>{lang === 'en' ? 'Swahili' : 'English'}</span>
           </button>
           <ThemeToggle />
@@ -121,7 +121,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
         <div className="hidden lg:grid grid-cols-[400px_1fr] rounded-3xl bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden min-h-[500px]">
           
           {/* Left Hero Column */}
-          <div className="bg-[#F95700] p-10 flex flex-col justify-between text-white relative overflow-hidden">
+          <div className="bg-primary p-10 flex flex-col justify-between text-white relative overflow-hidden">
             <div className="space-y-6">
               <div className="border border-white/40 bg-white/10 text-white font-extrabold text-[10px] tracking-wider uppercase px-3.5 py-1 rounded-full w-fit backdrop-blur-xs">
                 PHONE VERIFICATION
@@ -187,7 +187,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
                 <Button
                   onClick={() => handleVerify()}
                   disabled={verifying || otpCode.length !== 6}
-                  className="w-full h-12 bg-[#F95700] hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2 cursor-pointer"
+                  className="w-full h-12 bg-primary hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2 cursor-pointer"
                 >
                   {verifying ? (
                     <>
@@ -213,7 +213,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
                       type="button"
                       onClick={handleResend}
                       disabled={loading}
-                      className="font-extrabold text-[#F95700] hover:underline cursor-pointer flex items-center gap-1"
+                      className="font-extrabold text-primary hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <RefreshCw className="size-3" />
                       <span>{t.resendButton}</span>
@@ -233,7 +233,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
         {/* Mobile Single Card Layout (< lg) */}
         <div className="w-full lg:hidden rounded-3xl bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 shadow-xl p-6 space-y-6">
           <div className="space-y-2 text-center">
-            <div className="mx-auto size-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#F95700] flex items-center justify-center">
+            <div className="mx-auto size-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-primary flex items-center justify-center">
               <Smartphone className="size-6 stroke-[2.5]" />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
@@ -273,7 +273,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
               <Button
                 onClick={() => handleVerify()}
                 disabled={verifying || otpCode.length !== 6}
-                className="w-full h-11 bg-[#F95700] hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md cursor-pointer"
+                className="w-full h-11 bg-primary hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md cursor-pointer"
               >
                 {verifying ? t.verifying : t.verifyButton}
               </Button>
@@ -285,7 +285,7 @@ export function PhoneOtpVerification({ initialPhone }: PhoneOtpVerificationProps
                   <button
                     type="button"
                     onClick={handleResend}
-                    className="font-extrabold text-[#F95700] hover:underline cursor-pointer ml-1"
+                    className="font-extrabold text-primary hover:underline cursor-pointer ml-1"
                   >
                     {t.resendButton}
                   </button>

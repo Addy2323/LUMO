@@ -99,15 +99,15 @@ export default function SalesOrdersAssignmentPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <ClipboardList className="size-6 text-[#FF6B00]" /> Order Assignment &amp; Coordination Console
+              <ClipboardList className="size-6 text-primary" /> Order Assignment &amp; Coordination Console
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Workload-Aware Matching
             </Badge>
           </div>
@@ -150,7 +150,7 @@ export default function SalesOrdersAssignmentPage() {
 
           {loading ? (
             <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-              <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading orders...
+              <RefreshCw className="size-4 animate-spin text-primary" /> Loading orders...
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">No orders found</div>
@@ -170,7 +170,7 @@ export default function SalesOrdersAssignmentPage() {
                 <tbody className="divide-y divide-slate-100 text-slate-800">
                   {filtered.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-50/80 transition">
-                      <td className="p-3 font-mono font-bold text-[#FF6B00]">#{ord.ref || ord.orderNumber}</td>
+                      <td className="p-3 font-mono font-bold text-primary">#{ord.ref || ord.orderNumber}</td>
                       <td className="p-3 font-semibold text-slate-900">{ord.customer || ord.buyer?.name || 'Retail Merchant'}</td>
                       <td className="p-3 font-mono font-bold text-slate-900">{formatTZS(ord.amountTZS || ord.totalAmountTZS)}</td>
                       <td className="p-3 text-slate-600 text-[11px] font-mono">{ord.paymentMethod || 'LUMO Payment Protection'}</td>
@@ -179,13 +179,13 @@ export default function SalesOrdersAssignmentPage() {
                           {ord.stage || ord.status}
                         </Badge>
                         {ord.assigned && (
-                          <div className="text-[9px] text-[#FF6B00] font-bold mt-0.5">{ord.assigned}</div>
+                          <div className="text-[9px] text-primary font-bold mt-0.5">{ord.assigned}</div>
                         )}
                       </td>
                       <td className="p-3 text-right">
                         <Button
                           onClick={() => setSelectedOrder(ord)}
-                          className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-[11px] h-7 px-3 gap-1 shadow-sm"
+                          className="bg-primary hover:bg-primary/80 text-white font-bold text-[11px] h-7 px-3 gap-1 shadow-sm"
                         >
                           <UserPlus className="size-3" /> Assign Agent
                         </Button>
@@ -201,7 +201,7 @@ export default function SalesOrdersAssignmentPage() {
         {/* Right Col: Available Sourcing Agents */}
         <Card className="bg-white border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Building2 className="size-5 text-[#FF6B00]" />
+            <Building2 className="size-5 text-primary" />
             <h3 className="text-base font-extrabold text-slate-900">Available Sourcing Agents</h3>
           </div>
 

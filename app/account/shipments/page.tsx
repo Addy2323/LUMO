@@ -172,14 +172,14 @@ export default function CustomerShipmentsPage() {
       {loading ? (
         <Card className="py-16 text-center bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="space-y-3">
-            <Loader2 className="size-8 animate-spin text-[#FF6B00] mx-auto" />
+            <Loader2 className="size-8 animate-spin text-primary mx-auto" />
             <p className="text-xs text-muted-foreground font-semibold">Loading cargo shipments from database...</p>
           </CardContent>
         </Card>
       ) : shipments.length === 0 ? (
         <Card className="py-16 text-center bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
           <CardContent className="space-y-4 max-w-md mx-auto">
-            <div className="size-16 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900 flex items-center justify-center mx-auto text-[#FF6B00]">
+            <div className="size-16 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900 flex items-center justify-center mx-auto text-primary">
               <Truck className="size-8" />
             </div>
             <div>
@@ -188,7 +188,7 @@ export default function CustomerShipmentsPage() {
                 You have no orders currently in transit. Orders placed on the Lumo B2B Marketplace will automatically generate real-time TRA customs & tracking waybills here.
               </p>
             </div>
-            <Button render={<Link href="/marketplace" />} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl shadow-xs gap-2">
+            <Button render={<Link href="/marketplace" />} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl shadow-xs gap-2">
               <ShoppingBag className="size-4" /> Browse Marketplace
             </Button>
           </CardContent>
@@ -214,12 +214,12 @@ export default function CustomerShipmentsPage() {
                   onClick={() => setSelectedWaybill(shipment)}
                   className={`p-4 cursor-pointer transition-all border ${
                     selectedWaybill?.id === shipment.id
-                      ? 'border-[#FF6B00] ring-1 ring-[#FF6B00]/30 bg-[#FF6B00]/5'
+                      ? 'border-primary ring-1 ring-[#FF6B00]/30 bg-primary/5'
                       : 'hover:border-primary/40'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono font-extrabold text-xs text-[#FF6B00]">
+                    <span className="font-mono font-extrabold text-xs text-primary">
                       {shipment.waybillNumber}
                     </span>
                     <Badge
@@ -253,7 +253,7 @@ export default function CustomerShipmentsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-extrabold font-mono text-[#FF6B00]">{selectedWaybill.waybillNumber}</h2>
+                    <h2 className="text-xl font-extrabold font-mono text-primary">{selectedWaybill.waybillNumber}</h2>
                     <Badge variant="outline" className="font-mono text-xs">
                       {selectedWaybill.orderNumber}
                     </Badge>
@@ -285,16 +285,16 @@ export default function CustomerShipmentsPage() {
               <div className="space-y-4 pt-2">
                 <h3 className="font-extrabold text-xs text-foreground uppercase tracking-wider">Live Tracking History</h3>
 
-                <div className="relative pl-6 border-l-2 border-[#FF6B00]/40 space-y-6">
+                <div className="relative pl-6 border-l-2 border-primary/40 space-y-6">
                   {selectedWaybill.events.map((evt, idx) => (
                     <div key={idx} className="relative space-y-1 text-xs">
-                      <div className="absolute -left-[31px] top-0 size-4 rounded-full bg-[#FF6B00] ring-4 ring-background flex items-center justify-center">
+                      <div className="absolute -left-[31px] top-0 size-4 rounded-full bg-primary ring-4 ring-background flex items-center justify-center">
                         <div className="size-1.5 rounded-full bg-white" />
                       </div>
                       <span className="text-[10px] text-muted-foreground font-mono">{evt.time}</span>
                       <p className="font-bold text-foreground">{evt.title}</p>
                       <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <MapPin className="size-3 text-[#FF6B00]" /> {evt.location}
+                        <MapPin className="size-3 text-primary" /> {evt.location}
                       </p>
                     </div>
                   ))}

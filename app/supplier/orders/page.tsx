@@ -128,7 +128,7 @@ export default function SupplierOrdersPage() {
           <div className="divide-y border-t">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live supplier database orders...
               </div>
             ) : filteredOrders.length === 0 ? (
@@ -147,7 +147,7 @@ export default function SupplierOrdersPage() {
                     <p className="text-muted-foreground text-[11px]">Placed: {formatDate(order.createdAt)}</p>
                   </div>
 
-                  <span className="font-mono font-extrabold text-[#FF6B00] text-sm">
+                  <span className="font-mono font-extrabold text-primary text-sm">
                     {formatTZS(order.totalAmountTZS)}
                   </span>
                 </div>

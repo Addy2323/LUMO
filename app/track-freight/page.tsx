@@ -113,7 +113,7 @@ export default function TrackFreightPage() {
                 type="submit"
                 disabled={loading}
                 size="lg"
-                className="w-full md:w-auto font-bold px-8 bg-[#FF6B00] hover:bg-[#E85F00] text-white shadow-md shadow-orange-500/20"
+                className="w-full md:w-auto font-bold px-8 bg-primary hover:bg-primary/80 text-white shadow-md shadow-orange-500/20"
               >
                 {loading ? (
                   <>
@@ -130,7 +130,7 @@ export default function TrackFreightPage() {
         {/* Live Shipment Database Result Card */}
         {loading ? (
           <Card className="p-12 text-center text-xs text-muted-foreground space-y-3">
-            <RefreshCw className="size-8 animate-spin mx-auto text-[#FF6B00]" />
+            <RefreshCw className="size-8 animate-spin mx-auto text-primary" />
             <p className="font-bold text-sm text-foreground">Querying Database Shipment Records...</p>
             <p>Searching electronic waybills, order fulfillment milestones, and carrier dispatch logs.</p>
           </Card>
@@ -140,7 +140,7 @@ export default function TrackFreightPage() {
               <CardHeader className="bg-primary/5 border-b pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center font-mono font-bold text-sm shadow">
+                    <div className="size-10 rounded-xl bg-primary text-white flex items-center justify-center font-mono font-bold text-sm shadow">
                       {trackingData.mode?.includes('Air') ? <Plane className="size-5" /> : <Anchor className="size-5" />}
                     </div>
                     <div>
@@ -156,7 +156,7 @@ export default function TrackFreightPage() {
                     </div>
                   </div>
 
-                  <Badge className="px-3 py-1 text-xs font-bold bg-[#FF6B00] text-white">
+                  <Badge className="px-3 py-1 text-xs font-bold bg-primary text-white">
                     {trackingData.status}
                   </Badge>
                 </div>
@@ -179,7 +179,7 @@ export default function TrackFreightPage() {
                   </div>
                   <div>
                     <span className="text-[11px] font-semibold text-muted-foreground uppercase">Est. Delivery</span>
-                    <p className="text-xs font-bold text-[#FF6B00] mt-1">{trackingData.eta || 'Active Transit'}</p>
+                    <p className="text-xs font-bold text-primary mt-1">{trackingData.eta || 'Active Transit'}</p>
                   </div>
                 </div>
 
@@ -190,7 +190,7 @@ export default function TrackFreightPage() {
                       <div
                         className={`absolute -left-6 top-0.5 flex size-5 items-center justify-center rounded-full border-2 transition-all ${
                           step.done
-                            ? 'border-[#FF6B00] bg-[#FF6B00] text-white shadow-sm'
+                            ? 'border-primary bg-primary text-white shadow-sm'
                             : 'border-muted-foreground/30 bg-background text-muted-foreground'
                         }`}
                       >
@@ -204,7 +204,7 @@ export default function TrackFreightPage() {
                           </h4>
                           <span className="text-[11px] font-mono text-muted-foreground">{step.timestamp}</span>
                         </div>
-                        <p className="text-xs font-medium text-[#FF6B00] mt-0.5">{step.location}</p>
+                        <p className="text-xs font-medium text-primary mt-0.5">{step.location}</p>
                         <p className="text-xs leading-relaxed text-muted-foreground mt-1">{step.description}</p>
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export default function TrackFreightPage() {
               <Card className="border-primary/20 shadow-md">
                 <CardHeader className="bg-muted/40 border-b pb-3">
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Compass className="size-4 text-[#FF6B00]" />
+                    <Compass className="size-4 text-primary" />
                     Freight Cost Estimator
                   </CardTitle>
                   <CardDescription className="text-xs">
@@ -234,11 +234,11 @@ export default function TrackFreightPage() {
                       max="100"
                       value={calcWeight}
                       onChange={(e) => setCalcWeight(Number(e.target.value))}
-                      className="w-full mt-2 accent-[#FF6B00]"
+                      className="w-full mt-2 accent-primary"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground font-mono mt-1">
                       <span>1 kg</span>
-                      <span className="font-bold text-[#FF6B00]">{calcWeight} kg</span>
+                      <span className="font-bold text-primary">{calcWeight} kg</span>
                       <span>100 kg</span>
                     </div>
                   </div>
@@ -252,11 +252,11 @@ export default function TrackFreightPage() {
                       step="0.1"
                       value={calcCbm}
                       onChange={(e) => setCalcCbm(Number(e.target.value))}
-                      className="w-full mt-2 accent-[#FF6B00]"
+                      className="w-full mt-2 accent-primary"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground font-mono mt-1">
                       <span>0.1 CBM</span>
-                      <span className="font-bold text-[#FF6B00]">{calcCbm} CBM</span>
+                      <span className="font-bold text-primary">{calcCbm} CBM</span>
                       <span>5.0 CBM</span>
                     </div>
                   </div>
@@ -286,14 +286,14 @@ export default function TrackFreightPage() {
               <Card className="border-border bg-card">
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="size-5 text-[#FF6B00] shrink-0" />
+                    <ShieldCheck className="size-5 text-primary shrink-0" />
                     <div>
                       <h5 className="text-xs font-bold">100% TRA &amp; TBS Cleared</h5>
                       <p className="text-[11px] text-muted-foreground">All customs duties and taxes included in quote.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <FileCheck className="size-5 text-[#FF6B00] shrink-0" />
+                    <FileCheck className="size-5 text-primary shrink-0" />
                     <div>
                       <h5 className="text-xs font-bold">Insurance Protection</h5>
                       <p className="text-[11px] text-muted-foreground">Goods protected against damage or transit loss.</p>
@@ -312,7 +312,7 @@ export default function TrackFreightPage() {
               <span className="font-mono font-bold text-foreground">"{searchQuery}"</span>.
             </p>
             <div className="pt-2 flex justify-center gap-3">
-              <Button render={<Link href="/account" />} size="sm" className="bg-[#FF6B00] hover:bg-[#E85F00] text-white text-xs">
+              <Button render={<Link href="/account" />} size="sm" className="bg-primary hover:bg-primary/80 text-white text-xs">
                 View My Account Orders
               </Button>
             </div>
@@ -321,7 +321,7 @@ export default function TrackFreightPage() {
           /* Initial State - Inviting Search Guidance */
           <div className="grid md:grid-cols-3 gap-6">
             <Card className="p-6 space-y-2 border-primary/20">
-              <Package className="size-6 text-[#FF6B00]" />
+              <Package className="size-6 text-primary" />
               <h3 className="font-bold text-sm">Order &amp; Parcel Tracking</h3>
               <p className="text-xs text-muted-foreground">
                 Track your Lumo online marketplace orders using your Order ID (e.g. ORD-...).
@@ -329,7 +329,7 @@ export default function TrackFreightPage() {
             </Card>
 
             <Card className="p-6 space-y-2 border-primary/20">
-              <Plane className="size-6 text-[#FF6B00]" />
+              <Plane className="size-6 text-primary" />
               <h3 className="font-bold text-sm">Electronic Waybills</h3>
               <p className="text-xs text-muted-foreground">
                 Monitor international Air Cargo and Sea Freight shipments with official EWB numbers.
@@ -337,7 +337,7 @@ export default function TrackFreightPage() {
             </Card>
 
             <Card className="p-6 space-y-2 border-primary/20">
-              <Truck className="size-6 text-[#FF6B00]" />
+              <Truck className="size-6 text-primary" />
               <h3 className="font-bold text-sm">Doorstep Dispatch</h3>
               <p className="text-xs text-muted-foreground">
                 Get real-time SMS notifications and rider details for last-mile delivery across Tanzania.
@@ -350,7 +350,7 @@ export default function TrackFreightPage() {
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="text-lg font-extrabold flex items-center gap-2">
-              <HelpCircle className="size-5 text-[#FF6B00]" />
+              <HelpCircle className="size-5 text-primary" />
               Frequently Asked Freight &amp; Customs Questions
             </CardTitle>
           </CardHeader>

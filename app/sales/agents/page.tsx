@@ -40,14 +40,14 @@ export default function SourcingAgentsPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Building2 className="size-6 text-[#FF6B00]" /> Sourcing Agents Liaison Desk
+              <Building2 className="size-6 text-primary" /> Sourcing Agents Liaison Desk
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live PostgreSQL
             </Badge>
           </div>
@@ -80,7 +80,7 @@ export default function SourcingAgentsPage() {
       <Card className="bg-white border-slate-200 p-4 shadow-sm space-y-3">
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading sourcing agents...
+            <RefreshCw className="size-4 animate-spin text-primary" /> Loading sourcing agents...
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400 space-y-1">
@@ -93,7 +93,7 @@ export default function SourcingAgentsPage() {
               <div key={item.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 font-bold text-slate-900">
-                    <UserCheck className="size-4 text-[#FF6B00]" />
+                    <UserCheck className="size-4 text-primary" />
                     <span>{item.name}</span>
                     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px]">Verified Agent</Badge>
                   </div>

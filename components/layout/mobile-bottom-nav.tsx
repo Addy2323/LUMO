@@ -61,7 +61,7 @@ export function MobileBottomNav() {
               >
                 <Icon className={`size-5 ${active ? 'text-[#0B4385] dark:text-sky-400' : 'text-[#64748B] dark:text-slate-400'}`} />
                 {item.badge !== undefined && item.badge > 0 ? (
-                  <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF6B00] text-[10px] font-extrabold text-white flex items-center justify-center border-2 border-white dark:border-[#0B1F3A] leading-none shadow-xs">
+                  <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] font-extrabold text-white flex items-center justify-center border-2 border-white dark:border-[#0B1F3A] leading-none shadow-xs">
                     {item.badge}
                   </span>
                 ) : null}

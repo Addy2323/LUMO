@@ -28,7 +28,7 @@ export default function InternalMessagesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export default function InternalMessagesPage() {
             placeholder="Type message to team..."
             className="bg-slate-50 border-slate-200 text-xs h-10"
           />
-          <Button type="submit" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-10 px-4">
+          <Button type="submit" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-10 px-4">
             <Send className="size-4 mr-1" /> Send
           </Button>
         </form>

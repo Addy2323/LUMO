@@ -163,7 +163,7 @@ export function SourcingChatThread({
     <div className="space-y-3 pt-3 border-t border-border/60">
       <div className="flex items-center justify-between">
         <h4 className="font-extrabold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
-          <MessageSquare className="size-4 text-[#FF6B00]" />
+          <MessageSquare className="size-4 text-primary" />
           <span>Sourcing Communication Thread</span>
         </h4>
         <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export function SourcingChatThread({
       <div className="space-y-3 min-h-[140px] max-h-64 overflow-y-auto p-4 rounded-2xl bg-slate-950/5 dark:bg-muted/10 border border-border/80">
         {loading ? (
           <div className="py-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2 font-medium">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" />
+            <RefreshCw className="size-4 animate-spin text-primary" />
             Syncing live database conversation thread...
           </div>
         ) : messages.length === 0 ? (
@@ -205,7 +205,7 @@ export function SourcingChatThread({
                 key={msg.id}
                 className={`p-3.5 rounded-2xl max-w-[85%] text-xs space-y-1 shadow-xs transition-all ${
                   isMe
-                    ? 'ml-auto bg-[#FF6B00] text-white font-medium'
+                    ? 'ml-auto bg-primary text-white font-medium'
                     : isSalesOrAdmin
                     ? 'mr-auto bg-amber-500/15 border border-amber-500/30 text-foreground'
                     : 'mr-auto bg-card border border-border text-foreground'
@@ -245,7 +245,7 @@ export function SourcingChatThread({
         <Button
           type="submit"
           disabled={sending || loading || !chatInput.trim()}
-          className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold h-10 px-5 rounded-xl shrink-0 shadow-md shadow-orange-500/15"
+          className="bg-primary hover:bg-primary/80 text-white font-bold h-10 px-5 rounded-xl shrink-0 shadow-md shadow-orange-500/15"
         >
           {sending ? <RefreshCw className="size-4 animate-spin" /> : <Send className="size-4 mr-1.5" />}
           Send

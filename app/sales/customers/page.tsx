@@ -208,13 +208,13 @@ export default function Customer360Page() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Users className="size-6 text-[#FF6B00]" /> Customer 360° Workspace
+              <Users className="size-6 text-primary" /> Customer 360° Workspace
             </h1>
             <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
               Live PostgreSQL
@@ -271,7 +271,7 @@ export default function Customer360Page() {
                   onClick={() => selectCustomer(cust)}
                   className={`p-3 rounded-lg border text-xs cursor-pointer transition ${
                     selectedCustomer?.id === cust.id
-                      ? 'bg-orange-50/80 border-[#FF6B00] shadow-xs'
+                      ? 'bg-orange-50/80 border-primary shadow-xs'
                       : 'bg-white border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -314,7 +314,7 @@ export default function Customer360Page() {
                 <div className="flex items-center gap-2 text-xs">
                   <Button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-8 px-3 gap-1 cursor-pointer"
+                    className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-8 px-3 gap-1 cursor-pointer"
                   >
                     <Plus className="size-3.5" /> Create Sourcing Request
                   </Button>
@@ -354,7 +354,7 @@ export default function Customer360Page() {
 
                 {loadingDetails ? (
                   <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                    <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading customer data...
+                    <RefreshCw className="size-4 animate-spin text-primary" /> Loading customer data...
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -374,7 +374,7 @@ export default function Customer360Page() {
                                 Qty: {s.targetQuantity}
                               </div>
                             </div>
-                            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px]">
+                            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px]">
                               {s.status}
                             </Badge>
                           </div>
@@ -408,7 +408,7 @@ export default function Customer360Page() {
                 <textarea
                   rows={3}
                   placeholder="Add internal notes about this customer..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-primary"
                 />
               </div>
             </>
@@ -425,7 +425,7 @@ export default function Customer360Page() {
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
               <div>
                 <h3 className="font-extrabold text-sm flex items-center gap-2">
-                  <Plus className="size-4 text-[#FF6B00]" /> Create Sourcing Request
+                  <Plus className="size-4 text-primary" /> Create Sourcing Request
                 </h3>
                 <p className="text-[11px] text-slate-400">
                   For Customer: <strong className="text-orange-400">{selectedCustomer.name}</strong> ({selectedCustomer.email})
@@ -494,7 +494,7 @@ export default function Customer360Page() {
                   onChange={(e) => setNewNotes(e.target.value)}
                   rows={2}
                   placeholder="Special requirements, packaging requests..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-primary"
                 />
               </div>
 
@@ -510,7 +510,7 @@ export default function Customer360Page() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold h-9 px-4"
+                  className="bg-primary hover:bg-primary/80 text-white text-xs font-bold h-9 px-4"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Sourcing Request'}
                 </Button>

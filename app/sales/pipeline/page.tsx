@@ -35,7 +35,7 @@ export default function SalesPipelinePage() {
     { id: 'CUSTOMER_QUOTE', title: '6. Customer Quotation', color: 'border-sky-500 bg-sky-50/30' },
     { id: 'CUSTOMER_DECISION', title: '7. Customer Decision', color: 'border-teal-500 bg-teal-50/30' },
     { id: 'PAYMENT', title: '8. Payment', color: 'border-emerald-500 bg-emerald-50/30' },
-    { id: 'ORDER_COORDINATION', title: '9. Order Coordination', color: 'border-[#FF6B00] bg-orange-50/30' },
+    { id: 'ORDER_COORDINATION', title: '9. Order Coordination', color: 'border-primary bg-orange-50/30' },
     { id: 'COMPLETED', title: '10. Completed', color: 'border-green-600 bg-green-50/30' },
   ]
 
@@ -126,15 +126,15 @@ export default function SalesPipelinePage() {
     : pipelineData
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24 overflow-x-hidden">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <TrendingUp className="size-6 text-[#FF6B00]" /> 10-Stage Visual Sales Conversion Pipeline
+              <TrendingUp className="size-6 text-primary" /> 10-Stage Visual Sales Conversion Pipeline
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live PostgreSQL
             </Badge>
           </div>
@@ -193,13 +193,13 @@ export default function SalesPipelinePage() {
                   {stageCards.map((card) => (
                     <Card
                       key={card.id}
-                      className="p-3 bg-white border-slate-200 shadow-xs hover:border-[#FF6B00] transition cursor-pointer space-y-2"
+                      className="p-3 bg-white border-slate-200 shadow-xs hover:border-primary transition cursor-pointer space-y-2"
                     >
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="font-bold text-slate-900 truncate max-w-[130px]">
                           {card.customer}
                         </span>
-                        <span className="font-mono text-[#FF6B00] font-bold text-[10px]">
+                        <span className="font-mono text-primary font-bold text-[10px]">
                           {card.reference}
                         </span>
                       </div>

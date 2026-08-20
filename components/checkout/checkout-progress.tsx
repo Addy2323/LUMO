@@ -39,7 +39,7 @@ export function CheckoutProgress({ currentStep, onStepClick }: CheckoutProgressP
                 disabled={!isNavigable}
                 onClick={() => isNavigable && onStepClick?.(s.id as 0 | 1 | 2)}
                 className={cn(
-                  'w-full text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#F95700] rounded-md transition-colors',
+                  'w-full text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-md transition-colors',
                   isNavigable ? 'cursor-pointer' : 'cursor-default'
                 )}
               >
@@ -51,7 +51,7 @@ export function CheckoutProgress({ currentStep, onStepClick }: CheckoutProgressP
                       isDone
                         ? 'bg-[#137333] text-white'
                         : isCurrent
-                          ? 'bg-[#F95700] text-white shadow-2xs'
+                          ? 'bg-primary text-white shadow-2xs'
                           : 'bg-[#F1F5F9] text-[#64748B]'
                     )}
                   >
@@ -63,7 +63,7 @@ export function CheckoutProgress({ currentStep, onStepClick }: CheckoutProgressP
                       isDone
                         ? 'text-[#137333]'
                         : isCurrent
-                          ? 'text-[#F95700]'
+                          ? 'text-primary'
                           : 'text-[#64748B]'
                     )}
                   >
@@ -78,7 +78,7 @@ export function CheckoutProgress({ currentStep, onStepClick }: CheckoutProgressP
                     isDone
                       ? 'bg-[#137333]'
                       : isCurrent
-                        ? 'bg-[#F95700]'
+                        ? 'bg-primary'
                         : 'bg-[#E2E8F0]'
                   )}
                 />

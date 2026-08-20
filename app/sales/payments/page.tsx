@@ -45,7 +45,7 @@ export default function PaymentIssuesPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export default function PaymentIssuesPage() {
                   </p>
                 </div>
 
-                <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 font-bold uppercase text-[9px]">
+                <Badge className="bg-orange-50 text-primary border-orange-200 font-bold uppercase text-[9px]">
                   {item.status}
                 </Badge>
               </div>

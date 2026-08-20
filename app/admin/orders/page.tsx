@@ -152,7 +152,7 @@ export default function AdminOrdersPage() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Database Orders</p>
               <p className="text-2xl font-black tracking-tight tnum">{orders.length}</p>
             </div>
-            <div className="rounded-lg bg-orange-500/10 p-2.5 text-[#FF6B00]">
+            <div className="rounded-lg bg-orange-500/10 p-2.5 text-primary">
               <ClipboardList className="size-5" />
             </div>
           </CardContent>
@@ -250,7 +250,7 @@ export default function AdminOrdersPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="p-12 text-center text-xs text-muted-foreground">
-                      <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                      <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                       Querying PostgreSQL Order table...
                     </td>
                   </tr>
@@ -339,7 +339,7 @@ export default function AdminOrdersPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => setSelectedOrder(ord)}
-                            className="h-8 text-xs font-bold border-brand-500/30 text-[#FF6B00] hover:bg-orange-50"
+                            className="h-8 text-xs font-bold border-brand-500/30 text-primary hover:bg-orange-50"
                           >
                             <Eye className="size-3.5 mr-1" /> Audit
                           </Button>

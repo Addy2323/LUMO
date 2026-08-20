@@ -51,7 +51,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
   const activeBullets = mode === 'register' ? REGISTER_BULLETS : LOGIN_BULLETS
 
   return (
-    <div className="relative flex min-h-dvh min-h-svh w-full flex-col justify-between p-4 sm:p-6 lg:p-8 pb-[env(safe-area-inset-bottom)] antialiased selection:bg-[#F95700] selection:text-white bg-[#FAF8F5] dark:bg-[#090D16] text-[#0F172A] dark:text-slate-100 transition-colors duration-300">
+    <div className="relative flex min-h-dvh min-h-svh w-full flex-col justify-between p-4 sm:p-6 lg:p-8 pb-[env(safe-area-inset-bottom)] antialiased selection:bg-primary selection:text-white bg-[#FAF8F5] dark:bg-[#090D16] text-[#0F172A] dark:text-slate-100 transition-colors duration-300">
       
       {/* Background Dot Pattern on Desktop */}
       <div className="absolute inset-0 bg-[radial-gradient(#CBD5E1_1px,transparent_1px)] dark:bg-[radial-gradient(#1E293B_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none z-0" />
@@ -71,7 +71,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
             <Link href="/startup">
               <button
                 type="button"
-                className="rounded-full border-2 border-[#F95700] text-[#F95700] hover:bg-[#F95700]/10 px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 transition-all duration-200 cursor-pointer shadow-xs"
+                className="rounded-full border-2 border-primary text-primary hover:bg-primary/10 px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 transition-all duration-200 cursor-pointer shadow-xs"
               >
                 Startup Portal
                 <ArrowUpRight className="size-3.5 stroke-[2.5]" />
@@ -148,7 +148,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
                   <button
                     type="button"
                     onClick={() => toggleMode('register')}
-                    className="font-extrabold text-[#F95700] hover:underline cursor-pointer ml-1"
+                    className="font-extrabold text-primary hover:underline cursor-pointer ml-1"
                   >
                     Create an account
                   </button>
@@ -172,7 +172,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
                   <button
                     type="button"
                     onClick={() => toggleMode('login')}
-                    className="font-extrabold text-[#F95700] hover:underline cursor-pointer ml-1"
+                    className="font-extrabold text-primary hover:underline cursor-pointer ml-1"
                   >
                     Sign in
                   </button>
@@ -203,7 +203,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
       <div className="hidden lg:flex my-auto mx-auto w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-slate-800 relative z-10 grid grid-cols-[400px_1fr] xl:grid-cols-[440px_1fr]">
         
         {/* Left Column: Vibrant Orange Hero Banner Panel */}
-        <div className="bg-[#F95700] p-8 xl:p-10 flex flex-col justify-between text-white relative overflow-hidden">
+        <div className="bg-primary p-8 xl:p-10 flex flex-col justify-between text-white relative overflow-hidden">
           {/* Subtle Ambient Curved Overlay Lines */}
           <div className="absolute -right-20 -bottom-20 size-80 rounded-full border border-white/15 pointer-events-none" />
           <div className="absolute -right-10 -bottom-10 size-60 rounded-full border border-white/20 pointer-events-none" />
@@ -223,7 +223,7 @@ export function AnimatedAuthCard({ initialMode = 'login' }: { initialMode?: 'log
             <ul className="space-y-4 pt-2">
               {activeBullets.map((point, index) => (
                 <li key={index} className="flex items-start gap-3 text-xs xl:text-sm font-bold text-white leading-snug">
-                  <div className="size-5 rounded-full bg-white text-[#F95700] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                  <div className="size-5 rounded-full bg-white text-primary flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                     <CheckCircle2 className="size-3.5 stroke-[3] fill-current" />
                   </div>
                   <span>{point}</span>

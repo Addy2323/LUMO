@@ -2,17 +2,19 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Package, MapPin, CreditCard, Clock, CheckCircle2, Truck, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, CreditCard, Clock, CheckCircle2, Truck, RefreshCw, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
 import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
+import { CustomerPaymentReceipt } from '@/components/receipt/customer-payment-receipt'
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
 
   const fetchOrder = async () => {
     setLoading(true)
@@ -77,6 +79,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             <p className="text-xs text-muted-foreground mt-0.5">Placed on {formatDate(order.createdAt)}</p>
           </div>
         </div>
+
+        <Button
+          onClick={() => setShowReceiptModal(true)}
+          className="font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 gap-1.5 rounded-xl shadow-xs"
+        >
+          <FileText className="size-4" />
+          Download Official Receipt
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -133,6 +143,25 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
           </CardContent>
         </Card>
       </div>
+
+      {/* RECEIPT MODAL */}
+      {showReceiptModal && (
+        <CustomerPaymentReceipt
+          open={showReceiptModal}
+          onClose={() => setShowReceiptModal(false)}
+          receipt={{
+            id: order.id,
+            orderNumber: order.orderNumber,
+            createdAt: order.createdAt,
+            status: order.status,
+            totalAmountTZS: order.totalAmountTZS,
+            paymentMethod: order.paymentMethod || 'LUMO Mobile Money',
+            transactionRef: `AZM-${order.orderNumber}`,
+            items: order.items || [],
+            shippingAddress: typeof order.shippingAddress === 'object' ? order.shippingAddress : {},
+          }}
+        />
+      )}
     </div>
   )
 }

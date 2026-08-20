@@ -100,7 +100,7 @@ export function SignUpForm() {
                 onClick={() => form.setValue('role', type.role)}
                 className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#FFF0E6] border-[#F95700] text-[#F95700] font-bold shadow-xs'
+                    ? 'bg-lumo-orange-light border-primary text-primary font-bold shadow-xs'
                     : 'bg-[#F0F5FD] hover:bg-slate-100 text-slate-600 border-[#DCE7F5]'
                 }`}
               >
@@ -123,7 +123,7 @@ export function SignUpForm() {
               id="fullName"
               autoComplete="name"
               placeholder="Amina Hassan"
-              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700]"
+              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
               aria-invalid={!!errors.fullName || undefined}
               {...form.register('fullName')}
             />
@@ -142,7 +142,7 @@ export function SignUpForm() {
               type="email"
               autoComplete="email"
               placeholder="you@example.co.tz"
-              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700]"
+              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
               aria-invalid={!!errors.email || undefined}
               {...form.register('email')}
             />
@@ -162,7 +162,7 @@ export function SignUpForm() {
               inputMode="tel"
               autoComplete="tel"
               placeholder="+255 712 345 678"
-              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700]"
+              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
               aria-invalid={!!errors.phone || undefined}
               {...form.register('phone')}
             />
@@ -180,7 +180,7 @@ export function SignUpForm() {
               id="new-password"
               autoComplete="new-password"
               placeholder="At least 8 characters"
-              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700]"
+              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
               aria-invalid={!!errors.password || undefined}
               {...form.register('password')}
             />
@@ -198,7 +198,7 @@ export function SignUpForm() {
               id="confirm-password"
               autoComplete="new-password"
               placeholder="Re-enter password"
-              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700]"
+              className="pl-10 h-10 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] border-[#DCE7F5] rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
               aria-invalid={!!errors.confirmPassword || undefined}
               {...form.register('confirmPassword')}
             />
@@ -216,17 +216,17 @@ export function SignUpForm() {
                 shouldValidate: form.formState.isSubmitted,
               })
             }
-            className="size-4.5 rounded-md border-slate-300 data-[state=checked]:bg-[#F95700] data-[state=checked]:border-[#F95700]"
+            className="size-4.5 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
           <FieldContent>
             <FieldLabel htmlFor="acceptTerms" className="font-semibold text-xs text-[#64748B]">
               <span className="leading-tight">
                 I agree to the Lumo{' '}
-                <Link href="/terms" className="text-[#F95700] font-bold hover:underline">
+                <Link href="/terms" className="text-primary font-bold hover:underline">
                   terms
                 </Link>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-[#F95700] font-bold hover:underline">
+                <Link href="/privacy" className="text-primary font-bold hover:underline">
                   privacy
                 </Link>
                 .
@@ -240,7 +240,7 @@ export function SignUpForm() {
       <Button
         type="submit"
         disabled={signUp.isPending}
-        className="h-11 w-full font-extrabold text-xs text-white bg-[#F95700] hover:bg-[#E04E00] rounded-xl shadow-md shadow-orange-500/20 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-1"
+        className="h-11 w-full font-extrabold text-xs text-white bg-primary hover:bg-[#E04E00] rounded-xl shadow-md shadow-orange-500/20 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-1"
       >
         {signUp.isPending && <Spinner data-icon="inline-start" className="mr-2 text-white" />}
         {t('auth.signUpSubmit')}

@@ -35,14 +35,14 @@ export default function SalesReportsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <TrendingUp className="size-6 text-[#FF6B00]" /> Sales Reports &amp; Revenue Analytics
+              <TrendingUp className="size-6 text-primary" /> Sales Reports &amp; Revenue Analytics
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live PostgreSQL
             </Badge>
           </div>
@@ -63,7 +63,7 @@ export default function SalesReportsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="p-5 bg-slate-900 text-white rounded-xl space-y-2">
           <span className="text-[10px] text-slate-400 font-bold uppercase">Total Confirmed GMV Sales</span>
-          <div className="text-3xl font-black text-[#FF6B00] font-mono">
+          <div className="text-3xl font-black text-primary font-mono">
             {formatTZS(salesValue)}
           </div>
           <p className="text-xs text-slate-400">Total gross merchandise value from paid customer orders</p>

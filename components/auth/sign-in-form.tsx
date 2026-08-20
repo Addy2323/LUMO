@@ -81,7 +81,7 @@ export function SignInForm() {
               id="identifier"
               autoComplete="username"
               placeholder="admin@lumo.co.tz"
-              className="pl-10 h-11 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] dark:bg-slate-900 border-[#DCE7F5] dark:border-slate-800 rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700] placeholder:text-slate-400"
+              className="pl-10 h-11 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] dark:bg-slate-900 border-[#DCE7F5] dark:border-slate-800 rounded-xl focus-visible:ring-1 focus-visible:ring-primary placeholder:text-slate-400"
               aria-invalid={!!errors.identifier || undefined}
               {...form.register('identifier')}
             />
@@ -97,7 +97,7 @@ export function SignInForm() {
             </FieldLabel>
             <Link
               href="/forgot-password"
-              className="text-xs font-bold text-[#F95700] hover:underline underline-offset-4"
+              className="text-xs font-bold text-primary hover:underline underline-offset-4"
             >
               {t('auth.forgotPassword')}
             </Link>
@@ -108,7 +108,7 @@ export function SignInForm() {
               id="password"
               autoComplete="current-password"
               placeholder="••••••••••••"
-              className="pl-10 h-11 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] dark:bg-slate-900 border-[#DCE7F5] dark:border-slate-800 rounded-xl focus-visible:ring-1 focus-visible:ring-[#F95700] placeholder:text-slate-400"
+              className="pl-10 h-11 text-xs font-semibold text-[#0F172A] bg-[#F0F5FD] dark:bg-slate-900 border-[#DCE7F5] dark:border-slate-800 rounded-xl focus-visible:ring-1 focus-visible:ring-primary placeholder:text-slate-400"
               aria-invalid={!!errors.password || undefined}
               {...form.register('password')}
             />
@@ -122,7 +122,7 @@ export function SignInForm() {
             id="remember"
             checked={form.watch('remember')}
             onCheckedChange={(checked) => form.setValue('remember', checked === true)}
-            className="size-4.5 rounded-md border-slate-300 data-[state=checked]:bg-[#F95700] data-[state=checked]:border-[#F95700]"
+            className="size-4.5 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
           <FieldContent>
             <FieldLabel htmlFor="remember" className="font-semibold text-xs text-[#64748B] cursor-pointer">
@@ -136,7 +136,7 @@ export function SignInForm() {
       <Button
         type="submit"
         disabled={signIn.isPending}
-        className="h-12 w-full font-extrabold text-sm text-white bg-[#F95700] hover:bg-[#E04E00] rounded-xl shadow-md shadow-orange-500/20 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-1"
+        className="h-12 w-full font-extrabold text-sm text-white bg-primary hover:bg-[#E04E00] rounded-xl shadow-md shadow-orange-500/20 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-1"
       >
         {signIn.isPending && <Spinner data-icon="inline-start" className="mr-2 text-white" />}
         {t('auth.signInSubmit')}

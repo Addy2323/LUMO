@@ -296,7 +296,7 @@ export default function AdminUsersPage() {
             generateRandomPassword()
             setShowAddUserModal(true)
           }}
-          className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold gap-2 text-xs shadow-md shadow-orange-500/20"
+          className="bg-primary hover:bg-primary/80 text-white font-bold gap-2 text-xs shadow-md shadow-orange-500/20"
         >
           <UserPlus className="size-4" /> + Add New System User
         </Button>
@@ -306,7 +306,7 @@ export default function AdminUsersPage() {
       <Card className="border-brand-500/20 bg-brand-50/30 dark:bg-brand-950/20">
         <CardContent className="flex items-center justify-between p-4 text-xs">
           <div className="flex items-center gap-3 text-brand-900 dark:text-brand-300">
-            <ShieldCheck className="size-5 shrink-0 text-[#FF6B00]" />
+            <ShieldCheck className="size-5 shrink-0 text-primary" />
             <span>
               Admin Security Controls: Passwords are encrypted with bcrypt (cost 12). Created credentials can be updated or provided directly to team members.
             </span>
@@ -323,7 +323,7 @@ export default function AdminUsersPage() {
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
           <div className="flex items-center gap-3">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Users className="size-4 text-[#FF6B00]" />
+              <Users className="size-4 text-primary" />
               Registered System Users ({filteredUsers.length})
             </CardTitle>
           </div>
@@ -361,7 +361,7 @@ export default function AdminUsersPage() {
           <div className="divide-y divide-border">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading system users...
               </div>
             ) : filteredUsers.length === 0 ? (
@@ -406,7 +406,7 @@ export default function AdminUsersPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenEditModal(u)}
-                        className="text-xs font-bold border-brand-200 text-[#FF6B00] hover:bg-orange-50 hover:text-[#E85F00] dark:hover:bg-orange-950/30 gap-1 h-8"
+                        className="text-xs font-bold border-brand-200 text-primary hover:bg-orange-50 hover:text-[#E85F00] dark:hover:bg-orange-950/30 gap-1 h-8"
                       >
                         <Pencil className="size-3.5" /> Edit User
                       </Button>
@@ -435,7 +435,7 @@ export default function AdminUsersPage() {
         <DialogContent className="sm:max-w-md p-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-extrabold flex items-center gap-2 text-foreground">
-              <Pencil className="size-5 text-[#FF6B00]" />
+              <Pencil className="size-5 text-primary" />
               Edit User Profile &amp; Role
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -528,7 +528,7 @@ export default function AdminUsersPage() {
                 <Button
                   type="submit"
                   disabled={isUpdating}
-                  className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold text-xs"
+                  className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
                 >
                   {isUpdating ? 'Saving Changes...' : 'Save Changes'}
                 </Button>
@@ -545,7 +545,7 @@ export default function AdminUsersPage() {
         <DialogContent className="sm:max-w-md p-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-extrabold flex items-center gap-2 text-foreground">
-              <UserPlus className="size-5 text-[#FF6B00]" />
+              <UserPlus className="size-5 text-primary" />
               Add New System User
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -628,7 +628,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={generateRandomPassword}
-                  className="text-[11px] font-bold text-[#FF6B00] hover:underline"
+                  className="text-[11px] font-bold text-primary hover:underline"
                 >
                   Generate Random
                 </button>
@@ -658,7 +658,7 @@ export default function AdminUsersPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold text-xs"
+                className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
               >
                 {isSubmitting ? 'Creating User...' : 'Create System User'}
               </Button>
@@ -738,7 +738,7 @@ export default function AdminUsersPage() {
 
                 <Button
                   onClick={() => setShowCredentialsModal(false)}
-                  className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold text-xs"
+                  className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
                 >
                   Done
                 </Button>

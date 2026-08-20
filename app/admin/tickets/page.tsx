@@ -91,15 +91,15 @@ export default function AdminSupportTicketsPage() {
   })
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Top Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <LifeBuoy className="size-6 text-[#FF6B00]" /> Customer Support Tickets &amp; Disputes
+              <LifeBuoy className="size-6 text-primary" /> Customer Support Tickets &amp; Disputes
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live PostgreSQL Data
             </Badge>
           </div>
@@ -191,7 +191,7 @@ export default function AdminSupportTicketsPage() {
 
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading support tickets...
+            <RefreshCw className="size-4 animate-spin text-primary" /> Loading support tickets...
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center space-y-2">
@@ -216,7 +216,7 @@ export default function AdminSupportTicketsPage() {
               <tbody className="divide-y divide-slate-100 text-slate-800">
                 {filtered.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50/80 transition">
-                    <td className="p-3 font-mono font-bold text-[#FF6B00]">{t.ticketNumber || t.id.slice(0, 8)}</td>
+                    <td className="p-3 font-mono font-bold text-primary">{t.ticketNumber || t.id.slice(0, 8)}</td>
                     <td className="p-3 max-w-xs">
                       <div className="font-semibold text-slate-900 truncate">{t.reason || 'Support Request'}</div>
                     </td>
@@ -261,7 +261,7 @@ export default function AdminSupportTicketsPage() {
           <Card className="bg-white border-slate-200 p-6 rounded-2xl shadow-xl w-full max-w-lg space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-bold text-[#FF6B00] uppercase tracking-wider">Ticket Review</span>
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Ticket Review</span>
                 <h3 className="text-base font-extrabold text-slate-900">{selectedTicket.ticketNumber || selectedTicket.id}</h3>
               </div>
               <button onClick={() => setSelectedTicket(null)} className="text-slate-400 hover:text-slate-600 text-xs font-bold">
@@ -282,7 +282,7 @@ export default function AdminSupportTicketsPage() {
                 value={responseMsg}
                 onChange={(e) => setResponseMsg(e.target.value)}
                 placeholder="Type resolution instructions or message to user..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-primary"
               />
             </div>
 

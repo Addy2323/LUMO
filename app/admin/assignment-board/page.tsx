@@ -127,7 +127,7 @@ export default function AdminAssignmentBoardPage() {
                   columnItems.map((item) => (
                     <Card key={item.id} className="p-3 shadow-xs hover:shadow-md transition-all text-xs bg-background">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-mono font-extrabold text-[#FF6B00] text-[11px]">{item.orderNumber}</span>
+                        <span className="font-mono font-extrabold text-primary text-[11px]">{item.orderNumber}</span>
                         <Badge variant="outline" className="text-[9px] font-mono">
                           {formatTZS(item.amountTZS)}
                         </Badge>

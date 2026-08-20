@@ -100,7 +100,7 @@ export default function AdminPaymentsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-extrabold flex items-center gap-2">
-              <CreditCard className="size-5 text-[#FF6B00]" />
+              <CreditCard className="size-5 text-primary" />
               Protected Transaction Ledger ({filtered.length})
             </CardTitle>
             <div className="relative w-72">
@@ -119,7 +119,7 @@ export default function AdminPaymentsPage() {
           <div className="divide-y border rounded-xl overflow-hidden">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live payment protection ledgers from database...
               </div>
             ) : filtered.length === 0 ? (
@@ -142,7 +142,7 @@ export default function AdminPaymentsPage() {
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-4">
-                    <span className="font-mono font-extrabold text-[#FF6B00] text-sm">{formatTZS(t.amountTZS)}</span>
+                    <span className="font-mono font-extrabold text-primary text-sm">{formatTZS(t.amountTZS)}</span>
 
                     {t.protectionState !== 'Released to Supplier' && (
                       <Button size="sm" onClick={() => handleReleasePayment(t.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 text-xs">

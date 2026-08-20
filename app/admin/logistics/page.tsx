@@ -65,7 +65,7 @@ export default function AdminLogisticsPage() {
 
       {loading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">
-          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
           Loading live logistics partners from database...
         </div>
       ) : carriers.length === 0 ? (
@@ -80,7 +80,7 @@ export default function AdminLogisticsPage() {
               <CardHeader className="pb-2 space-y-1">
                 <div className="flex items-center justify-between">
                   <Badge className="bg-emerald-600 text-white text-[10px] font-bold">{c.apiStatus}</Badge>
-                  <span className="font-mono text-xs font-bold text-[#FF6B00]">{c.activeShipments} Manifests</span>
+                  <span className="font-mono text-xs font-bold text-primary">{c.activeShipments} Manifests</span>
                 </div>
                 <CardTitle className="text-sm font-extrabold text-foreground">{c.name}</CardTitle>
               </CardHeader>

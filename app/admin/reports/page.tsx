@@ -84,7 +84,7 @@ export default function AdminReportsPage() {
 
       {loading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">
-          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
           Computing real-time database GMV &amp; analytics...
         </div>
       ) : (
@@ -106,11 +106,11 @@ export default function AdminReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                <ShoppingBag className="size-4 text-[#FF6B00]" /> Completed Orders
+                <ShoppingBag className="size-4 text-primary" /> Completed Orders
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-mono font-extrabold text-[#FF6B00]">{metrics.totalOrdersCount} Orders</div>
+              <div className="text-2xl font-mono font-extrabold text-primary">{metrics.totalOrdersCount} Orders</div>
               <p className="text-[11px] text-muted-foreground mt-1">Avg Order Value: {formatTZS(metrics.avgOrderValueTZS)}</p>
             </CardContent>
           </Card>

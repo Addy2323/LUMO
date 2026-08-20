@@ -115,7 +115,7 @@ export default function AdminSalesDepartmentPage() {
           <Button variant="outline" size="sm" onClick={fetchSalesOfficers} className="text-xs font-bold gap-1.5 h-9">
             <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Database
           </Button>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold text-xs h-9">
+          <Button onClick={() => setIsModalOpen(true)} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9">
             <Plus className="size-4 mr-1.5" />
             Onboard Sales Officer
           </Button>
@@ -124,7 +124,7 @@ export default function AdminSalesDepartmentPage() {
 
       {loading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">
-          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+          <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
           Loading live sales staff from database...
         </div>
       ) : roster.length === 0 ? (
@@ -140,7 +140,7 @@ export default function AdminSalesDepartmentPage() {
                   <Badge className={s.shiftStatus === 'On Duty' ? 'bg-emerald-600 text-white' : 'bg-slate-600 text-white'}>
                     {s.shiftStatus}
                   </Badge>
-                  <span className="font-mono text-xs font-bold text-[#FF6B00]">{s.activeQueueCount} Tickets</span>
+                  <span className="font-mono text-xs font-bold text-primary">{s.activeQueueCount} Tickets</span>
                 </div>
                 <CardTitle className="text-sm font-extrabold text-foreground">{s.name}</CardTitle>
                 <CardDescription className="text-xs">{s.role}</CardDescription>
@@ -203,7 +203,7 @@ export default function AdminSalesDepartmentPage() {
 
             <DialogFooter className="mt-4">
               <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-              <Button size="sm" onClick={handleAddOfficer} className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold">Onboard Officer</Button>
+              <Button size="sm" onClick={handleAddOfficer} className="bg-primary hover:bg-primary/80 text-white font-bold">Onboard Officer</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

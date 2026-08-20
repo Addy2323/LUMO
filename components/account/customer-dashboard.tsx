@@ -279,7 +279,7 @@ export function CustomerDashboard() {
   const hasActionItems = pendingQuotations.length > 0 || pendingPayments.length > 0
 
   return (
-    <div className="flex flex-col gap-6 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen pb-24">
+    <div className="flex flex-col gap-6 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen pb-24">
       {/* 1. Header with CTA Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
         <div>
@@ -299,7 +299,7 @@ export function CustomerDashboard() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-2 shadow-xs"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-2 shadow-xs"
             render={<Link href="/marketplace" />}
           >
             <ShoppingBag className="size-4" /> Browse Marketplace
@@ -311,7 +311,7 @@ export function CustomerDashboard() {
             className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold h-9 px-4 gap-2"
             render={<Link href="/sourcing/request" />}
           >
-            <PackageSearch className="size-4 text-[#FF6B00]" /> Request Sourcing
+            <PackageSearch className="size-4 text-primary" /> Request Sourcing
           </Button>
         </div>
       </div>
@@ -338,7 +338,7 @@ export function CustomerDashboard() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-start gap-2">
                     <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                      <FileText className="size-4 text-[#FF6B00]" /> Approve Sourcing Quotation
+                      <FileText className="size-4 text-primary" /> Approve Sourcing Quotation
                     </span>
                     <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[9px] font-mono font-bold">
                       Quoted
@@ -354,7 +354,7 @@ export function CustomerDashboard() {
                 <Button
                   size="xs"
                   onClick={() => setSelectedQuote(q)}
-                  className="w-full bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold h-8 gap-1.5 shadow-xs"
+                  className="w-full bg-primary hover:bg-primary/80 text-white text-xs font-bold h-8 gap-1.5 shadow-xs"
                 >
                   <FileText className="size-3.5" /> Review Landed Quote
                 </Button>
@@ -404,7 +404,7 @@ export function CustomerDashboard() {
 
       {/* 3. Actionable KPI Cards (8 Grid) - 100% Real User Data */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <Link href="/account/orders" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-[#FF6B00] transition space-y-1">
+        <Link href="/account/orders" className="p-3 bg-white border border-slate-200 rounded-xl shadow-xs hover:border-primary transition space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase block truncate">Total Orders</span>
           <div className="text-xl font-black text-slate-900 font-mono">{orders.length}</div>
         </Link>
@@ -472,7 +472,7 @@ export function CustomerDashboard() {
             <div className="divide-y divide-slate-100">
               {orders.length === 0 ? (
                 <div className="p-8 text-center space-y-3">
-                  <div className="size-12 rounded-full bg-orange-50 text-[#FF6B00] flex items-center justify-center mx-auto">
+                  <div className="size-12 rounded-full bg-orange-50 text-primary flex items-center justify-center mx-auto">
                     <Package className="size-6" />
                   </div>
                   <div className="space-y-1">
@@ -481,7 +481,7 @@ export function CustomerDashboard() {
                       You have not placed any orders yet. Explore our wholesale marketplace or request a custom factory quote.
                     </p>
                   </div>
-                  <Button size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-8 mt-2" render={<Link href="/marketplace" />}>
+                  <Button size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-8 mt-2" render={<Link href="/marketplace" />}>
                     Start Shopping
                   </Button>
                 </div>
@@ -574,7 +574,7 @@ export function CustomerDashboard() {
             <h4 className="font-bold text-xs text-slate-900 uppercase tracking-wider">Control Centre Shortcuts</h4>
             <div className="grid grid-cols-1 gap-2 text-xs">
               <Link href="/account/quotations" className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg flex items-center justify-between font-bold text-slate-800 transition">
-                <span className="flex items-center gap-2"><FileText className="size-4 text-[#FF6B00]" /> My Sourcing Quotations</span>
+                <span className="flex items-center gap-2"><FileText className="size-4 text-primary" /> My Sourcing Quotations</span>
                 <ChevronRight className="size-4 text-slate-400" />
               </Link>
               <Link href="/account/documents" className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg flex items-center justify-between font-bold text-slate-800 transition">
@@ -600,7 +600,7 @@ export function CustomerDashboard() {
           <DialogContent className="max-w-md bg-white p-6 rounded-2xl border border-slate-200">
             <DialogHeader className="space-y-1">
               <div className="flex items-center justify-between">
-                <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-xs font-bold gap-1">
+                <Badge className="bg-orange-50 text-primary border-orange-200 text-xs font-bold gap-1">
                   <Sparkles className="size-3" /> Landed Cost Sourcing Quote
                 </Badge>
               </div>
@@ -638,7 +638,7 @@ export function CustomerDashboard() {
                 </div>
                 <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-slate-900">
                   <span>Total Landed Price:</span>
-                  <span className="font-mono text-[#FF6B00]">
+                  <span className="font-mono text-primary">
                     {formatTZS(selectedQuote.targetPriceTZS ? Number(selectedQuote.targetPriceTZS) : 250000)}
                   </span>
                 </div>
@@ -657,7 +657,7 @@ export function CustomerDashboard() {
               <Button
                 disabled={isSubmitting}
                 onClick={() => handleQuotationResponse('APPROVE')}
-                className="flex-1 bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold h-10 gap-1.5"
+                className="flex-1 bg-primary hover:bg-primary/80 text-white text-xs font-bold h-10 gap-1.5"
               >
                 {isSubmitting ? 'Processing...' : 'Approve & Create Order'}
               </Button>

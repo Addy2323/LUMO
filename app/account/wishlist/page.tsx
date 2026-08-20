@@ -76,7 +76,7 @@ export default function CustomerWishlistPage() {
           <Link href="/marketplace">
             <Button
               size="sm"
-              className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-2 rounded-xl shadow-xs"
+              className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-2 rounded-xl shadow-xs"
             >
               <Store className="size-4" /> Browse Marketplace
             </Button>
@@ -97,7 +97,7 @@ export default function CustomerWishlistPage() {
               </p>
             </div>
             <Link href="/marketplace">
-              <Button className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl shadow-md gap-2 mt-2 px-5">
+              <Button className="bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl shadow-md gap-2 mt-2 px-5">
                 Explore Marketplace <ArrowRight className="size-4" />
               </Button>
             </Link>
@@ -185,7 +185,7 @@ export default function CustomerWishlistPage() {
                       size="sm"
                       onClick={() => handleAddToCart(item)}
                       disabled={!item.inStock}
-                      className="w-full bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+                      className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs"
                     >
                       <ShoppingCart className="size-3.5 mr-1" /> Add to Cart
                     </Button>

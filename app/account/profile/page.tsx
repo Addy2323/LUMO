@@ -102,7 +102,7 @@ export default function CustomerProfilePage() {
           onClick={() => setEditing(!editing)}
           variant={editing ? 'outline' : 'default'}
           size="sm"
-          className={editing ? 'border-slate-300 text-xs font-bold' : 'bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 rounded-xl'}
+          className={editing ? 'border-slate-300 text-xs font-bold' : 'bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5 rounded-xl'}
         >
           <Edit3 className="size-3.5" /> {editing ? 'Cancel Editing' : 'Edit Profile'}
         </Button>
@@ -142,7 +142,7 @@ export default function CustomerProfilePage() {
               <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving} size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs gap-1.5">
+              <Button type="submit" disabled={saving} size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs gap-1.5">
                 {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
                 Save Changes to DB
               </Button>

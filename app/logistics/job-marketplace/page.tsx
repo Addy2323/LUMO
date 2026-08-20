@@ -87,7 +87,7 @@ export default function LogisticsJobMarketplacePage() {
             <Card key={job.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1.5 min-w-0 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-extrabold text-xs text-[#FF6B00]">{job.jobRef}</span>
+                  <span className="font-mono font-extrabold text-xs text-primary">{job.jobRef}</span>
                   <Badge
                     className={`text-[10px] uppercase ${
                       job.status === 'Accepted' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
@@ -118,7 +118,7 @@ export default function LogisticsJobMarketplacePage() {
                 {job.status === 'Open for Bids' ? (
                   <Button
                     onClick={() => acceptJob(job.id)}
-                    className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+                    className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
                   >
                     <Truck className="size-3.5 mr-1" /> Accept &amp; Assign to Fleet
                   </Button>

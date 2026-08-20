@@ -216,7 +216,7 @@ export function ProductCard({
             'absolute bottom-2.5 right-2.5 z-10 size-9 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 cursor-pointer border border-white/20 active:scale-90',
             isAdded
               ? 'bg-emerald-600 text-white scale-110'
-              : 'bg-[#FF6B00] hover:bg-[#E05E00] text-white hover:scale-110'
+              : 'bg-primary hover:bg-primary/80 text-white hover:scale-110'
           )}
         >
           {isAdded ? (
@@ -285,7 +285,7 @@ export function ProductCard({
             'w-full mt-1 font-bold text-xs rounded-xl shadow-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 py-2 active:scale-[0.98]',
             isAdded
               ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
-              : 'bg-[#FF6B00] hover:bg-[#E05E00] active:bg-[#C44F00] text-white shadow-orange-500/20 hover:shadow-md'
+              : 'bg-primary hover:bg-primary/80 active:bg-lumo-orange-hover text-white shadow-orange-500/20 hover:shadow-md'
           )}
         >
           {isAdded ? (

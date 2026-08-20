@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Package, Search, Clock, CheckCircle2, Truck, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { Package, Search, Clock, CheckCircle2, Truck, AlertCircle, ArrowRight, RefreshCw, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
 import { useSessionStore } from '@/lib/stores/session-store'
 import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
+import { CustomerPaymentReceipt } from '@/components/receipt/customer-payment-receipt'
 
 type DatabaseOrder = {
   id: string
@@ -25,6 +26,7 @@ export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState<DatabaseOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<any | null>(null)
 
   const fetchCustomerOrders = async () => {
     setLoading(true)
@@ -77,7 +79,7 @@ export default function CustomerOrdersPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-extrabold flex items-center gap-2">
-              <Package className="size-5 text-[#FF6B00]" /> Order History ({filtered.length})
+              <Package className="size-5 text-primary" /> Order History ({filtered.length})
             </CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -95,14 +97,14 @@ export default function CustomerOrdersPage() {
           <div className="divide-y border-t">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading your database orders...
               </div>
             ) : filtered.length === 0 ? (
               <div className="p-12 text-center text-xs text-muted-foreground space-y-2">
                 <p className="font-semibold text-foreground">No orders found in database.</p>
                 <p>Your B2B purchases will appear here upon checkout.</p>
-                <Button size="sm" render={<Link href="/marketplace" />} className="bg-[#FF6B00] text-white font-bold text-xs mt-2">
+                <Button size="sm" render={<Link href="/marketplace" />} className="bg-primary text-white font-bold text-xs mt-2">
                   Browse Marketplace
                 </Button>
               </div>
@@ -158,7 +160,7 @@ export default function CustomerOrdersPage() {
                             {o.status}
                           </Badge>
                           {totalItemsCount > 1 && (
-                            <Badge variant="outline" className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+                            <Badge variant="outline" className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
                               + {totalItemsCount - 1} more item{totalItemsCount - 1 > 1 ? 's' : ''} ({totalUnitsCount} units total)
                             </Badge>
                           )}
@@ -176,9 +178,17 @@ export default function CustomerOrdersPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 shrink-0">
-                      <span className="font-mono font-extrabold text-[#FF6B00] text-sm">{formatTZS(o.totalAmountTZS)}</span>
-                      <Button variant="outline" size="sm" render={<Link href={`/account/orders/${o.id}`} />} className="font-bold text-xs">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-mono font-extrabold text-primary text-sm">{formatTZS(o.totalAmountTZS)}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedReceiptOrder(o)}
+                        className="font-extrabold text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 h-8"
+                      >
+                        <FileText className="size-3.5 mr-1 text-emerald-600" /> Receipt
+                      </Button>
+                      <Button variant="outline" size="sm" render={<Link href={`/account/orders/${o.id}`} />} className="font-bold text-xs h-8">
                         View Detail <ArrowRight className="size-3.5 ml-1" />
                       </Button>
                     </div>
@@ -189,6 +199,25 @@ export default function CustomerOrdersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* RECEIPT MODAL */}
+      {selectedReceiptOrder && (
+        <CustomerPaymentReceipt
+          open={!!selectedReceiptOrder}
+          onClose={() => setSelectedReceiptOrder(null)}
+          receipt={{
+            id: selectedReceiptOrder.id,
+            orderNumber: selectedReceiptOrder.orderNumber,
+            createdAt: selectedReceiptOrder.createdAt,
+            status: selectedReceiptOrder.status,
+            totalAmountTZS: selectedReceiptOrder.totalAmountTZS,
+            paymentMethod: selectedReceiptOrder.paymentMethod || 'LUMO Pay Gateway',
+            transactionRef: `AZM-${selectedReceiptOrder.orderNumber}`,
+            items: selectedReceiptOrder.items || [],
+            shippingAddress: typeof selectedReceiptOrder.shippingAddress === 'object' ? selectedReceiptOrder.shippingAddress : {},
+          }}
+        />
+      )}
     </div>
   )
 }

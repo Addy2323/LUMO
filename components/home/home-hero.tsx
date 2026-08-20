@@ -26,7 +26,7 @@ export function HomeHero() {
       <div className="mx-auto max-w-[1600px] flex justify-center mb-3">
         <Link
           href="/help"
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FF6B00] hover:bg-[#E85F00] text-white text-[11px] sm:text-xs font-semibold shadow-xs transition-colors max-w-full"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary hover:bg-primary/80 text-white text-[11px] sm:text-xs font-semibold shadow-xs transition-colors max-w-full"
         >
           <span className="flex items-center gap-1.5">
             <span>🛡️</span>
@@ -93,9 +93,9 @@ export function HomeHero() {
               <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
                 <Link href="/marketplace" className="w-full">
                   <Button className="w-full bg-white hover:bg-slate-100 text-[#0B1F3A] font-extrabold text-[11px] sm:text-xs lg:text-sm px-2 sm:px-4 h-11 sm:h-12 rounded-2xl shadow-md gap-1.5 transition-transform hover:-translate-y-px">
-                    <ShoppingBag className="size-3.5 sm:size-4 text-[#FF6B00] shrink-0" />
+                    <ShoppingBag className="size-3.5 sm:size-4 text-primary shrink-0" />
                     <span className="truncate">Explore Marketplace</span>
-                    <ChevronRight className="size-3.5 sm:size-4 text-[#FF6B00] shrink-0" />
+                    <ChevronRight className="size-3.5 sm:size-4 text-primary shrink-0" />
                   </Button>
                 </Link>
                 <Link href="/sourcing/request" className="w-full">

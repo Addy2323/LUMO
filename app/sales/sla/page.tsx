@@ -32,7 +32,7 @@ export default function SlaPerformancePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export default function SlaPerformancePage() {
 
         <Card className="p-4 bg-white border-slate-200 shadow-sm space-y-1">
           <span className="text-[10px] text-slate-400 font-bold uppercase">Overall Sales Conversion</span>
-          <div className="text-2xl font-black text-[#FF6B00] font-mono">{kpis?.conversionRate || 0}%</div>
+          <div className="text-2xl font-black text-primary font-mono">{kpis?.conversionRate || 0}%</div>
           <p className="text-[11px] text-slate-500">RFQ to Paid Order conversion</p>
         </Card>
       </div>

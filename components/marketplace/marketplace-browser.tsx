@@ -111,7 +111,7 @@ export function MarketplaceBrowser() {
             </div>
           </div>
 
-          <Button size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs shrink-0 rounded-lg px-4 shadow-xs" render={<Link href="/sourcing/request" />}>
+          <Button size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs shrink-0 rounded-lg px-4 shadow-xs" render={<Link href="/sourcing/request" />}>
             {t('marketplace.requestGlobalSourcing')}
           </Button>
         </div>

@@ -106,13 +106,13 @@ export default function AdminMessagingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <MessageSquare className="size-6 text-[#FF6B00]" /> Meseji SMS Messaging Console
+              <MessageSquare className="size-6 text-primary" /> Meseji SMS Messaging Console
             </h1>
             <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
               Live Gateway
@@ -177,7 +177,7 @@ export default function AdminMessagingPage() {
         <Card className="bg-white border-slate-200 p-4 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs font-semibold">
             <span>Messages Dispatched</span>
-            <div className="size-8 rounded-lg bg-orange-50 text-[#FF6B00] flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-orange-50 text-primary flex items-center justify-center">
               <Send className="size-4" />
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function AdminMessagingPage() {
         {/* Left 2 Cols: Test SMS & Diagnostics */}
         <Card className="bg-white border-slate-200 p-5 shadow-sm lg:col-span-2 space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Smartphone className="size-5 text-[#FF6B00]" />
+            <Smartphone className="size-5 text-primary" />
             <h3 className="text-base font-extrabold text-slate-900">Send Test SMS via Gateway</h3>
           </div>
 
@@ -227,7 +227,7 @@ export default function AdminMessagingPage() {
                 rows={3}
                 value={testMessage}
                 onChange={(e) => setTestMessage(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-md p-2.5 text-xs text-slate-900 outline-none focus:border-[#FF6B00]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-md p-2.5 text-xs text-slate-900 outline-none focus:border-primary"
                 required
               />
             </div>
@@ -235,7 +235,7 @@ export default function AdminMessagingPage() {
             <Button
               type="submit"
               disabled={testSending}
-              className="w-full bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 gap-2 shadow-sm"
+              className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 gap-2 shadow-sm"
             >
               {testSending ? <RotateCw className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
               Dispatch Test SMS

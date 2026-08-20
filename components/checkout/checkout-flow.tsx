@@ -18,11 +18,13 @@ import {
   Tag,
   Truck,
   Zap,
+  FileText,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { CustomerPaymentReceipt } from '@/components/receipt/customer-payment-receipt'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -136,6 +138,7 @@ export function CheckoutFlow() {
   const [isAuthorizing, setIsAuthorizing] = useState(false)
   const isSubmittingRef = useRef(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
 
   const [lastPaidOrder, setLastPaidOrder] = useState<{
     reference: string
@@ -462,7 +465,7 @@ export function CheckoutFlow() {
                 <Check className="size-3.5 mx-auto mb-0.5 stroke-[3]" />
                 Paid
               </div>
-              <div className="p-2 rounded-lg bg-[#FFF8F3] border border-[#FFD9C2] text-[#F95700] font-bold">
+              <div className="p-2 rounded-lg bg-lumo-orange-light border border-lumo-orange-soft text-primary font-bold">
                 <Package className="size-3.5 mx-auto mb-0.5 animate-bounce" />
                 Packing
               </div>
@@ -477,10 +480,21 @@ export function CheckoutFlow() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+          <div className="pt-2">
+            <Button
+              size="lg"
+              onClick={() => setShowReceiptModal(true)}
+              className="w-full font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md h-11 text-xs rounded-xl flex items-center justify-center gap-2"
+            >
+              <FileText className="size-4" />
+              Generate &amp; Download Official Payment Receipt
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
             <Button
               size="sm"
-              className="flex-1 font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white shadow-xs h-10 text-xs rounded-xl"
+              className="flex-1 font-extrabold bg-primary hover:bg-primary/80 text-white shadow-xs h-10 text-xs rounded-xl"
               render={<Link href="/account/orders" />}
             >
               Track Order in Account
@@ -495,6 +509,32 @@ export function CheckoutFlow() {
               Continue Shopping
             </Button>
           </div>
+
+          {/* CUSTOMER PAYMENT RECEIPT MODAL */}
+          {showReceiptModal && lastPaidOrder && (
+            <CustomerPaymentReceipt
+              open={showReceiptModal}
+              onClose={() => setShowReceiptModal(false)}
+              receipt={{
+                id: lastPaidOrder.reference,
+                orderNumber: lastPaidOrder.reference,
+                createdAt: new Date(),
+                status: 'PAID',
+                paymentStatus: 'SUCCESSFUL',
+                totalAmountTZS: lastPaidOrder.total,
+                paymentMethod: lastPaidOrder.methodName,
+                transactionRef: lastPaidOrder.reference,
+                items: [],
+                shippingAddress: {
+                  fullName: lastPaidOrder.recipient,
+                  phone: lastPaidOrder.phone,
+                  ward: lastPaidOrder.ward,
+                  city: lastPaidOrder.region,
+                  country: 'Tanzania',
+                },
+              }}
+            />
+          )}
         </CardContent>
       </Card>
     )
@@ -513,7 +553,7 @@ export function CheckoutFlow() {
               Add products from the marketplace or paste a factory sourcing link to proceed.
             </p>
           </div>
-          <Button size="lg" className="font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white rounded-xl" render={<Link href="/marketplace" />}>
+          <Button size="lg" className="font-extrabold bg-primary hover:bg-primary/80 text-white rounded-xl" render={<Link href="/marketplace" />}>
             Browse Global Marketplace
           </Button>
         </CardContent>
@@ -537,7 +577,7 @@ export function CheckoutFlow() {
             <Card className="border-[#E2E8F0] bg-white rounded-2xl shadow-xs overflow-hidden">
               <CardHeader className="border-b border-[#E2E8F0] bg-[#FAF9F5] py-4 px-5 sm:px-6">
                 <CardTitle className="text-base font-black text-[#0F172A] flex items-center gap-2">
-                  <MapPin className="size-4.5 text-[#F95700]" />
+                  <MapPin className="size-4.5 text-primary" />
                   Step 1: Delivery Address &amp; Shipping Speed
                 </CardTitle>
               </CardHeader>
@@ -554,7 +594,7 @@ export function CheckoutFlow() {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowAddAddressForm(!showAddAddressForm)}
-                      className="h-8 text-xs font-bold border-[#F95700] text-[#F95700] hover:bg-[#FFF8F3] rounded-xl"
+                      className="h-8 text-xs font-bold border-primary text-primary hover:bg-lumo-orange-light rounded-xl"
                     >
                       {showAddAddressForm ? 'Cancel' : '+ Add New Address'}
                     </Button>
@@ -562,12 +602,12 @@ export function CheckoutFlow() {
 
                   {/* Add New Address Inline Form */}
                   {showAddAddressForm && (
-                    <form onSubmit={handleCreateAddress} className="p-4 rounded-2xl border border-[#F95700] bg-[#FFF8F3] space-y-3 mb-4">
-                      <div className="flex items-center justify-between border-b border-[#FFD9C2] pb-2">
+                    <form onSubmit={handleCreateAddress} className="p-4 rounded-2xl border border-primary bg-lumo-orange-light space-y-3 mb-4">
+                      <div className="flex items-center justify-between border-b border-lumo-orange-soft pb-2">
                         <span className="text-xs font-extrabold text-[#0F172A] flex items-center gap-1.5">
-                          <MapPin className="size-3.5 text-[#F95700]" /> Enter Custom Delivery Address
+                          <MapPin className="size-3.5 text-primary" /> Enter Custom Delivery Address
                         </span>
-                        <Badge className="bg-[#F95700] text-white text-[10px]">New Address</Badge>
+                        <Badge className="bg-primary text-white text-[10px]">New Address</Badge>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -639,7 +679,7 @@ export function CheckoutFlow() {
                         <Button
                           type="submit"
                           size="sm"
-                          className="h-8 text-xs font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white shadow-xs rounded-lg"
+                          className="h-8 text-xs font-extrabold bg-primary hover:bg-primary/80 text-white shadow-xs rounded-lg"
                         >
                           Save &amp; Use Address
                         </Button>
@@ -698,7 +738,7 @@ export function CheckoutFlow() {
                 <Button
                   size="lg"
                   onClick={handleProceedToStep2}
-                  className="w-full sm:w-auto font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white shadow-md px-8 h-12 text-sm rounded-xl min-h-[44px]"
+                  className="w-full sm:w-auto font-extrabold bg-primary hover:bg-primary/80 text-white shadow-md px-8 h-12 text-sm rounded-xl min-h-[44px]"
                 >
                   Continue to Payment
                   <ArrowRight className="size-4 ml-2" />
@@ -712,7 +752,7 @@ export function CheckoutFlow() {
             <Card className="border-[#E2E8F0] bg-white rounded-2xl shadow-xs overflow-hidden">
               <CardHeader className="border-b border-[#E2E8F0] bg-[#FAF9F5] py-4 px-5 sm:px-6">
                 <CardTitle className="text-base font-black text-[#0F172A] flex items-center gap-2">
-                  <CreditCard className="size-4.5 text-[#F95700]" />
+                  <CreditCard className="size-4.5 text-primary" />
                   Step 2: Select Payment Method &amp; Payment Protection
                 </CardTitle>
               </CardHeader>
@@ -737,9 +777,9 @@ export function CheckoutFlow() {
 
                 {/* M-Pesa Phone Input Container */}
                 {method.kind === 'mobile_money' && methodId === 'mpesa' ? (
-                  <div className="p-4 rounded-2xl border border-[#F95700] bg-[#FFF8F3] space-y-3">
+                  <div className="p-4 rounded-2xl border border-primary bg-lumo-orange-light space-y-3">
                     <div className="flex items-center gap-2 text-xs font-extrabold text-[#0F172A]">
-                      <PhoneCall className="size-4 text-[#F95700]" />
+                      <PhoneCall className="size-4 text-primary" />
                       <span>Enter Your M-Pesa Registered Phone Number</span>
                     </div>
 
@@ -801,7 +841,7 @@ export function CheckoutFlow() {
                 <Button
                   size="lg"
                   onClick={handleProceedToStep3}
-                  className="w-full sm:w-auto font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white shadow-md px-8 h-12 text-sm rounded-xl min-h-[44px]"
+                  className="w-full sm:w-auto font-extrabold bg-primary hover:bg-primary/80 text-white shadow-md px-8 h-12 text-sm rounded-xl min-h-[44px]"
                 >
                   Review Order &amp; Pay
                   <ArrowRight className="size-4 ml-2" />
@@ -815,7 +855,7 @@ export function CheckoutFlow() {
             <Card className="border-[#E2E8F0] bg-white rounded-2xl shadow-xs overflow-hidden">
               <CardHeader className="border-b border-[#E2E8F0] bg-[#FAF9F5] py-4 px-5 sm:px-6">
                 <CardTitle className="text-base font-black text-[#0F172A] flex items-center gap-2">
-                  <Zap className="size-4.5 text-[#F95700]" />
+                  <Zap className="size-4.5 text-primary" />
                   Step 3: Review Details &amp; Authorize Settlement
                 </CardTitle>
               </CardHeader>
@@ -830,7 +870,7 @@ export function CheckoutFlow() {
                       <button
                         type="button"
                         onClick={() => setStep(0)}
-                        className="text-[#F95700] hover:underline font-bold text-xs"
+                        className="text-primary hover:underline font-bold text-xs"
                       >
                         Edit
                       </button>
@@ -849,7 +889,7 @@ export function CheckoutFlow() {
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="text-[#F95700] hover:underline font-bold text-xs"
+                        className="text-primary hover:underline font-bold text-xs"
                       >
                         Edit
                       </button>
@@ -900,8 +940,8 @@ export function CheckoutFlow() {
 
                 {/* Pending authorization status prompt */}
                 {isAuthorizing && (
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#F95700]/40 bg-[#FFF8F3] p-4 text-xs font-bold text-[#F95700] animate-pulse">
-                    <Loader2 className="size-5 shrink-0 animate-spin text-[#F95700]" />
+                  <div className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-lumo-orange-light p-4 text-xs font-bold text-primary animate-pulse">
+                    <Loader2 className="size-5 shrink-0 animate-spin text-primary" />
                     <span>
                       Awaiting USSD PIN authorization on {normalizeTanzaniaPhone(rawPhone).formattedDisplay}... Please check your mobile phone handset.
                     </span>
@@ -923,7 +963,7 @@ export function CheckoutFlow() {
                   size="lg"
                   onClick={authorizeAndPay}
                   disabled={isAuthorizing}
-                  className="w-full sm:w-auto font-extrabold bg-[#F95700] hover:bg-[#E04D00] text-white shadow-lg px-8 h-12 text-sm rounded-xl min-h-[44px]"
+                  className="w-full sm:w-auto font-extrabold bg-primary hover:bg-primary/80 text-white shadow-lg px-8 h-12 text-sm rounded-xl min-h-[44px]"
                 >
                   {isAuthorizing ? (
                     <>
@@ -957,7 +997,7 @@ export function CheckoutFlow() {
           <Card className="border-[#E2E8F0] bg-white rounded-2xl shadow-xs">
             <CardContent className="p-4 space-y-2.5">
               <label className="text-xs font-bold text-[#64748B] flex items-center gap-1.5">
-                <Tag className="size-3.5 text-[#F95700]" />
+                <Tag className="size-3.5 text-primary" />
                 Have a Promo Code or Coupon?
               </label>
               <form onSubmit={applyPromoCode} className="flex gap-2">
