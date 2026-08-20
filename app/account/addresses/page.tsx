@@ -287,7 +287,7 @@ export default function CustomerAddressesPage() {
             <MapPin className="size-12 text-muted-foreground mx-auto" />
             <div>
               <h3 className="text-base font-extrabold">No saved addresses found</h3>
-              <p className="text-xs text-muted-foreground mt-1">Add a delivery destination for fast 1-click AzamPay checkout.</p>
+              <p className="text-xs text-muted-foreground mt-1">Add a delivery destination for fast 1-click LUMO Pay checkout.</p>
             </div>
             <Button onClick={() => setOpen(true)} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl">
               <Plus className="size-4 mr-1.5" />

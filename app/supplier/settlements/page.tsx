@@ -50,7 +50,7 @@ export default function SupplierSettlementsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Settlements &amp; Escrow Payouts</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">Settlements &amp; Trade Payouts</h1>
           <p className="text-sm text-muted-foreground">
             Manage unlocked earnings, request instant bank wire or M-Pesa payouts, and view past settlement statements.
           </p>
@@ -76,7 +76,7 @@ export default function SupplierSettlementsPage() {
 
         <Card className="bg-card border-border/80">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Escrow Balance</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Settlement Balance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-extrabold tnum text-foreground">{formatTZS(pendingEscrowTZS)}</div>
@@ -131,7 +131,7 @@ export default function SupplierSettlementsPage() {
               <Banknote className="size-10 text-muted-foreground/40 mx-auto" />
               <p className="font-bold text-sm text-foreground">No Payout Settlements Recorded</p>
               <p className="max-w-md mx-auto">
-                Completed escrow releases and requested payouts will generate statements here.
+                Completed payment protection releases and requested payouts will generate statements here.
               </p>
             </div>
           ) : (

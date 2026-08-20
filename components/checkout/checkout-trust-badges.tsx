@@ -9,7 +9,7 @@ export function CheckoutTrustBadges() {
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1 text-xs font-bold text-[#137333]">
           <ShieldCheck className="size-3.5 text-[#137333]" />
-          AzamPay Buyer Protection Active
+          LUMO Trade Protection Active
         </span>
       </div>
 

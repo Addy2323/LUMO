@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
               location: 'Lumo B2B Platform',
               timestamp: new Date(order.createdAt).toLocaleString(),
               done: true,
-              description: `Order ${order.orderNumber} successfully registered under AzamPay escrow protection.`,
+              description: `Order ${order.orderNumber} successfully registered under LUMO Pay trade protection.`,
             },
             {
               title: 'Supplier Warehouse Packing & Quality Inspection',

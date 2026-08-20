@@ -70,7 +70,7 @@ const COMMAND_ITEMS: CommandItem[] = [
   {
     id: 'cmd_5',
     title: 'Admin Governance Suite',
-    subtitle: 'Master orders, escrow & system config',
+    subtitle: 'Master orders, payment protection & system config',
     category: 'Portals',
     href: '/admin',
     icon: ShieldCheck,

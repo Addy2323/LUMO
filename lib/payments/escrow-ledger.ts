@@ -9,18 +9,18 @@ export interface EscrowReleaseParams {
 }
 
 /**
- * Escrow Ledger Service for LUMO Regulated Financial Holdings
+ * Payment Vault Ledger Service for LUMO Regulated Financial Holdings
  */
 export class EscrowLedgerService {
   /**
-   * Lock funds in escrow when payment is successfully confirmed
+   * Lock funds in payment protection when payment is successfully confirmed
    */
   async lockInEscrow(orderId: string, transactionRef: string, amountTZS: Prisma.Decimal) {
     return prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } })
       if (!order) throw new Error('Order not found')
 
-      const escrow = await tx.escrowLedger.upsert({
+      const paymentRecord = await tx.escrowLedger.upsert({
         where: { orderId },
         update: {
           status: EscrowStatus.HELD,
@@ -39,24 +39,24 @@ export class EscrowLedgerService {
           userRole: 'BUYER',
           action: 'ESCROW_FUNDS_HELD',
           targetResource: `Order:${order.orderNumber}`,
-          details: `Locked TZS ${amountTZS} in Escrow Ledger. Ref: ${transactionRef}`,
+          details: `Locked TZS ${amountTZS} in Payment Vault Ledger. Ref: ${transactionRef}`,
         },
       })
 
-      return escrow
+      return paymentRecord
     })
   }
 
   /**
-   * Release escrow funds to supplier upon successful delivery confirmation
+   * Release protected funds to supplier upon successful delivery confirmation
    */
   async releaseEscrowToSupplier({ orderId, supplierId, performedByUserId, userRole }: EscrowReleaseParams) {
     return prisma.$transaction(async (tx) => {
-      const escrow = await tx.escrowLedger.findUnique({ where: { orderId } })
-      if (!escrow) throw new Error('Escrow record not found')
+      const paymentRecord = await tx.escrowLedger.findUnique({ where: { orderId } })
+      if (!paymentRecord) throw new Error('Payment record not found')
 
-      if (escrow.status !== EscrowStatus.HELD) {
-        throw new Error(`Cannot release escrow in status ${escrow.status}`)
+      if (paymentRecord.status !== EscrowStatus.HELD) {
+        throw new Error(`Cannot release payment protection in status ${paymentRecord.status}`)
       }
 
       const updatedEscrow = await tx.escrowLedger.update({
@@ -80,7 +80,7 @@ export class EscrowLedgerService {
           userRole,
           action: 'ESCROW_FUNDS_RELEASED',
           targetResource: `Order:${orderId}`,
-          details: `Released TZS ${escrow.amountTZS} from Escrow Ledger to Supplier ${supplierId || 'Default'}`,
+          details: `Released TZS ${paymentRecord.amountTZS} from Payment Vault Ledger to Supplier ${supplierId || 'Default'}`,
         },
       })
 
@@ -89,12 +89,12 @@ export class EscrowLedgerService {
   }
 
   /**
-   * Refund escrow funds back to buyer upon order cancellation or dispute resolution
+   * Refund protected funds back to buyer upon order cancellation or dispute resolution
    */
   async refundEscrowToBuyer({ orderId, performedByUserId, userRole }: EscrowReleaseParams) {
     return prisma.$transaction(async (tx) => {
-      const escrow = await tx.escrowLedger.findUnique({ where: { orderId } })
-      if (!escrow) throw new Error('Escrow record not found')
+      const paymentRecord = await tx.escrowLedger.findUnique({ where: { orderId } })
+      if (!paymentRecord) throw new Error('Payment record not found')
 
       const updatedEscrow = await tx.escrowLedger.update({
         where: { orderId },
@@ -115,7 +115,7 @@ export class EscrowLedgerService {
           userRole,
           action: 'ESCROW_FUNDS_REFUNDED',
           targetResource: `Order:${orderId}`,
-          details: `Refunded TZS ${escrow.amountTZS} from Escrow Ledger to Buyer ${escrow.buyerId}`,
+          details: `Refunded TZS ${paymentRecord.amountTZS} from Payment Vault Ledger to Buyer ${paymentRecord.buyerId}`,
         },
       })
 

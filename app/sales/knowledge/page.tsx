@@ -13,7 +13,7 @@ export default function KnowledgeBasePage() {
   const SOPs = [
     { title: 'Standard Operating Procedure: B2B RFQ Verification', category: 'Sourcing' },
     { title: 'TRA Customs Duty & Import Tax Tariff Reference Guide', category: 'Customs' },
-    { title: 'AzamPay Escrow Release & Refund Standard', category: 'Payments' },
+    { title: 'LUMO Payment Protection Release & Refund Standard', category: 'Payments' },
     { title: 'Field Agent Physical Inspection Checklist (Guangzhou & Yiwu)', category: 'Inspections' },
     { title: 'Dispute Handling & Freight Damage Resolution Protocol', category: 'Disputes' },
   ]

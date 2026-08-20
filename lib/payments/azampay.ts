@@ -6,7 +6,7 @@ export interface AzamPayCheckoutParams {
   orderNumber: string
   amountTZS: number
   accountNumber: string // Customer mobile number (e.g. 0712345678)
-  providerName: 'M-PESA' | 'HALOPESA' | 'AIRTEL' | 'AZAMPAY'
+  providerName: 'M-PESA' | 'HALOPESA' | 'AIRTEL' | 'LUMO_PAY'
 }
 
 export interface AzamPayCheckoutResult {
@@ -17,7 +17,7 @@ export interface AzamPayCheckoutResult {
 }
 
 /**
- * AzamPay Server Integration Client for Tanzania Mobile Money
+ * LUMO Pay Server Integration Client for Tanzania Mobile Money
  */
 export class AzamPayClient {
   private baseUrl: string
@@ -30,7 +30,7 @@ export class AzamPayClient {
   }
 
   /**
-   * Request OAuth Token from AzamPay API
+   * Request OAuth Token from LUMO Pay API
    */
   async getAuthToken(): Promise<string | null> {
     const clientId = env.AZAMPAY_CLIENT_ID
@@ -39,7 +39,7 @@ export class AzamPayClient {
 
     if (!clientId || !clientSecret) {
       if (env.NODE_ENV === 'production') {
-        console.error('[CRITICAL] Missing AzamPay production credentials!')
+        console.error('[CRITICAL] Missing LUMO Pay production credentials!')
         return null
       }
       // Dev mock token
@@ -63,7 +63,7 @@ export class AzamPayClient {
       }
       return null
     } catch (error) {
-      console.error('[AZAMPAY AUTH TOKEN ERROR]', error)
+      console.error('[LUMO_PAY AUTH TOKEN ERROR]', error)
       return null
     }
   }
@@ -87,7 +87,7 @@ export class AzamPayClient {
 
     // Development sandbox simulation
     if (env.NODE_ENV === 'development' && (!clientId || token?.startsWith('azm_dev_token_'))) {
-      console.log(`[DEV AZAMPAY CHECKOUT] Order ${params.orderNumber} | Amount: TZS ${params.amountTZS} | Mobile: ${params.accountNumber} | Channel: ${params.providerName}`)
+      console.log(`[DEV LUMO_PAY CHECKOUT] Order ${params.orderNumber} | Amount: TZS ${params.amountTZS} | Mobile: ${params.accountNumber} | Channel: ${params.providerName}`)
       return {
         success: true,
         transactionRef,
@@ -128,7 +128,7 @@ export class AzamPayClient {
         message: data.message || 'Payment request rejected by carrier.',
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'AzamPay server request failed.'
+      const errorMessage = err instanceof Error ? err.message : 'LUMO Pay server request failed.'
       return {
         success: false,
         transactionRef,
@@ -138,7 +138,7 @@ export class AzamPayClient {
   }
 
   /**
-   * Verify official AzamPay Webhook signature / bearer token
+   * Verify official LUMO Pay Webhook signature / bearer token
    */
   verifyWebhookAuth(reqHeaders: Headers, bodyString: string): boolean {
     const webhookSecret = env.AZAMPAY_WEBHOOK_SECRET

@@ -370,7 +370,7 @@ export default function TrackFreightPage() {
             <div className="p-4 rounded-xl bg-muted/30 border">
               <h4 className="text-sm font-bold text-foreground">Q: What happens if my shipment is delayed at Dar port?</h4>
               <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                If customs clearance takes longer than expected, Lumo covers any port demurrage fees. Your payment remains safely protected under AzamPay buyer protection until goods are delivered.
+                If customs clearance takes longer than expected, Lumo covers any port demurrage fees. Your payment remains safely protected under LUMO Pay buyer protection until goods are delivered.
               </p>
             </div>
           </CardContent>

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         taxAmountTZS: 180000.0,
         totalAmountTZS: 4930000.0,
         status: 'PAID',
-        paymentMethod: 'AzamPay Escrow (Simulated)',
+        paymentMethod: 'LUMO Payment Protection (Simulated)',
         shippingAddress: {
           fullName: 'Tanzania Sourcing Merchant',
           street: 'Samora Avenue, Plot 42',

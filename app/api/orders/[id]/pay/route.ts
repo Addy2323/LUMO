@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 import { authorizeApiRequest } from '@/lib/auth/authorize'
 
 const PayOrderSchema = z.object({
-  paymentMethod: z.string().default('AzamPay Mobile Money'),
+  paymentMethod: z.string().default('LUMO Mobile Money'),
   network: z.string().optional(), // M-Pesa, Mix by Yas, Airtel Money, CRDB Bank, NMB Bank
   phoneNumber: z.string().optional(),
   cardNumber: z.string().optional(),
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const isBankCard = network === 'CRDB Bank' || network === 'NMB Bank' || paymentMethod.includes('Card')
-    const providerName = isBankCard ? `AzamPay Direct (${network || 'Bank Card'})` : `AzamPay Mobile Money (${network || 'M-Pesa'})`
+    const providerName = isBankCard ? `LUMO Pay Direct (${network || 'Bank Card'})` : `LUMO Mobile Money (${network || 'M-Pesa'})`
     const transactionRef = `AZM-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`
 
     // Execute state update inside transaction
@@ -60,21 +60,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       prisma.escrowLedger.upsert({
         where: { orderId: order.id },
         update: {
-          status: EscrowStatus.HELD_IN_ESCROW,
+          status: EscrowStatus.HELD,
           amountTZS: order.totalAmountTZS,
         },
         create: {
           orderId: order.id,
           buyerId: auth.user.id,
           amountTZS: order.totalAmountTZS,
-          status: EscrowStatus.HELD_IN_ESCROW,
+          status: EscrowStatus.HELD,
         },
       }),
     ])
 
     return NextResponse.json({
       success: true,
-      message: `Payment received successfully via ${providerName} Escrow.`,
+      message: `Payment received successfully via ${providerName} Trade Protection.`,
       order: updatedOrder,
       transactionRef,
     })

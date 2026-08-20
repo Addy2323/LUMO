@@ -4,7 +4,7 @@ import { CheckoutFlow } from '@/components/checkout/checkout-flow'
 
 export const metadata: Metadata = {
   title: 'Secure Checkout — Lumoo Global Sourcing',
-  description: 'Confirm delivery, pay with mobile money, card or bank transfer under AzamPay Buyer Protection.',
+  description: 'Confirm delivery, pay with mobile money, card or bank transfer under LUMO Trade Protection.',
 }
 
 export default function CheckoutPage() {

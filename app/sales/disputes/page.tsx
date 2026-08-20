@@ -115,7 +115,7 @@ export default function SalesDisputeDeskPage() {
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Structured 8-step mediation workspace for investigating merchant claims, supplier evidence, and authorizing escrow refunds.
+            Structured 8-step mediation workspace for investigating merchant claims, supplier evidence, and authorizing payment refunds.
           </p>
         </div>
 
@@ -263,7 +263,7 @@ export default function SalesDisputeDeskPage() {
                     disabled={updating}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-4 gap-1.5"
                   >
-                    <CheckCircle2 className="size-3.5" /> Authorize Escrow Refund
+                    <CheckCircle2 className="size-3.5" /> Authorize Payment Refund
                   </Button>
 
                   <Button

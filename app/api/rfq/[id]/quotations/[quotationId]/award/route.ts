@@ -146,7 +146,7 @@ export async function POST(
           paymentRecords: {
             create: {
               amountTZS: totalAmountTZS,
-              paymentMethod: 'AzamPay Escrow',
+              paymentMethod: 'LUMO Payment Protection',
               status: PaymentStatus.PENDING,
             },
           },

@@ -162,7 +162,7 @@ export default function HomePage() {
             <span>© {new Date().getFullYear()} Lumo Commerce Platform. All rights reserved.</span>
             <div className="flex items-center gap-3 text-[11px]">
               <span className="px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-bold">
-                Escrow Protected Payments
+                Trade Protection Protected Payments
               </span>
               <span>Secure TZS Settlement</span>
             </div>

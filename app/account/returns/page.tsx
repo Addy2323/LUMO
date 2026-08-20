@@ -60,7 +60,7 @@ export default function CustomerReturnsPage() {
           <div>
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">Return &amp; Refund Request</h1>
             <p className="text-xs text-muted-foreground">
-              Request a return on delivered eligible items within 7 days under Lumo Escrow protection.
+              Request a return on delivered eligible items within 7 days under Lumo Trade Assurance protection.
             </p>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function CustomerReturnsPage() {
           <div className="flex flex-col gap-1">
             <span className="font-extrabold">Important Refund Policy Notice</span>
             <span>
-              All approved refunds are credited back directly to the original payment method used during checkout ({selectedOrder?.paymentMethod ? selectedOrder.paymentMethod.toUpperCase() : 'AZAMPAY MOBILE MONEY'}). Lumo does not issue store credit or customer wallet balances.
+              All approved refunds are credited back directly to the original payment method used during checkout ({selectedOrder?.paymentMethod ? selectedOrder.paymentMethod.toUpperCase() : 'LUMO MOBILE MONEY'}). Lumo does not issue store credit or customer wallet balances.
             </span>
           </div>
         </CardContent>
@@ -164,7 +164,7 @@ export default function CustomerReturnsPage() {
                   </ul>
                   <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-foreground font-bold">
                     <span>Original Payment Method:</span>
-                    <span className="uppercase text-[#FF6B00]">{selectedOrder.paymentMethod || 'AzamPay Escrow'} (Direct Refund)</span>
+                    <span className="uppercase text-[#FF6B00]">{selectedOrder.paymentMethod || 'LUMO Payment Protection'} (Direct Refund)</span>
                   </div>
                 </div>
               ) : null}

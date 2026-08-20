@@ -9,7 +9,7 @@
 | **`SALES`** | `/sales` | Customer Inbox, Unassigned Requests, Quotes | Cross-customer sales queue | ✅ ALLOWED (Assigned/Internal) |
 | **`LOGISTICS`** | `/logistics` | Carrier Shipments, Electronic Waybills | Scoped to active `Organization.id` (`type=LOGISTICS_COMPANY`) | ❌ Restricted (Assigned orders only) |
 | **`AGENT`** | `/agent` | Field Sourcing Tasks, Factory Inspections | Scoped to assigned field country/order | ✅ ALLOWED (Assigned/Internal) |
-| **`ADMIN`** | `/admin` | System-wide Governance, Kanban, Escrow | Global platform scope (MFA required) | ✅ ALLOWED (Full Admin Security) |
+| **`ADMIN`** | `/admin` | System-wide Governance, Kanban, Trade Protection | Global platform scope (MFA required) | ✅ ALLOWED (Full Admin Security) |
 
 ---
 
@@ -18,7 +18,7 @@
 | Transition | Permitted Roles | Notes |
 | --- | --- | --- |
 | `DRAFT` → `PENDING_PAYMENT` | `BUYER`, `SALES`, `ADMIN` | Customer submits order for payment |
-| `PENDING_PAYMENT` → `PAID` | `BUYER`, `ADMIN` | AzamPay webhook or admin confirmation |
+| `PENDING_PAYMENT` → `PAID` | `BUYER`, `ADMIN` | LUMO Pay webhook or admin confirmation |
 | `PAID` → `PROCESSING` | `SUPPLIER`, `SALES`, `ADMIN` | Supplier accepts fulfillment |
 | `PROCESSING` → `SHIPPED` | `SUPPLIER`, `LOGISTICS`, `ADMIN` | Carrier issues waybill & dispatches |
 | `SHIPPED` → `DELIVERED` | `LOGISTICS`, `BUYER`, `ADMIN` | Carrier or buyer confirms receipt |

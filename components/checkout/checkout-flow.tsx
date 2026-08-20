@@ -28,7 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { formatTZS } from '@/lib/format'
 import { ADDRESSES, addCustomAddress, addCustomerOrder, getAddressesForUser, type Address, type PaymentMethodId } from '@/lib/mock/orders'
-import { PAYMENT_METHODS, paymentMethod, requestAzamPayCharge } from '@/lib/mock/payments'
+import { PAYMENT_METHODS, paymentMethod, requestLumoPayCharge } from '@/lib/mock/payments'
 import { cartSubtotal, useCartStore } from '@/lib/stores/cart-store'
 import { useSessionStore } from '@/lib/stores/session-store'
 import { AuthRequiredModal } from '@/components/auth/auth-required-modal'
@@ -303,8 +303,8 @@ export function CheckoutFlow() {
     registerPendingIdempotency(key, authoritative.total)
 
     try {
-      // Execute payment charge via AzamPay integration
-      const result = await requestAzamPayCharge({
+      // Execute payment charge via LUMO Pay integration
+      const result = await requestLumoPayCharge({
         methodId,
         amount: authoritative.total,
         phone: phoneCheck.normalized,
@@ -395,7 +395,7 @@ export function CheckoutFlow() {
       isSubmittingRef.current = false
       clear()
       toast.success('Order Successfully Placed & Recorded in Database!', {
-        description: `Order ${createdReference} saved to PostgreSQL database under AzamPay Buyer Protection.`,
+        description: `Order ${createdReference} saved to PostgreSQL database under LUMO Trade Protection.`,
       })
 
 
@@ -895,7 +895,7 @@ export function CheckoutFlow() {
                   total={authoritative.total}
                 />
 
-                {/* AzamPay Buyer Protection Full Card */}
+                {/* LUMO Trade Protection Full Card */}
                 <BuyerProtectionCard variant="full" />
 
                 {/* Pending authorization status prompt */}
@@ -988,7 +988,7 @@ export function CheckoutFlow() {
         open={showAuthModal}
         onOpenChange={setShowAuthModal}
         title="Sign In Required for Order Authorization"
-        description="To authorize payment and complete your order with AzamPay buyer protection, please sign in or register an account."
+        description="To authorize payment and complete your order with LUMO Pay buyer protection, please sign in or register an account."
         redirectUrl="/checkout"
       />
     </div>

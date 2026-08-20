@@ -27,7 +27,7 @@ const CORE_PILLARS = [
     icon: CreditCard,
     title: 'Zero Forex Risk & TZS Price Guarantee',
     description:
-      'Tanzanian buyers pay strictly in Tanzanian Shillings (TZS) using AzamPay, M-Pesa, TigoPesa, or local bank transfers. Lumo absorbs all international currency exchange volatility with guaranteed quotes.',
+      'Tanzanian buyers pay strictly in Tanzanian Shillings (TZS) using LUMO Pay, M-Pesa, TigoPesa, or local bank transfers. Lumo absorbs all international currency exchange volatility with guaranteed quotes.',
     color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
   },
   {
@@ -172,7 +172,7 @@ export default function AboutPage() {
           <ul className="space-y-2 pt-2 text-xs font-medium">
             <li className="flex items-center gap-2">
               <CheckCircle2 className="size-4 text-brand-500 shrink-0" />
-              <span>Full buyer protection with AzamPay mobile payment protection integration.</span>
+              <span>Full buyer protection with LUMO Pay mobile payment protection integration.</span>
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="size-4 text-brand-500 shrink-0" />

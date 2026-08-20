@@ -61,7 +61,7 @@ export default function LogisticsShipmentsPage() {
                   subtotalTZS: 120000,
                   shippingFeeTZS: 26340,
                   totalAmountTZS: 146340,
-                  paymentMethod: 'Escrow',
+                  paymentMethod: 'Trade Protection',
                   shippingAddress: { fullName: 'Tanzanian Merchant', city: 'Dar es Salaam' },
                   createdAt: a.createdAt || new Date().toISOString(),
                   items: [{ id: 'item-1', quantity: 100, unitPriceTZS: 1200, product: { title: a.instructions || 'Cargo Freight Goods', imageUrl: '', slug: 'cargo' } }],

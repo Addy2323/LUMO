@@ -784,7 +784,7 @@ export default function AdminOperationsPage() {
                   <span className="text-[10px] text-slate-500 font-bold uppercase">Payment Guarantee</span>
                   <p className="font-bold text-emerald-700 text-xs flex items-center gap-1">
                     <CheckCircle2 className="size-3.5 text-emerald-600" />
-                    {selectedOrder.stage === 'Paid' ? 'PAID (AzamPay Buyer Protection)' : 'Pending Authorization'}
+                    {selectedOrder.stage === 'Paid' ? 'PAID (LUMO Trade Protection)' : 'Pending Authorization'}
                   </p>
                 </div>
               </div>

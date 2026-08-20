@@ -347,7 +347,7 @@ export default function CustomerSourcingPage() {
                 </div>
               )}
 
-              {/* Paid Escrow Callout */}
+              {/* Paid Trade Protection Callout */}
               {item.status === 'paid' && item.paymentDetails && (
                 <div className="p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 space-y-1 text-[11px]">
                   <div className="flex items-center justify-between font-bold">
@@ -389,7 +389,7 @@ export default function CustomerSourcingPage() {
         />
       )}
 
-      {/* Sourcing Quotation Escrow Payment Dialog */}
+      {/* Sourcing Quotation Trade Protection Payment Dialog */}
       {payingItem && (
         <SourcingPaymentDialog
           item={payingItem}
@@ -660,7 +660,7 @@ function SourcingPaymentDialog({
                   const content = `LUMO B2B SOURCING PAYMENT RECEIPT\nReference: ${lastRef}\nSourcing Request: ${item.reference}\nProduct: ${item.productName}\nAmount Paid: TZS ${amountTZS.toLocaleString()}\nDate: ${new Date().toLocaleDateString()}\nStatus: PAYMENT PROTECTED & DISPATCHED`
                   const element = document.createElement('a')
                   element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`)
-                  element.setAttribute('download', `Lumo_Escrow_Receipt_${item.reference}.txt`)
+                  element.setAttribute('download', `Lumo_Payment_Receipt_${item.reference}.txt`)
                   document.body.appendChild(element)
                   element.click()
                   document.body.removeChild(element)
@@ -776,7 +776,7 @@ function SourcingPaymentDialog({
               />
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                 <Lock className="size-3 text-emerald-600" />
-                AzamPay Direct Checkout Gateway · Encrypted 256-bit SSL
+                LUMO Pay Direct Checkout Gateway · Encrypted 256-bit SSL
               </p>
             </div>
 

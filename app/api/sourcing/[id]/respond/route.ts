@@ -64,7 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           taxAmountTZS: new Prisma.Decimal(landedTotal * 0.1),
           totalAmountTZS: new Prisma.Decimal(landedTotal),
           status: OrderStatus.PENDING_PAYMENT,
-          paymentMethod: 'AzamPay Escrow',
+          paymentMethod: 'LUMO Payment Protection',
           shippingAddress: {
             fullName: auth.user.name || 'Valued Buyer',
             phone: auth.user.phone || '+255700000000',
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({
       success: true,
-      message: 'Quotation approved successfully. Order created awaiting AzamPay deposit.',
+      message: 'Quotation approved successfully. Order created awaiting LUMO Pay deposit.',
       sourcingRequest: updatedSourcing,
       order: createdOrder,
     })

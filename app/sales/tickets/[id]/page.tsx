@@ -32,7 +32,7 @@ const CANNED_RESPONSES = [
   },
   {
     title: 'Refund Authorization Notice',
-    body: 'Return request yako imepitishwa. Payout currency (TZS) inarejeshwa moja kwa moja kwenye namba yako ya AzamPay / M-Pesa ndani ya siku 2 za kazi.',
+    body: 'Return request yako imepitishwa. Payout currency (TZS) inarejeshwa moja kwa moja kwenye namba yako ya LUMO Pay / M-Pesa ndani ya siku 2 za kazi.',
   },
   {
     title: 'Supplier Stock Check (Internal)',

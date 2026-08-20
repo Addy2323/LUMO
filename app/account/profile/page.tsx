@@ -94,7 +94,7 @@ export default function CustomerProfilePage() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Your verified customer identity, company TIN details, and phone number for AzamPay mobile money checkout.
+            Your verified customer identity, company TIN details, and phone number for LUMO Pay mobile money checkout.
           </p>
         </div>
 

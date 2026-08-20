@@ -16,7 +16,7 @@ type SettlementRecord = {
   grossAmountTZS: number
   platformFeeTZS: number
   netPayoutTZS: number
-  status: 'SETTLED' | 'PENDING_PAYOUT' | 'HELD_IN_ESCROW'
+  status: 'SETTLED' | 'PENDING_PAYOUT' | 'HELD_IN_PROTECTION'
   settledAt?: string
 }
 
@@ -44,7 +44,7 @@ export default function AdminSettlementsPage() {
             grossAmountTZS: gross,
             platformFeeTZS: fee,
             netPayoutTZS: net,
-            status: isSettled ? 'SETTLED' : order.status === 'SHIPPED' ? 'PENDING_PAYOUT' : 'HELD_IN_ESCROW',
+            status: isSettled ? 'SETTLED' : order.status === 'SHIPPED' ? 'PENDING_PAYOUT' : 'HELD_IN_PROTECTION',
             settledAt: isSettled ? formatDate(order.updatedAt || order.createdAt) : undefined,
           }
         })

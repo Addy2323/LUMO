@@ -173,7 +173,7 @@ export default function SalesOrdersAssignmentPage() {
                       <td className="p-3 font-mono font-bold text-[#FF6B00]">#{ord.ref || ord.orderNumber}</td>
                       <td className="p-3 font-semibold text-slate-900">{ord.customer || ord.buyer?.name || 'Retail Merchant'}</td>
                       <td className="p-3 font-mono font-bold text-slate-900">{formatTZS(ord.amountTZS || ord.totalAmountTZS)}</td>
-                      <td className="p-3 text-slate-600 text-[11px] font-mono">{ord.paymentMethod || 'AzamPay Escrow'}</td>
+                      <td className="p-3 text-slate-600 text-[11px] font-mono">{ord.paymentMethod || 'LUMO Payment Protection'}</td>
                       <td className="p-3">
                         <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
                           {ord.stage || ord.status}

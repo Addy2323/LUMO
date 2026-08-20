@@ -394,7 +394,7 @@ export function ProductDetail({
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-muted-foreground text-[10px]">Protection</span>
-                <span className="font-semibold text-xs text-emerald-600 dark:text-emerald-400">AzamPay Protected</span>
+                <span className="font-semibold text-xs text-emerald-600 dark:text-emerald-400">LUMO Trade Protected</span>
               </div>
             </div>
           </div>
@@ -545,7 +545,7 @@ export function ProductDetail({
           <div className="rounded-lg border border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20 p-2.5 flex items-center gap-2 text-xs">
             <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span className="text-emerald-900/90 dark:text-emerald-200/90 text-[11px]">
-              <strong>Lumo Trade Assurance:</strong> AzamPay Buyer Protection &amp; Money-back inspection guarantee.
+              <strong>Lumo Trade Assurance:</strong> LUMO Trade Protection &amp; Money-back inspection guarantee.
             </span>
           </div>
 
@@ -636,7 +636,7 @@ export function ProductDetail({
                 <div className="flex flex-col gap-2 text-emerald-900/80 dark:text-emerald-200/80">
                   <div className="flex items-start gap-2">
                     <BadgeCheck className="size-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Secure Payments:</strong> AzamPay, M-Pesa, Mix by Yas, Airtel Money &amp; Bank.</span>
+                    <span><strong>Secure Payments:</strong> LUMO Pay, M-Pesa, Mix by Yas, Airtel Money &amp; Bank.</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <RotateCcw className="size-3.5 text-emerald-600 shrink-0 mt-0.5" />

@@ -39,7 +39,7 @@ export function AdminDashboard() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Global B2B platform governance, supplier KYC compliance, catalog approval machine, and Escrow payout settlements.
+            Global B2B platform governance, supplier KYC compliance, catalog approval machine, and Settlement payout settlements.
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export function AdminDashboard() {
           </Button>
           <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white gap-1.5 text-xs font-bold shadow-sm" render={<Link href="/admin/settlements" />}>
             <DollarSign className="size-3.5" />
-            AzamPay Payouts
+            LUMO Payouts
           </Button>
         </div>
       </div>
@@ -60,7 +60,7 @@ export function AdminDashboard() {
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="size-5 shrink-0 text-info-400" />
           <span>
-            <strong>Platform Financial Standard:</strong> All transactions are settled strictly in whole Tanzanian Shillings (TZS) via AzamPay escrow with daily merchant automated batch runs.
+            <strong>Platform Financial Standard:</strong> All transactions are settled strictly in whole Tanzanian Shillings (TZS) via LUMO Pay payment protection with daily merchant automated batch runs.
           </span>
         </div>
         <Badge variant="outline" className="hidden sm:inline-flex border-info-400/40 text-info-400 text-[10px] font-bold uppercase">
@@ -126,7 +126,7 @@ export function AdminDashboard() {
         <Card className="relative overflow-hidden border-border/80 bg-card card-hover-lift">
           <CardHeader className="pb-1">
             <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-              Escrow Orders Completed
+              Protected Orders Completed
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
@@ -135,7 +135,7 @@ export function AdminDashboard() {
             </div>
             <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
               <CheckCircle2 className="size-3 text-success inline" />
-              <span>100% AzamPay Paid</span>
+              <span>100% LUMO Pay Paid</span>
             </div>
           </CardContent>
         </Card>
@@ -148,7 +148,7 @@ export function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
               <CardTitle className="text-sm font-extrabold">Recent Platform Audit &amp; Approvals</CardTitle>
-              <CardDescription className="text-xs">Real-time merchant KYC, product approvals, and escrow releases</CardDescription>
+              <CardDescription className="text-xs">Real-time merchant KYC, product approvals, and payment protection releases</CardDescription>
             </div>
             <Button variant="ghost" size="sm" className="text-xs text-brand-500 font-semibold" render={<Link href="/admin/audit" />}>
               View All Logs
@@ -197,7 +197,7 @@ export function AdminDashboard() {
             <CardContent className="flex flex-col gap-2 text-xs">
               <p className="text-muted-foreground">Audit delivered order payouts &amp; platform fee ledger.</p>
               <Button size="sm" variant="outline" className="w-full justify-between font-semibold" render={<Link href="/admin/settlements" />}>
-                <span>View AzamPay Ledger</span>
+                <span>View LUMO Payment Ledger</span>
                 <ArrowRight className="size-3.5" />
               </Button>
             </CardContent>

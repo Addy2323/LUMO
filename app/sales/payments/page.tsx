@@ -50,14 +50,14 @@ export default function PaymentIssuesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <CreditCard className="size-6 text-emerald-600" /> Payment &amp; Escrow Reconciliation Desk
+              <CreditCard className="size-6 text-emerald-600" /> Payment &amp; Trade Protection Reconciliation Desk
             </h1>
             <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
               Live PostgreSQL
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Audit pending AzamPay escrow deposits, failed M-Pesa push transactions, and bank wire verifications.
+            Audit pending LUMO Pay payment protection deposits, failed M-Pesa push transactions, and bank wire verifications.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function PaymentIssuesPage() {
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400 space-y-1">
             <p className="font-semibold text-slate-600">No unverified or failed payments</p>
-            <p>Pending escrow transactions requiring manual reconciliation will appear here.</p>
+            <p>Pending payment protection transactions requiring manual reconciliation will appear here.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -105,7 +105,7 @@ export default function PaymentIssuesPage() {
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px]">
-                    Buyer: {item.buyer?.companyName || item.buyer?.name || 'Customer'} · Provider: {item.paymentMethod || 'AzamPay'}
+                    Buyer: {item.buyer?.companyName || item.buyer?.name || 'Customer'} · Provider: {item.paymentMethod || 'LUMO Pay'}
                   </p>
                 </div>
 

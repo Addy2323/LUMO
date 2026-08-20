@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { PaymentMethodId } from '@/lib/mock/orders'
 
 /**
- * Phase 1 payment methods. All of these are processed through AzamPay — the
+ * Phase 1 payment methods. All of these are processed through LUMO Pay — the
  * gateway is never surfaced as a choice to the customer.
  */
 export type PaymentMethod = {
@@ -14,7 +14,7 @@ export type PaymentMethod = {
   description: string
   icon: LucideIcon
   logo?: string
-  /** Copy shown while the mock AzamPay call is in flight. */
+  /** Copy shown while the mock LUMO Pay call is in flight. */
   waitingCopy?: string
 }
 
@@ -87,17 +87,19 @@ export function paymentMethod(id: PaymentMethodId): PaymentMethod {
 export const SAVED_PAYMENT_METHODS: any[] = []
 
 /**
- * Stubbed AzamPay call. Resolves after a delay; the reference mirrors the shape
+ * Stubbed LUMO Pay call. Resolves after a delay; the reference mirrors the shape
  * the real gateway returns so the checkout screen needs no changes later.
  */
-export async function requestAzamPayCharge(input: {
+export async function requestLumoPayCharge(input: {
   methodId: PaymentMethodId
   amount: number
   phone?: string
 }): Promise<{ reference: string; status: 'success' | 'failed' }> {
   await new Promise((resolve) => setTimeout(resolve, 2600))
   return {
-    reference: `AZP-${Math.floor(100000 + Math.random() * 899999)}`,
+    reference: `LMP-${Math.floor(100000 + Math.random() * 899999)}`,
     status: input.amount > 0 ? 'success' : 'failed',
   }
 }
+
+export const requestAzamPayCharge = requestLumoPayCharge

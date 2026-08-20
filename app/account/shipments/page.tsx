@@ -136,7 +136,7 @@ export default function CustomerShipmentsPage() {
   function handleVerifyOtp() {
     if (!selectedWaybill) return
     if (otpInput.trim() === selectedWaybill.deliveryOtp) {
-      toast.success(`Delivery Confirmed for Waybill ${selectedWaybill.waybillNumber}! Escrow released to supplier.`)
+      toast.success(`Delivery Confirmed for Waybill ${selectedWaybill.waybillNumber}! Payment released to supplier.`)
       setOtpModalOpen(false)
       setOtpInput('')
     } else {

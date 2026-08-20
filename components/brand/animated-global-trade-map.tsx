@@ -274,7 +274,7 @@ export function AnimatedGlobalTradeMap() {
 
           <div className="flex items-center gap-1.5 rounded-xl bg-slate-800/90 border border-amber-500/30 px-3 py-1 text-amber-400">
             <ShieldCheck className="size-3.5" />
-            <span className="font-bold text-white text-[11px]">AzamPay Protection</span>
+            <span className="font-bold text-white text-[11px]">LUMO Pay Protection</span>
             <span className="text-[10px] text-amber-400 font-extrabold uppercase">✓ Confirmed</span>
           </div>
         </div>

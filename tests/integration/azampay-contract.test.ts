@@ -1,5 +1,5 @@
 /**
- * Phase 7B AzamPay Webhook Contract & Security Test Suite
+ * Phase 7B LUMO Pay Webhook Contract & Security Test Suite
  */
 
 import { assertTestEnvironment } from '../setup'
@@ -7,7 +7,7 @@ import { assertTestEnvironment } from '../setup'
 export function runAzamPayContractTests() {
   assertTestEnvironment()
 
-  const suiteName = 'AzamPay Webhook Contract & Security'
+  const suiteName = 'LUMO Pay Webhook Contract & Security'
   const subResults: { name: string; passed: boolean; detail: string; status: string }[] = []
 
   // 1. Raw Body Signature Verification
@@ -30,13 +30,13 @@ export function runAzamPayContractTests() {
   subResults.push({
     name: 'Duplicate Webhook Notification Idempotency',
     passed: true,
-    detail: 'Duplicate transaction notifications return 200 OK without re-crediting escrow',
+    detail: 'Duplicate transaction notifications return 200 OK without re-crediting payment protection',
     status: 'VALIDATED_LOCAL_CONTRACT',
   })
 
   // 4. Sandbox Live External Dependency Classification
   subResults.push({
-    name: 'Live Official AzamPay Sandbox Postback Verification',
+    name: 'Live Official LUMO Pay Sandbox Postback Verification',
     passed: false,
     detail: 'Live sandbox credentials not configured in environment. Classified as BLOCKED_EXTERNAL.',
     status: 'BLOCKED_EXTERNAL',

@@ -83,7 +83,7 @@ const PORTAL_ROLES = [
     id: 'admin',
     title: 'Executive Admin Portal',
     subtitle: 'System & Audit Control',
-    description: 'Full oversight of platform GMV, product catalog approvals, user roles, KYC & escrow settlements.',
+    description: 'Full oversight of platform GMV, product catalog approvals, user roles, KYC & trade settlements.',
     icon: ShieldCheck,
     href: '/admin',
     badge: 'System Admin',
@@ -187,7 +187,7 @@ export default function StartupPage() {
             </h1>
 
             <p className="max-w-2xl text-sm sm:text-base text-slate-400 leading-relaxed">
-              Select your portal below to launch into the Lumo Commerce Platform. Direct factory trade, landed TZS cost calculator, AzamPay payment protection, and air/sea logistics dispatch.
+              Select your portal below to launch into the Lumo Commerce Platform. Direct factory trade, landed TZS cost calculator, LUMO Pay payment protection, and air/sea logistics dispatch.
             </p>
           </div>
         </section>

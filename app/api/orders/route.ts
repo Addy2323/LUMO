@@ -21,7 +21,7 @@ const CreateOrderSchema = z.object({
     street: z.string(),
     city: z.string(),
   }),
-  paymentMethod: z.string().default('AzamPay Escrow'),
+  paymentMethod: z.string().default('LUMO Payment Protection'),
   status: z.string().optional(),
   paymentStatus: z.string().optional(),
   subtotalTZS: z.number().optional(),
@@ -343,7 +343,7 @@ export async function POST(req: NextRequest) {
       await tx.paymentRecord.create({
         data: {
           orderId: order.id,
-          provider: 'AzamPay',
+          provider: 'LUMO Pay',
           transactionRef,
           amountTZS: finalTotalAmountTZS,
           status: initialPaymentStatus,

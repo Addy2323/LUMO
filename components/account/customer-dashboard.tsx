@@ -216,7 +216,7 @@ export function CustomerDashboard() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            paymentMethod: isBankCard ? 'Bank Card' : 'AzamPay Mobile Money',
+            paymentMethod: isBankCard ? 'Bank Card' : 'LUMO Mobile Money',
             network: payNetwork,
             phoneNumber: payPhone,
             cardNumber: cardNumber.replace(/\s/g, ''),
@@ -292,7 +292,7 @@ export function CustomerDashboard() {
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Shopping, factory sourcing, AzamPay escrow protection, and live freight delivery control centre.
+            Shopping, factory sourcing, LUMO Pay trade protection, and live freight delivery control centre.
           </p>
         </div>
 
@@ -370,7 +370,7 @@ export function CustomerDashboard() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-start gap-2">
                       <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                        <CreditCard className="size-4 text-emerald-600" /> Complete AzamPay Payment
+                        <CreditCard className="size-4 text-emerald-600" /> Complete LUMO Pay Payment
                       </span>
                       <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-mono font-bold">
                         Pending Payment
@@ -381,7 +381,7 @@ export function CustomerDashboard() {
                       <span className="font-mono font-black text-emerald-700">{formatTZS(Number(p.totalAmountTZS || 0))}</span>
                     </div>
                     <p className="text-[11px] text-slate-500 line-clamp-1">
-                      {itemTitle} — Escrow deposit awaiting payment confirmation.
+                      {itemTitle} — Payment deposit awaiting payment confirmation.
                     </p>
                   </div>
                   <Button
@@ -511,7 +511,7 @@ export function CustomerDashboard() {
                       <div className="flex items-center gap-2 shrink-0">
                         <div className="text-right mr-2 hidden sm:block">
                           <div className="font-mono font-black text-sm text-slate-900">{formatTZS(Number(order.totalAmountTZS || 0))}</div>
-                          <span className="text-[10px] text-emerald-600 font-bold">AzamPay Escrow Protected</span>
+                          <span className="text-[10px] text-emerald-600 font-bold">LUMO Payment Protection Protected</span>
                         </div>
 
                         <Button size="xs" variant="outline" className="text-[10px] font-bold h-8" render={<Link href={`/account/orders/${order.id}`} />}>
@@ -542,8 +542,8 @@ export function CustomerDashboard() {
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-400">Escrow Provider:</span>
-                <span className="font-bold text-white">AzamPay Mobile &amp; Card Gateway</span>
+                <span className="text-slate-400">Trade Protection Provider:</span>
+                <span className="font-bold text-white">LUMO Pay Mobile &amp; Card Gateway</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-400">Protected Amount:</span>
@@ -631,7 +631,7 @@ export function CustomerDashboard() {
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Tanzania Import Customs &amp; Escrow:</span>
+                  <span>Tanzania Import Customs &amp; Trade Protection:</span>
                   <span className="font-mono text-slate-900">
                     {formatTZS(selectedQuote.targetPriceTZS ? Number(selectedQuote.targetPriceTZS) * 0.15 : 37500)}
                   </span>
@@ -666,7 +666,7 @@ export function CustomerDashboard() {
         </Dialog>
       )}
 
-      {/* 6. AzamPay Mobile Money & Bank Card Payment Modal */}
+      {/* 6. LUMO Mobile Money & Bank Card Payment Modal */}
       {selectedPayOrder && (
         <Dialog open={!!selectedPayOrder} onOpenChange={() => {
           if (!isSubmitting) {
@@ -678,14 +678,14 @@ export function CustomerDashboard() {
             <DialogHeader className="space-y-1">
               <div className="flex items-center justify-between">
                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-bold gap-1">
-                  <ShieldCheck className="size-3" /> AzamPay Escrow Direct Deposit
+                  <ShieldCheck className="size-3" /> LUMO Trade Protection Direct Deposit
                 </Badge>
               </div>
               <DialogTitle className="text-lg font-black text-slate-900">
                 Pay Order #{selectedPayOrder.orderNumber || selectedPayOrder.id}
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500">
-                Your payment will be locked safely in AzamPay Escrow until quality inspection is approved.
+                Your payment will be locked safely in LUMO Payment Protection until quality inspection is approved.
               </DialogDescription>
             </DialogHeader>
 
@@ -699,7 +699,7 @@ export function CustomerDashboard() {
                       {formatTZS(Number(selectedPayOrder.totalAmountTZS || 0))}
                     </strong>
                   </div>
-                  <Badge className="bg-emerald-600 text-white font-bold text-[10px]">AzamPay Secured</Badge>
+                  <Badge className="bg-emerald-600 text-white font-bold text-[10px]">LUMO Secured</Badge>
                 </div>
 
                 {/* Network Options Selector */}
@@ -853,7 +853,7 @@ export function CustomerDashboard() {
                     {isBankCard ? `Connecting to ${payNetwork} Card Gateway` : `Initiating ${payNetwork} USSD Push`}
                   </h4>
                   <p className="text-xs text-slate-500">
-                    {isBankCard ? 'Verifying 3D-Secure card authentication...' : `Connecting to AzamPay Gateway for phone ${payPhone}...`}
+                    {isBankCard ? 'Verifying 3D-Secure card authentication...' : `Connecting to LUMO Payment Gateway for phone ${payPhone}...`}
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs font-bold text-emerald-600">
@@ -878,7 +878,7 @@ export function CustomerDashboard() {
                   <p className="text-xs text-slate-600 max-w-xs mx-auto">
                     {isBankCard
                       ? `Authorizing ${payNetwork} card transaction...`
-                      : `Please enter your ${payNetwork} PIN on your mobile phone to approve the escrow payment.`}
+                      : `Please enter your ${payNetwork} PIN on your mobile phone to approve the payment protection payment.`}
                   </p>
                 </div>
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-mono text-emerald-900 font-bold inline-block">
@@ -896,11 +896,11 @@ export function CustomerDashboard() {
                 <div className="space-y-1">
                   <h4 className="font-black text-slate-900 text-base">Payment Successful!</h4>
                   <p className="text-xs text-slate-600">
-                    Funds locked safely in AzamPay Escrow via {payNetwork}. Order #{selectedPayOrder.orderNumber} is now active.
+                    Funds locked safely in LUMO Payment Protection via {payNetwork}. Order #{selectedPayOrder.orderNumber} is now active.
                   </p>
                 </div>
                 <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-mono text-xs py-1 px-3">
-                  Verified by Lumo Escrow
+                  Verified by Lumo Trade Assurance
                 </Badge>
               </div>
             )}

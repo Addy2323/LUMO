@@ -180,7 +180,7 @@ export default function Customer360Page() {
             orderNumber: so.orderNumber,
             totalAmountTZS: Math.round(so.targetBudgetUSD * 2600),
             status: so.status.toUpperCase(),
-            paymentMethod: 'Escrow Guarantee',
+            paymentMethod: 'Trade Protection Guarantee',
           })
         }
       })
@@ -384,7 +384,7 @@ export default function Customer360Page() {
                             <div>
                               <div className="font-bold text-slate-900">Order #{o.orderNumber}</div>
                               <div className="text-[11px] text-slate-500">
-                                Total: {formatTZS(Number(o.totalAmountTZS))} · {o.paymentMethod || 'AzamPay'}
+                                Total: {formatTZS(Number(o.totalAmountTZS))} · {o.paymentMethod || 'LUMO Pay'}
                               </div>
                             </div>
                             <Badge className={`text-[10px] ${

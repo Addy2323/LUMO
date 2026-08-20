@@ -48,7 +48,7 @@ export function AppTopbar() {
   const [notifications, setNotifications] = useState([
     { id: '1', title: 'Shipment #SHP-9021 Customs Cleared', desc: 'Dar es Salaam Port · 15m ago', read: false, icon: PackageCheck, color: 'text-emerald-500' },
     { id: '2', title: 'Supplier Factory RFQ Accepted', desc: 'Yiwu Supplier Hub · 1h ago', read: false, icon: FilePlus, color: 'text-brand-500' },
-    { id: '3', title: 'Escrow Payment Released', desc: 'AzamPay TZS Settlement · 3h ago', read: true, icon: CheckCircle2, color: 'text-blue-500' },
+    { id: '3', title: 'Payment Protection Released', desc: 'LUMO Pay TZS Settlement · 3h ago', read: true, icon: CheckCircle2, color: 'text-blue-500' },
   ])
 
   const unreadCount = notifications.filter((n) => !n.read).length

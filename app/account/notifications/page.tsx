@@ -39,7 +39,7 @@ export default function CustomerNotificationsPage() {
                 <Smartphone className="size-4 text-purple-600" /> SMS Mobile Alerts (+255)
               </div>
               <p className="text-[11px] text-slate-500">
-                Receive instant SMS notifications for AzamPay receipts and freight delivery OTPs.
+                Receive instant SMS notifications for LUMO Pay receipts and freight delivery OTPs.
               </p>
             </div>
             <Switch checked={sms} onCheckedChange={(v) => { setSms(v); toast.success('SMS preferences updated') }} />

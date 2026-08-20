@@ -27,7 +27,7 @@ export default function SupplierPayoutsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Payout Ledger & B2B Settlements</h1>
           <p className="text-sm text-muted-foreground">
-            Track unlocked revenue from delivered orders and initiate AzamPay / Bank payouts.
+            Track unlocked revenue from delivered orders and initiate LUMO Pay / Bank payouts.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ function WithdrawalDialog({ unlockedBalance }: { unlockedBalance: number }) {
             <CheckCircle2 className="size-10 text-success-600" />
             <span className="font-semibold text-sm">Payout Transfer Submitted</span>
             <span className="text-xs text-muted-foreground">
-              Your request for {formatTZS(amount)} has been sent to AzamPay B2B settlement queue.
+              Your request for {formatTZS(amount)} has been sent to LUMO Pay B2B settlement queue.
             </span>
             <Button size="sm" onClick={() => setOpen(false)} className="mt-2">
               Done
@@ -204,7 +204,7 @@ function WithdrawalDialog({ unlockedBalance }: { unlockedBalance: number }) {
               >
                 <option value="crdb">CRDB Bank — Account 0152994821000</option>
                 <option value="nmb">NMB Bank — Account 2041009841</option>
-                <option value="azampay_b2b">AzamPay Merchant B2B Transfer</option>
+                <option value="lumo_b2b">LUMO Merchant B2B Transfer</option>
               </select>
             </div>
 

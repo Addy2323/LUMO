@@ -76,7 +76,7 @@ export async function GET() {
         subtotalTZS: Number(o.subtotalTZS),
         shippingFeeTZS: Number(o.shippingFeeTZS),
         taxAmountTZS: Number(o.taxAmountTZS),
-        paymentMethod: o.paymentMethod || 'AzamPay Escrow',
+        paymentMethod: o.paymentMethod || 'LUMO Payment Protection',
         paymentStatus: o.status,
         createdAt: o.createdAt,
         location: addrObj.city || 'Dar es Salaam',

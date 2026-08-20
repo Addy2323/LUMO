@@ -47,14 +47,14 @@ export default function CustomerPaymentsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <CreditCard className="size-6 text-emerald-600" /> Payments &amp; AzamPay Escrow Log
+              <CreditCard className="size-6 text-emerald-600" /> Payments &amp; LUMO Transaction Log
             </h1>
             <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
               Live PostgreSQL
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Audit mobile wallet deposits, AzamPay transaction references, receipts, and refund statuses.
+            Audit mobile wallet deposits, LUMO Pay transaction references, receipts, and refund statuses.
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function CustomerPaymentsPage() {
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400 space-y-1">
             <p className="font-semibold text-slate-600">No payment transaction records</p>
-            <p>AzamPay receipts and mobile money transaction logs will appear here after checkout.</p>
+            <p>LUMO Pay receipts and mobile money transaction logs will appear here after checkout.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -101,12 +101,12 @@ export default function CustomerPaymentsPage() {
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px]">
-                    Method: {item.paymentMethod || 'AzamPay Mobile Money'} · Status: {item.status}
+                    Method: {item.paymentMethod || 'LUMO Mobile Money'} · Status: {item.status}
                   </p>
                 </div>
 
                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold uppercase text-[9px]">
-                  Protected by Lumo Escrow
+                  Protected by Lumo Trade Assurance
                 </Badge>
               </div>
             ))}

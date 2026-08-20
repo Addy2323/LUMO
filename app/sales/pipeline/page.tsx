@@ -99,7 +99,7 @@ export default function SalesPipelinePage() {
               reference: `ORD-${ord.orderNumber}`,
               valueTzs: Number(ord.totalAmountTZS || 0),
               officer: ord.buyer?.name || 'Sales Officer',
-              nextAction: ord.status === 'PAID' ? 'Verify payment escrow' : `Order ${ord.status}`,
+              nextAction: ord.status === 'PAID' ? 'Verify payment payment protection' : `Order ${ord.status}`,
               followUpDate: new Date(ord.createdAt).toLocaleDateString(),
               probability: stageId === 'COMPLETED' ? 100 : 90,
               timeInStage: `${Math.floor((Date.now() - new Date(ord.createdAt).getTime()) / 3600000)}h`,
@@ -139,7 +139,7 @@ export default function SalesPipelinePage() {
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track deals from initial enquiry to quotation approval, payment escrow, and order fulfillment — powered by live database.
+            Track deals from initial enquiry to quotation approval, payment payment protection, and order fulfillment — powered by live database.
           </p>
         </div>
 

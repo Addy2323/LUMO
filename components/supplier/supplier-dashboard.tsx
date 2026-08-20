@@ -93,7 +93,7 @@ export function SupplierDashboard() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Fulfillment pipeline, stock synchronization, and Escrow payout settlements.
+            Fulfillment pipeline, stock synchronization, and Settlement payout settlements.
           </p>
         </div>
 
@@ -114,7 +114,7 @@ export function SupplierDashboard() {
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="size-5 shrink-0 text-info-400" />
           <span>
-            <strong>Lumo Escrow Settlement Rule:</strong> Payouts release automatically into your account 24h after logistics carrier delivery scanning.
+            <strong>Lumo Trade Settlement Rule:</strong> Payouts release automatically into your account 24h after logistics carrier delivery scanning.
           </span>
         </div>
         <Link href="/supplier/payouts" className="font-bold text-brand-500 hover:underline shrink-0 text-xs flex items-center gap-1">
@@ -135,7 +135,7 @@ export function SupplierDashboard() {
             <div className="text-2xl font-extrabold tnum text-warning">
               {pendingPackOrders.length}
             </div>
-            <p className="text-[11px] text-muted-foreground">Escrow paid orders</p>
+            <p className="text-[11px] text-muted-foreground">Trade protected orders</p>
           </CardContent>
         </Card>
 
@@ -304,7 +304,7 @@ export function SupplierDashboard() {
           {/* Pending Payout Card */}
           <Card className="border-border/80">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Delivery Escrow</CardTitle>
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Delivery Settlements</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-xs">
               <div className="flex justify-between items-center">

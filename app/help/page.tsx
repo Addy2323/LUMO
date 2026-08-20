@@ -48,7 +48,7 @@ const FAQS: FAQItem[] = [
   {
     id: 'faq_3',
     category: 'payments',
-    question: 'Can I pay in Tanzanian Shillings (TZS) using AzamPay or M-Pesa?',
+    question: 'Can I pay in Tanzanian Shillings (TZS) using LUMO Pay or M-Pesa?',
     answer:
       'Yes! Lumo eliminates foreign exchange risk for Tanzanian buyers. You can pay in local TZS via Mobile Money (M-Pesa, TigoPesa, Airtel Money) or bank transfer, and Lumo handles international supplier settlements directly.',
   },

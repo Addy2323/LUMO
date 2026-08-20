@@ -176,7 +176,7 @@ export function GlobalTradeMap() {
         <div className="flex items-center gap-6 text-xs text-slate-300">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-4 text-amber-400" />
-            <span>AzamPay Buyer Protection: <strong className="text-white tnum">100% Protected</strong></span>
+            <span>LUMO Trade Protection: <strong className="text-white tnum">100% Protected</strong></span>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <TrendingUp className="size-4 text-emerald-400" />

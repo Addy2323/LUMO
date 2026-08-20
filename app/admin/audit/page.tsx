@@ -48,7 +48,7 @@ export default function AdminAuditPage() {
         <CardContent className="flex items-center gap-3 p-4 text-xs text-info-800 dark:text-info-400">
           <ShieldCheck className="size-4 shrink-0 text-info-600" />
           <span>
-            Security Standard: Audit logs are append-only. All AzamPay payout unlocks and admin state changes are cryptographically timestamped.
+            Security Standard: Audit logs are append-only. All LUMO Pay payout unlocks and admin state changes are cryptographically timestamped.
           </span>
         </CardContent>
       </Card>

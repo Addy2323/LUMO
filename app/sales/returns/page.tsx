@@ -60,7 +60,7 @@ export default function ReturnsAndRefundsPage() {
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Process cargo inspection return requests, return waybills, and AzamPay escrow refund authorizations.
+            Process cargo inspection return requests, return waybills, and LUMO Pay payment refund authorizations.
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function ReturnsAndRefundsPage() {
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400 space-y-1">
             <p className="font-semibold text-slate-600">No active return or refund requests</p>
-            <p>Orders flagged for return or escrow reversal will appear here.</p>
+            <p>Orders flagged for return or payment protection reversal will appear here.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -107,7 +107,7 @@ export default function ReturnsAndRefundsPage() {
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px]">
-                    Buyer: {item.buyer?.companyName || item.buyer?.name || 'Buyer'} · Payment: {item.paymentMethod || 'AzamPay'}
+                    Buyer: {item.buyer?.companyName || item.buyer?.name || 'Buyer'} · Payment: {item.paymentMethod || 'LUMO Pay'}
                   </p>
                 </div>
 

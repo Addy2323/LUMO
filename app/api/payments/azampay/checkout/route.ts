@@ -7,7 +7,7 @@ import { azamPayClient } from '@/lib/payments/azampay'
 const AzamCheckoutSchema = z.object({
   orderId: z.string().min(1),
   accountNumber: z.string().min(8, 'Mobile number required (e.g. 0712345678)'),
-  providerName: z.enum(['M-PESA', 'HALOPESA', 'AIRTEL', 'AZAMPAY']).default('M-PESA'),
+  providerName: z.enum(['M-PESA', 'HALOPESA', 'AIRTEL', 'LUMO_PAY']).default('M-PESA'),
 })
 
 export async function POST(req: NextRequest) {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(checkoutResult)
   } catch (error: any) {
-    console.error('[API AZAMPAY CHECKOUT ERROR]', error)
+    console.error('[API LUMO_PAY CHECKOUT ERROR]', error)
     return NextResponse.json({ error: 'Failed to process checkout' }, { status: 500 })
   }
 }

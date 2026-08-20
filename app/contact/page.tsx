@@ -95,7 +95,7 @@ export default function ContactPage() {
             Get in Touch with LUMO
           </h1>
           <p className="text-xs sm:text-sm text-slate-300">
-            Have questions about factory sourcing, landed freight quotes, supplier verification, or AzamPay payment protection? Our team is ready to assist.
+            Have questions about factory sourcing, landed freight quotes, supplier verification, or LUMO Pay payment protection? Our team is ready to assist.
           </p>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function ContactPage() {
                         <option value="sourcing">Bulk Factory Sourcing Request</option>
                         <option value="shipping">Air &amp; Sea Landed Freight Status</option>
                         <option value="supplier">Supplier Registration &amp; Verification</option>
-                        <option value="billing">AzamPay Mobile Payment &amp; Protection</option>
+                        <option value="billing">LUMO Mobile Payment &amp; Protection</option>
                         <option value="other">General Inquiry</option>
                       </select>
                     </div>
@@ -278,7 +278,7 @@ export default function ContactPage() {
               <span>Buyer Protection Guarantee</span>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              All transactions submitted through LUMO are covered under our AzamPay Buyer Protection. Funds are protected until product inspection photo approval.
+              All transactions submitted through LUMO are covered under our LUMO Trade Protection. Funds are protected until product inspection photo approval.
             </p>
           </Card>
         </div>
