@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 type LogoProps = {
@@ -10,29 +11,19 @@ type LogoProps = {
 
 export function Logo({ className, markOnly = false, tone = 'default' }: LogoProps) {
   return (
-    <span className={cn('flex items-center gap-2.5', className)}>
-      <span
-        aria-hidden="true"
+    <span className={cn('inline-flex items-center gap-2 select-none', className)}>
+      <Image
+        src="/logo.png"
+        alt="LUMO"
+        width={140}
+        height={40}
         className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-md font-mono text-sm font-semibold',
-          tone === 'onPrimary'
-            ? 'bg-brand-panel-foreground text-brand-panel'
-            : 'bg-primary-400 text-primary-foreground',
+          'h-9 w-auto object-contain transition-transform duration-200 hover:scale-105',
+          tone === 'onPrimary' && 'brightness-0 invert',
+          markOnly && 'h-7 w-7 object-cover object-top'
         )}
-      >
-        L
-      </span>
-      {!markOnly && (
-        <span
-          className={cn(
-            'text-base font-semibold tracking-tight',
-            tone === 'onPrimary' ? 'text-brand-panel-foreground' : 'text-foreground',
-          )}
-        >
-          Lumo
-        </span>
-      )}
-      <span className="sr-only">Lumo</span>
+        priority
+      />
     </span>
   )
 }
