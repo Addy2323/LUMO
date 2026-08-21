@@ -49,6 +49,7 @@ export async function authorizeApiRequest(
 
     const { user, activeRole } = session
     const effectiveRole = activeRole ?? user.role
+    const platformRoleForAssignment = effectiveRole === 'CUSTOMER' ? 'BUYER' : effectiveRole
 
     // 2. Database validation: Verify session exists and user account is ACTIVE (not suspended)
     const dbUser = await prisma.user.findUnique({
@@ -57,7 +58,7 @@ export async function authorizeApiRequest(
         id: true,
         accountStatus: true,
         roleAssignments: {
-          where: { role: effectiveRole as any, status: 'ACTIVE' },
+          where: { role: platformRoleForAssignment as any, status: 'ACTIVE' },
         },
         userRoles: {
           where: { role: effectiveRole as any, status: 'APPROVED' },
