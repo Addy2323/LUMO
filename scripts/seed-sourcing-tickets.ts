@@ -35,7 +35,7 @@ async function seedSourcingTickets() {
       targetQuantity: 200,
       targetPriceUSD: 85,
       description: 'Industrial Smart LED Street Lights 100W IP66 Waterproof for municipal tenders.',
-      status: SourcingStatus.IN_REVIEW,
+      status: SourcingStatus.UNDER_REVIEW,
     },
     {
       productUrl: 'https://www.alibaba.com/product-detail/Commercial-Ice-Maker-100kg_1600492837.html',

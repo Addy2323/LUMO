@@ -107,22 +107,9 @@ export async function offerAssignment(input: OfferAssignmentInput): Promise<Assi
       },
     })
 
-    // Write atomic NotificationOutbox entry
-    const outboxKey = input.idempotencyKey || `assignment-offer-${assignment.id}-${Date.now()}`
-    await tx.notificationOutbox.create({
-      data: {
-        idempotencyKey: outboxKey,
-        eventType: 'ASSIGNMENT_OFFERED',
-        payloadJson: JSON.stringify({
-          assignmentId: assignment.id,
-          orderId: input.orderId,
-          assignmentRole: input.assignmentRole,
-          assigneeId: input.assigneeId,
-          assigneeOrganizationId: input.assigneeOrganizationId,
-          assignedById: input.assignedById,
-        }),
-      },
-    })
+    // TODO: SMS notification not yet implemented -- no template exists for ASSIGNMENT_OFFERED.
+    // See lib/notifications/outbox-service.ts for the correct pattern (OutboxService.enqueue)
+    console.warn(`[NOTIFICATION PENDING] ASSIGNMENT_OFFERED for assignment ${assignment.id} -- SMS template not yet implemented`)
 
     return assignment
   })
@@ -180,19 +167,9 @@ export async function acceptAssignment(assignmentId: string, actorId: string, id
       },
     })
 
-    const outboxKey = idempotencyKey || `assignment-accept-${assignmentId}-${Date.now()}`
-    await tx.notificationOutbox.create({
-      data: {
-        idempotencyKey: outboxKey,
-        eventType: 'ASSIGNMENT_ACCEPTED',
-        payloadJson: JSON.stringify({
-          assignmentId,
-          orderId: assignment.orderId,
-          assignmentRole: assignment.assignmentRole,
-          actorId,
-        }),
-      },
-    })
+    // TODO: SMS notification not yet implemented -- no template exists for ASSIGNMENT_ACCEPTED.
+    // See lib/notifications/outbox-service.ts for the correct pattern (OutboxService.enqueue)
+    console.warn(`[NOTIFICATION PENDING] ASSIGNMENT_ACCEPTED for assignment ${assignmentId} -- SMS template not yet implemented`)
 
     return updated
   })

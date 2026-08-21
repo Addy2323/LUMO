@@ -4,11 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { evaluateAqlResult } from '@/lib/aql-engine'
 
 // GET /api/agent/inspections/[inspectionId]
-export async function GET(req: NextRequest, { params }: { params: { inspectionId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ inspectionId: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
 
-  const { inspectionId } = params
+  const { inspectionId } = await params
 
   try {
     const inspection = await (prisma as any).qualityInspection?.findFirst({
@@ -36,12 +36,12 @@ export async function GET(req: NextRequest, { params }: { params: { inspectionId
 
 // PATCH /api/agent/inspections/[inspectionId]
 // Autosave draft inspection details, checklist, quantities, defects, photos
-export async function PATCH(req: NextRequest, { params }: { params: { inspectionId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ inspectionId: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
   const { user } = auth
 
-  const { inspectionId } = params
+  const { inspectionId } = await params
 
   try {
     const body = await req.json()

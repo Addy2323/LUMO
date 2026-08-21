@@ -14,9 +14,11 @@ const PayOrderSchema = z.object({
   cardHolder: z.string().optional(),
 })
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
+
+  const { id } = await params
 
   try {
     const body = await req.json()
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { paymentMethod, phoneNumber, network, cardNumber, cardExpiry, cardHolder } = result.data
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!order) {
@@ -42,7 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     // Execute state update inside transaction
     const [updatedOrder, paymentRecord] = await prisma.$transaction([
       prisma.order.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           status: OrderStatus.PAID,
           paymentMethod: providerName,

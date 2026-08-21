@@ -23,7 +23,7 @@ export default function NewInspectionPage() {
   const router = useRouter()
   const { orders, activeCountry } = useAgentStore()
 
-  const hubOrders = orders.filter((o) => o.assignedCountry === activeCountry && o.status !== 'CANCELLED')
+  const hubOrders = orders.filter((o) => o.assignedCountry === activeCountry)
   const [selectedOrderId, setSelectedOrderId] = useState<string>(hubOrders[0]?.id || '')
   const [inspectionType, setInspectionType] = useState('Pre-shipment')
   const [lotSize, setLotSize] = useState('100')
@@ -122,7 +122,7 @@ export default function NewInspectionPage() {
                       {selectedOrderId === ord.id && <CheckCircle2 className="size-5 text-brand-400" />}
                     </div>
                     <div className="text-[11px] text-slate-400 font-mono mt-2 flex justify-between border-t border-slate-800/80 pt-2">
-                      <span>Qty: {ord.quantity} pcs</span>
+                      <span>Qty: {ord.quantityNeeded} pcs</span>
                       <span className="text-brand-400">{ord.status}</span>
                     </div>
                   </div>

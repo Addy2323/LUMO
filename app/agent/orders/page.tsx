@@ -131,7 +131,7 @@ export default function AgentOrdersPage() {
             customerName: so.customerName,
             destination: `${so.destinationRegion}, ${so.destinationCountry}`,
             currentStep: 'Field Operations',
-            supplierName: so.selectedSupplierName || 'Not Selected',
+            supplierName: so.selectedSupplier?.name || 'Not Selected',
           })
         }
       })

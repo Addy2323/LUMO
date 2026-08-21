@@ -5,12 +5,12 @@ import { calculateAqlSamplingPlan } from '@/lib/aql-engine'
 
 // POST /api/agent/inspections/[inspectionId]/reinspection
 // Create a new inspection linked to the original failed inspection
-export async function POST(req: NextRequest, { params }: { params: { inspectionId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ inspectionId: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
   const { user } = auth
 
-  const { inspectionId } = params
+  const { inspectionId } = await params
 
   try {
     const parent = await (prisma as any).qualityInspection?.findFirst({

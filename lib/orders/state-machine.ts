@@ -74,6 +74,20 @@ const TRANSITION_ROLE_PERMISSIONS: Record<string, Role[]> = {
   'DISPUTED->REFUNDED': ['ADMIN'],
 }
 
+/** Legacy role-per-target-status permissions (backward compat) */
+export const ROLE_TRANSITION_PERMISSIONS: Partial<Record<OrderStatus, Role[]>> = {
+  DRAFT: ['BUYER', 'ADMIN'],
+  PENDING_PAYMENT: ['BUYER', 'ADMIN'],
+  PAID: ['ADMIN'],
+  PROCESSING: ['SUPPLIER', 'SALES', 'ADMIN'],
+  SHIPPED: ['LOGISTICS', 'ADMIN'],
+  DELIVERED: ['LOGISTICS', 'ADMIN'],
+  COMPLETED: ['BUYER', 'ADMIN'],
+  CANCELLED: ['BUYER', 'ADMIN'],
+  REFUNDED: ['ADMIN'],
+  DISPUTED: ['BUYER', 'ADMIN'],
+}
+
 export function validateOrderTransition(
   currentStatus: OrderStatus,
   targetStatus: OrderStatus,
@@ -102,12 +116,19 @@ export function validateOrderTransition(
   return { valid: true }
 }
 
+/**
+ * Flexible helper accepting either (userRole, currentStatus, targetStatus) or (currentStatus, targetStatus, userRole)
+ */
 export function canRolePerformTransition(
-  userRole: Role,
-  currentStatus: OrderStatus,
-  targetStatus: OrderStatus
+  arg1: any,
+  arg2: any,
+  arg3?: any
 ): boolean {
-  return validateOrderTransition(currentStatus, targetStatus, userRole).valid
+  const roles = ['BUYER', 'CUSTOMER', 'SUPPLIER', 'SALES', 'LOGISTICS', 'AGENT', 'ADMIN']
+  if (roles.includes(arg1)) {
+    return validateOrderTransition(arg2 as OrderStatus, arg3 as OrderStatus, arg1 as Role).valid
+  }
+  return validateOrderTransition(arg1 as OrderStatus, arg2 as OrderStatus, arg3 as Role).valid
 }
 
 export const ALLOWED_TRANSITIONS: Record<string, Record<string, Role[]>> = (() => {
@@ -119,7 +140,6 @@ export const ALLOWED_TRANSITIONS: Record<string, Record<string, Role[]>> = (() =
   }
   return result
 })()
-
 
 export type TransitionResult = {
   success: boolean
@@ -363,4 +383,3 @@ function mapStatusToTemplateKey(status: OrderStatus): SmsTemplateType | null {
       return null
   }
 }
-
