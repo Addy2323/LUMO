@@ -66,11 +66,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${jakarta.variable} ${geistMono.variable} bg-background overflow-x-hidden max-w-full`}
+      className={`${outfit.variable} ${jakarta.variable} ${geistMono.variable} bg-background overflow-x-clip max-w-full`}
       suppressHydrationWarning
     >
       <body
-        className="font-sans antialiased selection:bg-brand-500 selection:text-white pb-16 lg:pb-0 overflow-x-hidden max-w-full"
+        className="font-sans antialiased selection:bg-brand-500 selection:text-white pb-16 lg:pb-0 overflow-x-clip max-w-full"
         suppressHydrationWarning
       >
         <AppProviders>

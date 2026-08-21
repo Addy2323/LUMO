@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequest } from '@/lib/api/client'
 import { useSessionStore, type SessionUser } from '@/lib/stores/session-store'
-import type { Role } from '@/lib/roles'
+import { normalizeRole, type Role } from '@/lib/roles'
 import type { ForgotPasswordInput, SignInInput, SignUpInput } from '@/lib/auth/schemas'
 import { useRouter } from 'next/navigation'
 
@@ -30,24 +30,32 @@ export function useSignIn() {
         password: payload.password,
       }
 
-      const res = await apiRequest<{ success: boolean; user: any }, typeof body>('/api/auth/login', {
+      const res = await apiRequest<{
+        success: boolean
+        user?: any
+        requirePhoneVerification?: boolean
+        redirect?: string
+      }, typeof body>('/api/auth/login', {
         method: 'POST',
         body,
       })
 
-      const role = (res.user.role.toLowerCase() as Role) || payload.role
+      const rawRole = res.user?.role || payload.role
+      const role = normalizeRole(rawRole)
+
       return {
-        id: res.user.id,
-        fullName: res.user.name,
-        email: res.user.email,
-        phone: res.user.phone || '',
+        id: res.user?.id || '',
+        fullName: res.user?.name || 'User',
+        email: res.user?.email || body.email,
+        phone: res.user?.phone || '',
         role,
         activeRole: role,
-        verified: true,
+        verified: !res.requirePhoneVerification,
         avatarUrl: null,
-        companyName: res.user.companyName || null,
-        kycStatus: res.user.kycStatus || null,
-      } as SessionUser
+        companyName: res.user?.companyName || null,
+        kycStatus: res.user?.kycStatus || null,
+        redirect: res.redirect,
+      } as SessionUser & { redirect?: string }
     },
     onSuccess: (user) => {
       signIn(user)

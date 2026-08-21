@@ -8,7 +8,7 @@ import { ScrollToTop } from '@/components/ui/scroll-to-top'
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-svh flex-col bg-[#FFF9F2] dark:bg-[#061326] text-[#0B1F3A] dark:text-slate-100 antialiased relative w-full max-w-full overflow-x-hidden">
+    <div className="flex min-h-svh flex-col bg-[#FFF9F2] dark:bg-[#061326] text-[#0B1F3A] dark:text-slate-100 antialiased relative w-full max-w-full overflow-x-clip">
       <FlyingCartContainer />
       <GlobalHeader />
       {/* Main Content — wrapped in locale transition for smooth language switching */}

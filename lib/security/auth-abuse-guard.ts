@@ -44,7 +44,7 @@ export async function checkAuthAbuseGuard(
   req: NextRequest,
   options: GuardCheckOptions
 ): Promise<GuardCheckResult> {
-  const { endpoint, accountOrPhone, purpose = 'auth', isHighRiskEndpoint = false, windowMs = 900000, maxLimit = 5 } = options
+  const { endpoint, accountOrPhone, purpose = 'auth', isHighRiskEndpoint = false, windowMs = 900000, maxLimit = 10 } = options
   const netContext = getClientNetworkContext(req)
 
   const ipHmac = hashIp(netContext.ip)
