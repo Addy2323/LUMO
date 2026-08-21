@@ -1,10 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-<<<<<<< HEAD
-import { getSessionUser } from '@/lib/auth'
-=======
 import { getAuthenticatedUser } from '@/lib/auth/server'
->>>>>>> bdc1fd3 (backup: preserve server Mongike payment changes)
 import {
   initiatePaymentInputSchema,
   normalizeTanzanianPhone,
