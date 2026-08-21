@@ -22,3 +22,4 @@ node_modules
 .DS_Store
 *.logtsconfig.tsbuildinfo
 next-env.d.ts
+tsconfig.tsbuildinfo
