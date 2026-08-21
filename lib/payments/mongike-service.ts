@@ -114,7 +114,7 @@ export interface MongikeApiResult {
 export async function initiateMongikeMobileMoneyPayment(
   params: InitiateMongikeRequestParams
 ): Promise<MongikeApiResult> {
-  const apiKey = process.env.MONGIKE_API_KEY
+  const apiKey = process.env.MONGIKE_API_KEY || 'mk_e30f8cc15b26d1b37fd2743be7c3e49810ff8e5df7a2584d'
   const baseUrl = process.env.MONGIKE_BASE_URL || 'https://mongike.com/api/v1'
   const endpoint = `${baseUrl}/payments/mobile-money/tanzania`
 
@@ -125,8 +125,10 @@ export async function initiateMongikeMobileMoneyPayment(
   const normalizedPhone = normalizeTanzanianPhone(params.buyerPhone)
   const feePayer = params.feePayer || process.env.MONGIKE_FEE_PAYER || 'MERCHANT'
 
+  const uniqueOrderId = `${params.orderNumber || params.orderId}-${Date.now().toString().slice(-6)}`
+
   const requestBody = {
-    order_id: params.orderNumber || params.orderId,
+    order_id: uniqueOrderId,
     amount: Math.round(params.amountTZS),
     buyer_phone: normalizedPhone,
     fee_payer: feePayer,
