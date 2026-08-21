@@ -31,6 +31,9 @@ export type SmsTemplateType =
   | 'REFUND_INITIATED'
   | 'REFUND_COMPLETED'
   | 'ORDER_CANCELLED'
+  | 'SOURCING_SUBMITTED'
+  | 'SOURCING_QUOTATION_READY'
+  | 'SOURCING_STATUS_UPDATE'
   | 'CUSTOM_MARKETING'
   | 'CUSTOM_ANNOUNCEMENT'
 
@@ -40,6 +43,9 @@ export interface SmsTemplateRenderParams {
   customerName?: string
   customerDisplayName?: string
   orderReference?: string
+  sourcingReference?: string
+  sourcingUrl?: string
+  sourcingStatus?: string
   trackingUrl?: string
   internalOrderUrl?: string
   staffOrderUrl?: string
@@ -183,6 +189,18 @@ export const DEFAULT_TEMPLATES: Record<SmsTemplateType, { en: string; sw: string
     en: 'Lumo Order {{orderReference}} has been cancelled. {{refundStatusMessage}} View details or contact support: {{trackingUrl}}.',
     sw: 'Oda ya Lumo {{orderReference}} imeghairiwa. {{refundStatusMessage}} Angalia taarifa: {{trackingUrl}}.',
   },
+  SOURCING_SUBMITTED: {
+    en: 'Thank you for submitting your sourcing request with Lumo! Ticket {{sourcingReference}}. Our global procurement team in Shenzhen & Yiwu has received your request and is sourcing suppliers. Track status: {{sourcingUrl}}. Lumo — Global sourcing you can trust.',
+    sw: 'Asante kwa kuwasilisha ombi lako la kutafuta bidhaa na Lumo! Namba ya Ombi {{sourcingReference}}. Timu yetu ya manunuzi Shenzhen & Yiwu inashughulikia. Fuatilia: {{sourcingUrl}}. Lumo.',
+  },
+  SOURCING_QUOTATION_READY: {
+    en: 'Great news! Your factory quotation for Lumo Sourcing Ticket {{sourcingReference}} is now ready. Review factory details, landed costs, and approve your order: {{sourcingUrl}}.',
+    sw: 'Habari njema! Nukuu ya bei ya Ombi lako la Lumo {{sourcingReference}} iko tayari. Angalia gharama na thibitisha oda yako: {{sourcingUrl}}.',
+  },
+  SOURCING_STATUS_UPDATE: {
+    en: 'Lumo Update: Sourcing Ticket {{sourcingReference}} status has been updated to {{sourcingStatus}}. View details: {{sourcingUrl}}.',
+    sw: 'Taarifa ya Lumo: Hali ya Ombi la Kutafuta Bidhaa {{sourcingReference}} imesasishwa kuwa {{sourcingStatus}}. Angalia taarifa: {{sourcingUrl}}.',
+  },
   CUSTOM_MARKETING: {
     en: 'Lumo Offer: {{customContent}} Reply STOP to opt out.',
     sw: 'Ofa ya Lumo: {{customContent}} Jibu STOP kujitoa.',
@@ -202,6 +220,7 @@ export function renderSmsTemplate(type: SmsTemplateType, params: SmsTemplateRend
   let rawTemplate = templateObj[lang] || templateObj.en
 
   const trackingUrl = params.trackingUrl || `${APP_URL}/orders/${params.orderReference || ''}`
+  const sourcingUrl = params.sourcingUrl || `${APP_URL}/account/sourcing/${params.sourcingReference || ''}`
   const internalOrderUrl = params.internalOrderUrl || params.staffOrderUrl || `${APP_URL}/admin/orders/${params.orderReference || ''}`
   const staffOrderUrl = params.staffOrderUrl || internalOrderUrl
   const deliverySelectionUrl = params.deliverySelectionUrl || `${APP_URL}/orders/${params.orderReference || ''}/delivery-selection`
@@ -216,6 +235,9 @@ export function renderSmsTemplate(type: SmsTemplateType, params: SmsTemplateRend
     customerName: params.customerName || params.customerDisplayName || params.firstName || 'Customer',
     customerDisplayName: params.customerDisplayName || params.customerName || params.firstName || 'Valued Customer',
     orderReference: params.orderReference || '',
+    sourcingReference: params.sourcingReference || '',
+    sourcingUrl,
+    sourcingStatus: params.sourcingStatus || 'PROCESSING',
     trackingUrl,
     internalOrderUrl,
     staffOrderUrl,

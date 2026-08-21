@@ -92,8 +92,14 @@ export async function processOutboxBatch(batchSize: number = 50): Promise<Outbox
  * Helper to generate human-friendly notification titles for in-app feeds
  */
 function getNotificationTitle(eventType: string, payload: any): string {
-  const ref = payload.orderReference || payload.orderNumber || ''
+  const ref = payload.sourcingReference || payload.orderReference || payload.orderNumber || ''
   switch (eventType) {
+    case 'SOURCING_SUBMITTED':
+      return `Sourcing Request Received (${ref})`
+    case 'SOURCING_QUOTATION_READY':
+      return `Quotation Ready for Sourcing Ticket ${ref}`
+    case 'SOURCING_STATUS_UPDATE':
+      return `Status Update for Sourcing Request ${ref}`
     case 'ORDER_PAID':
     case 'ORDER_PAID_CUSTOMER':
       return `Payment Received for Order ${ref}`
@@ -138,6 +144,6 @@ function getNotificationTitle(eventType: string, payload: any): string {
     case 'REFUND_COMPLETED':
       return `Refund Completed for Order ${ref}`
     default:
-      return `Order Update: ${ref}`
+      return `Notification: ${ref}`
   }
 }

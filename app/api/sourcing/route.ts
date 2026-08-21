@@ -4,6 +4,8 @@ import { Prisma, SourcingStatus } from '@prisma/client'
 import { prisma } from '@/lib/db'
 import { authorizeApiRequest } from '@/lib/auth/authorize'
 import { createConversation } from '@/lib/conversations/conversation-service'
+import { OutboxService } from '@/lib/notifications/outbox-service'
+import { processOutboxBatch } from '@/lib/notifications/outbox-worker'
 
 const SourcingRequestSchema = z.object({
   productUrl: z.string().min(1, 'Product link or description required'),
@@ -79,6 +81,30 @@ export async function POST(req: NextRequest) {
       })
     } catch (convError) {
       console.warn('[SOURCING POST CONVERSATION INIT WARNING]', convError)
+    }
+
+    // Trigger Transactional Outbox SMS Notification to Buyer
+    if (auth.user.phone) {
+      try {
+        const sourcingRef = `SRC-${request.id.slice(0, 8).toUpperCase()}`
+        await OutboxService.enqueue({
+          eventType: 'SOURCING_SUBMITTED',
+          aggregateId: request.id,
+          recipientId: auth.user.id,
+          recipientPhone: auth.user.phone,
+          templateKey: 'SOURCING_SUBMITTED',
+          payloadJson: {
+            customerName: auth.user.name || 'Valued Customer',
+            sourcingReference: sourcingRef,
+            sourcingUrl: `https://lumo.co.tz/account/sourcing/${request.id}`,
+          },
+        })
+
+        // Execute background pass to dispatch SMS immediately
+        processOutboxBatch().catch((err) => console.error('[OUTBOX BATCH ERROR]', err))
+      } catch (smsError) {
+        console.error('[SOURCING SUBMIT SMS ENQUEUE ERROR]', smsError)
+      }
     }
 
     return NextResponse.json(request, { status: 201 })
