@@ -43,10 +43,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await authorizeApiRequest(req)
-  if (!auth.authorized) return auth.response!
-
   try {
+    const auth = await authorizeApiRequest(req)
+    if (!auth.authorized) return auth.response!
+
     const body = await req.json()
     const result = SourcingRequestSchema.safeParse(body)
     if (!result.success) {

@@ -164,40 +164,40 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authResult = await authorizeApiRequest(req)
-  let buyerUser = authResult.user
-
-  if (!buyerUser) {
-    buyerUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { role: 'BUYER' },
-          { role: 'CUSTOMER' },
-        ],
-      },
-    })
-    if (!buyerUser) {
-      buyerUser = await prisma.user.findFirst()
-    }
-  }
-
-  if (!buyerUser) {
-    try {
-      buyerUser = await prisma.user.create({
-        data: {
-          name: 'Lumo Merchant',
-          email: `guest_${Date.now()}@lumo.co.tz`,
-          role: 'CUSTOMER',
-          accountStatus: 'ACTIVE',
-        },
-      })
-    } catch (createErr) {
-      console.error('[ORDER POST] Failed to create default guest user:', createErr)
-      return NextResponse.json({ error: 'Authentication required. No valid buyer user found in system.' }, { status: 401 })
-    }
-  }
-
   try {
+    const authResult = await authorizeApiRequest(req).catch(() => ({ authorized: false } as any))
+    let buyerUser = authResult.user
+
+    if (!buyerUser) {
+      buyerUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { role: 'BUYER' },
+            { role: 'CUSTOMER' },
+          ],
+        },
+      }).catch(() => null)
+      if (!buyerUser) {
+        buyerUser = await prisma.user.findFirst().catch(() => null)
+      }
+    }
+
+    if (!buyerUser) {
+      try {
+        buyerUser = await prisma.user.create({
+          data: {
+            name: 'Lumo Merchant',
+            email: `guest_${Date.now()}@lumo.co.tz`,
+            role: 'CUSTOMER',
+            accountStatus: 'ACTIVE',
+          },
+        })
+      } catch (createErr) {
+        console.error('[ORDER POST] Failed to create default guest user:', createErr)
+        return NextResponse.json({ error: 'Authentication required. No valid buyer user found in system.' }, { status: 401 })
+      }
+    }
+
     const body = await req.json()
     const result = CreateOrderSchema.safeParse(body)
 
