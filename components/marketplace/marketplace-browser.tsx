@@ -91,12 +91,12 @@ export function MarketplaceBrowser() {
   )
 
   return (
-    <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:gap-8">
-      <aside className="hidden w-64 shrink-0 lg:block">
-        <div className="sticky top-20">{filterPanel}</div>
+    <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:gap-8 lg:h-[calc(100vh-6rem)] lg:overflow-hidden">
+      <aside className="hidden w-72 shrink-0 lg:block lg:h-full lg:overflow-y-auto custom-scrollbar pr-1 pb-10">
+        {filterPanel}
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 lg:h-full lg:overflow-y-auto custom-scrollbar pr-2 pb-10">
         {/* Can't find product sourcing banner */}
         <div className="bg-orange-50/90 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-500/30 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-2xs">
           <div className="flex items-center gap-3">

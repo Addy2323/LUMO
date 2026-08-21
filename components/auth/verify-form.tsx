@@ -43,7 +43,8 @@ export function VerifyForm() {
     try {
       const user = await verify.mutateAsync({ code: value, role, fullName, email, phone: destination })
       toast.success('Account verified')
-      router.push(roleHome(user.role))
+      const targetPath = (user as any).redirect || roleHome(user.role)
+      window.location.href = targetPath
     } catch (cause) {
       setError(
         cause instanceof ApiError ? cause.message : 'We could not verify that code. Try again.',

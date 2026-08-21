@@ -108,6 +108,15 @@ export async function POST(req: NextRequest) {
         requirePhoneVerification: true,
         redirect: '/auth/verify-phone',
         message: 'Phone verification required before accessing dashboard.',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          kycStatus: user.kycStatus,
+          phone: user.phone || '',
+          companyName: user.companyName || '',
+        },
       })
     }
 

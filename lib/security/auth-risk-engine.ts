@@ -18,23 +18,26 @@ export function evaluateAttemptRisk(failedAttemptCount: number, isSpraySuspected
   let shouldThrottle = false
   let retryAfterSeconds = 0
 
-  if (failedAttemptCount >= 1 && failedAttemptCount <= 3) {
-    riskScore = 10 * failedAttemptCount
-  } else if (failedAttemptCount === 4) {
+  if (failedAttemptCount >= 1 && failedAttemptCount <= 5) {
+    riskScore = 5 * failedAttemptCount
+  } else if (failedAttemptCount >= 6 && failedAttemptCount <= 8) {
+    riskScore = 35
+    progressiveDelayMs = 250
+  } else if (failedAttemptCount >= 9 && failedAttemptCount <= 10) {
     riskScore = 50
-    // Controlled server-side delay (up to 2s)
-    progressiveDelayMs = 2000
-  } else if (failedAttemptCount === 5) {
+    // Controlled server-side delay (up to 1s)
+    progressiveDelayMs = 1000
+  } else if (failedAttemptCount === 11) {
     riskScore = 75
     requireBotChallenge = true
     shouldThrottle = true
     retryAfterSeconds = 5
-  } else if (failedAttemptCount >= 6 && failedAttemptCount <= 7) {
+  } else if (failedAttemptCount >= 12 && failedAttemptCount <= 14) {
     riskScore = 85
     requireBotChallenge = true
     shouldThrottle = true
-    retryAfterSeconds = 15 + (failedAttemptCount - 6) * 15 // 15s to 30s
-  } else if (failedAttemptCount >= 8) {
+    retryAfterSeconds = 15 + (failedAttemptCount - 12) * 15 // 15s to 45s
+  } else if (failedAttemptCount >= 15) {
     riskScore = 95
     shouldThrottle = true
     retryAfterSeconds = 900 // 15 mins temporary hold

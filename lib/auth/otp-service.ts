@@ -7,7 +7,7 @@ import { hashPhone } from '@/lib/security/secure-identifiers'
 const OTP_SECRET = process.env.OTP_HMAC_SECRET || process.env.JWT_SECRET || 'lumo-otp-secret-key-2026'
 const OTP_TTL_MS = 5 * 60 * 1000 // 5 minutes
 const COOLDOWN_MS = 60 * 1000 // 60 seconds
-const MAX_ATTEMPTS = 5
+const MAX_ATTEMPTS = 10
 
 /**
  * Keyed OTP HMAC calculation:

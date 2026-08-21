@@ -45,13 +45,13 @@ export async function runSecurityTestSuite() {
   assert.notStrictEqual(hmacReg, hmacReset, 'HMAC for registration OTP must be rejected if submitted for password reset')
   console.log('✓ Scenario 4 Passed: OTP purpose segregation verified.\n')
 
-  // 5. Fifth-attempt invalidation & max attempts threshold
-  console.log('[SCENARIO 5] Max Attempts Threshold (MAX_ATTEMPTS = 5)...')
-  const maxAttempts = 5
-  let attemptCount = 4
+  // 5. Tenth-attempt invalidation & max attempts threshold
+  console.log('[SCENARIO 5] Max Attempts Threshold (MAX_ATTEMPTS = 10)...')
+  const maxAttempts = 10
+  let attemptCount = 9
   attemptCount++
-  assert.strictEqual(attemptCount >= maxAttempts, true, 'Attempt counter invalidates code upon 5th failure')
-  console.log('✓ Scenario 5 Passed: 5th attempt invalidation threshold verified.\n')
+  assert.strictEqual(attemptCount >= maxAttempts, true, 'Attempt counter invalidates code upon 10th failure')
+  console.log('✓ Scenario 5 Passed: 10th attempt invalidation threshold verified.\n')
 
   // 6. Resend Preserving Cumulative Failure Counters
   console.log('[SCENARIO 6] Resend Counter Preservation...')
@@ -72,14 +72,14 @@ export async function runSecurityTestSuite() {
   // 8. Auth Risk Engine & Progressive Delays
   console.log('[SCENARIO 8] Auth Risk Engine & Throttling Limits...')
   const lowRisk = evaluateAttemptRisk(2)
-  assert.strictEqual(lowRisk.riskScore, 20)
+  assert.strictEqual(lowRisk.riskScore, 10)
   assert.strictEqual(lowRisk.progressiveDelayMs, 0)
   assert.strictEqual(lowRisk.requireBotChallenge, false)
 
-  const highRisk = evaluateAttemptRisk(6)
+  const highRisk = evaluateAttemptRisk(11)
   assert.strictEqual(highRisk.shouldThrottle, true)
   assert.strictEqual(highRisk.requireBotChallenge, true)
-  assert.strictEqual(highRisk.retryAfterSeconds, 15)
+  assert.strictEqual(highRisk.retryAfterSeconds, 5)
   console.log('✓ Scenario 8 Passed: Progressive delays & risk scoring verified.\n')
 
   // 9. DevLoggerOtpProvider Production Guard

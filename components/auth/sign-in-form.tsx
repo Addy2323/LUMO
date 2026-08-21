@@ -47,12 +47,9 @@ export function SignInForm() {
     try {
       const user = await signIn.mutateAsync({ ...values, role })
       toast.success(`Welcome back, ${user.fullName.split(' ')[0]}`)
-      const redirectUrl = searchParams.get('redirect')
-      if (redirectUrl) {
-        router.push(redirectUrl)
-      } else {
-        router.push(roleHome(user.role))
-      }
+      const redirectUrl = searchParams.get('redirect') || searchParams.get('from') || (user as any).redirect
+      const targetPath = redirectUrl || roleHome(user.role)
+      window.location.href = targetPath
     } catch (error) {
       setFormError(
         error instanceof ApiError ? error.message : t('auth.invalidCredentials'),
