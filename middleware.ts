@@ -14,8 +14,8 @@ const ROLE_PROTECTED_ROUTES: { prefix: string; allowedRoles: string[] }[] = [
   { prefix: '/sales', allowedRoles: ['SALES', 'ADMIN'] },
   { prefix: '/logistics', allowedRoles: ['LOGISTICS', 'ADMIN'] },
   { prefix: '/agent', allowedRoles: ['AGENT', 'ADMIN'] },
-  { prefix: '/account', allowedRoles: ['BUYER', 'SUPPLIER', 'SALES', 'LOGISTICS', 'AGENT', 'ADMIN'] },
-  { prefix: '/checkout', allowedRoles: ['BUYER', 'SUPPLIER', 'SALES', 'LOGISTICS', 'AGENT', 'ADMIN'] },
+  { prefix: '/account', allowedRoles: ['BUYER', 'CUSTOMER', 'SUPPLIER', 'SALES', 'LOGISTICS', 'AGENT', 'ADMIN'] },
+  { prefix: '/checkout', allowedRoles: ['BUYER', 'CUSTOMER', 'SUPPLIER', 'SALES', 'LOGISTICS', 'AGENT', 'ADMIN'] },
 ]
 
 export async function middleware(req: NextRequest) {
@@ -25,12 +25,14 @@ export async function middleware(req: NextRequest) {
   // 1. CSRF Origin & Host Validation for state-changing requests (POST, PUT, PATCH, DELETE)
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && pathname.startsWith('/api/')) {
     const origin = req.headers.get('origin')
-    const host = req.headers.get('host')
+    const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host')
 
     // Exempt public webhooks (e.g. AzamPay Webhook)
-    if (pathname !== '/api/payments/azampay/webhook' && origin && host) {
-      const originHost = origin.replace(/^https?:\/\//, '')
-      if (originHost !== host) {
+    if (pathname !== '/api/payments/azampay/webhook' && origin && rawHost) {
+      const originHost = origin.replace(/^https?:\/\//, '').replace(/:\d+$/, '').replace(/^www\./, '').toLowerCase()
+      const hostName = rawHost.split(',')[0].trim().replace(/:\d+$/, '').replace(/^www\./, '').toLowerCase()
+
+      if (originHost !== hostName) {
         return applySecurityHeaders(
           NextResponse.json({ error: 'CSRF verification failed: Origin mismatch' }, { status: 403 })
         )

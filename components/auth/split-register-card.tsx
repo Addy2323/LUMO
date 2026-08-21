@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label'
 import { AuthLogisticsIllustration } from '@/components/auth/auth-logistics-illustration'
 import { OtpInput } from '@/components/auth/otp-input'
 import { maskPhoneNumber } from '@/lib/sms/phone-normalizer'
+import { useSessionStore } from '@/lib/stores/session-store'
 
 interface SplitRegisterCardProps {
   initialRole?: 'CUSTOMER' | 'SUPPLIER' | 'LOGISTICS'
@@ -255,12 +256,25 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
         return
       }
 
+      if (data.user) {
+        useSessionStore.getState().signIn({
+          id: data.user.id,
+          fullName: data.user.name || formData.name,
+          email: data.user.email || formData.email,
+          phone: data.user.phone || formData.phone,
+          role: (data.user.role || 'customer').toLowerCase() as any,
+          activeRole: (data.user.role || 'customer').toLowerCase() as any,
+          verified: true,
+          avatarUrl: null,
+        })
+      }
+
       setIsVerified(true)
       setLoading(false)
 
       setTimeout(() => {
-        router.push(data.redirect || '/marketplace')
-        router.refresh()
+        const targetPath = data.redirect || '/account'
+        window.location.href = targetPath
       }, 1200)
     } catch {
       setError('Verification failed. Please check connection.')
