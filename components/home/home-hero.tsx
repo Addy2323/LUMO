@@ -98,7 +98,7 @@ export function HomeHero() {
                     <ChevronRight className="size-3.5 sm:size-4 text-primary shrink-0" />
                   </Button>
                 </Link>
-                <Link href="/sourcing/request" className="w-full">
+                <Link href="/sourcing/paste-link" className="w-full">
                   <Button
                     variant="outline"
                     className="w-full bg-white/15 hover:bg-white/25 text-white border-white/40 hover:border-white/60 font-bold text-[11px] sm:text-xs lg:text-sm px-2 sm:px-4 h-11 sm:h-12 rounded-2xl gap-1.5 shadow-sm backdrop-blur-md transition-transform hover:-translate-y-px"

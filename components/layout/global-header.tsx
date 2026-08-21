@@ -67,7 +67,7 @@ export function useMainNavItems() {
   const t = useT()
   return [
     { label: t('navigation.marketplace'), href: '/marketplace', icon: LayoutGrid },
-    { label: t('navigation.sourceProduct'), href: '/sourcing/request', icon: PackageSearch },
+    { label: t('navigation.sourceProduct'), href: '/sourcing/paste-link', icon: PackageSearch },
     { label: t('navigation.trackOrder'), href: '/track-freight', icon: Truck },
     { label: t('navigation.suppliers'), href: '/supplier', icon: Boxes },
     { label: t('navigation.aboutUs'), href: '/about', icon: Info },

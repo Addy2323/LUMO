@@ -385,25 +385,33 @@ export default function PasteLinkSourcingPage() {
               <div className="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 className="size-10" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">Sourcing Request Submitted!</h2>
+              <h2 className="text-2xl font-bold text-foreground">Sourcing Request Submitted!</h2>
               <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Your request for <strong>{productName || 'Custom Product'}</strong> has been assigned to Lumo Guangzhou Sourcing Officers. You will receive an all-inclusive landed TZS quotation within 2 hours.
+                Your request for <strong className="text-foreground">{productName || 'Custom Product'}</strong> has been assigned to Lumo Shenzhen & Yiwu Sourcing Officers. Reference Ticket: <span className="font-mono font-bold text-primary">{submittedRef}</span>.
               </p>
-              <div className="pt-4 flex items-center justify-center gap-3">
+
+              {/* SMS Notification Sent Pill */}
+              <div className="mx-auto max-w-md p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-semibold text-primary flex items-center justify-center gap-2">
+                <span className="text-base">📱</span>
+                <span>An SMS confirmation with your tracking link has been sent to your phone.</span>
+              </div>
+
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button
                   variant="outline"
                   onClick={() => {
                     setSubmitted(false)
                     setCurrentStep(1)
                   }}
+                  className="w-full sm:w-auto"
                 >
                   Create Another Request
                 </Button>
                 <Button
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                   render={<Link href="/account/sourcing" />}
                 >
-                  View My Sourcing Queue ({submittedRef})
+                  Track Sourcing Ticket ({submittedRef})
                 </Button>
               </div>
             </CardContent>

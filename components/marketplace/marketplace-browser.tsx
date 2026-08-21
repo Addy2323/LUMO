@@ -111,7 +111,7 @@ export function MarketplaceBrowser() {
             </div>
           </div>
 
-          <Button size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs shrink-0 rounded-lg px-4 shadow-xs" render={<Link href="/sourcing/request" />}>
+          <Button size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs shrink-0 rounded-lg px-4 shadow-xs" render={<Link href="/sourcing/paste-link" />}>
             {t('marketplace.requestGlobalSourcing')}
           </Button>
         </div>
@@ -224,7 +224,7 @@ export function MarketplaceBrowser() {
                 <RefreshCw className="size-4 mr-2" />
                 {t('common.tryAgain')}
               </Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/request" />}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/paste-link" />}>
                 {t('marketplace.requestGlobalSourcing')}
               </Button>
             </div>
@@ -259,7 +259,7 @@ export function MarketplaceBrowser() {
               >
                 {t('marketplace.clearFilters')}
               </Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/request" />}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/paste-link" />}>
                 {t('marketplace.requestGlobalSourcing')}
               </Button>
             </div>
@@ -281,7 +281,7 @@ export function MarketplaceBrowser() {
                 <RefreshCw className="size-4 mr-2" />
                 {t('marketplace.refreshProducts')}
               </Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/request" />}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold" render={<Link href="/sourcing/paste-link" />}>
                 {t('marketplace.requestGlobalSourcing')}
               </Button>
             </div>
