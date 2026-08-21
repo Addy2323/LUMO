@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authorizeApiRequest } from '@/lib/auth/authorize'
 import { transitionOrderStatus, AgentOrderStatus } from '@/lib/services/workflow-service'
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
 
   const { user } = auth
-  const orderId = context.params.id
+  const orderId = (await context.params).id
   const body = await req.json()
   const { currentStatus, nextStatus, reason, notes } = body
 

@@ -57,6 +57,9 @@ export const ROLE_TRANSITION_PERMISSIONS: Record<OrderStatus, Role[]> = {
 /**
  * Validates if an order status transition is permitted for the given role
  */
+export const canRolePerformTransition = (currentStatus: OrderStatus, targetStatus: OrderStatus, userRole: Role) => validateOrderTransition(currentStatus, targetStatus, userRole).valid
+export { TRANSITION_ROLE_PERMISSIONS as ALLOWED_TRANSITIONS }
+
 export function validateOrderTransition(
   currentStatus: OrderStatus,
   targetStatus: OrderStatus,
@@ -195,23 +198,9 @@ export async function transitionOrder(
       },
     })
 
-    // 4. Write NotificationOutbox (Atomic Single Outbox Pattern)
-    const outboxIdempotency = idempotencyKey || `order-transition-${orderId}-${currentStatus}-${targetStatus}-${Date.now()}`
-    await tx.notificationOutbox.create({
-      data: {
-        idempotencyKey: outboxIdempotency,
-        eventType: `ORDER_${targetStatus}`,
-        payloadJson: JSON.stringify({
-          orderId,
-          orderNumber: order.orderNumber,
-          previousStatus: currentStatus,
-          newStatus: targetStatus,
-          actorId,
-          actorRole,
-          buyerId: order.buyerId,
-        }),
-      },
-    })
+    // TODO: SMS notification not yet implemented for generic order transitions.
+    // Templates only exist for ORDER_PAID_CUSTOMER/INTERNAL and ORDER_DELIVERED_CUSTOMER today.
+    console.warn(`[NOTIFICATION PENDING] ORDER_${targetStatus} for order ${orderId} -- SMS template not yet implemented`)
   })
 
   return { success: true, orderId, previousStatus: currentStatus, newStatus: targetStatus }

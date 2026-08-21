@@ -9,9 +9,11 @@ const RespondSchema = z.object({
   notes: z.string().optional(),
 })
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
+
+  const { id } = await params
 
   try {
     const body = await req.json()
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { action, notes } = result.data
 
     const sourcingReq = await prisma.sourcingRequest.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!sourcingReq) {
@@ -32,10 +34,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     if (action === 'REJECT') {
       const updated = await prisma.sourcingRequest.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
-          status: SourcingStatus.CANCELLED,
-          notes: notes ? `Customer Rejected: ${notes}` : 'Customer Rejected Quotation',
+          status: SourcingStatus.REJECTED,
+          quoteDetails: {
+            ...(typeof sourcingReq.quoteDetails === 'object' && sourcingReq.quoteDetails !== null ? sourcingReq.quoteDetails : {}),
+            rejectionReason: notes ? `Customer Rejected: ${notes}` : 'Customer Rejected Quotation',
+          },
         },
       })
       return NextResponse.json({ success: true, sourcingRequest: updated })
@@ -50,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const [updatedSourcing, createdOrder] = await prisma.$transaction([
       prisma.sourcingRequest.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           status: SourcingStatus.FULFILLED,
         },

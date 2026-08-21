@@ -3,12 +3,12 @@ import { authorizeApiRequest } from '@/lib/auth/authorize'
 import { prisma } from '@/lib/prisma'
 
 // POST /api/agent/inspections/[inspectionId]/corrective-action
-export async function POST(req: NextRequest, { params }: { params: { inspectionId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ inspectionId: string }> }) {
   const auth = await authorizeApiRequest(req)
   if (!auth.authorized) return auth.response!
   const { user } = auth
 
-  const { inspectionId } = params
+    const { inspectionId } = await params
 
   try {
     const body = await req.json()

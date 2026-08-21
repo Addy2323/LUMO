@@ -1569,6 +1569,7 @@ model NotificationOutbox {
   errorMessage    String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  idempotencyKey  String?      @unique
 
   // Strict idempotency constraint preventing duplicate notifications
   @@unique([eventType, aggregateId, recipientId, templateVersion], name: "outbox_idempotency_idx")

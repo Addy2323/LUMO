@@ -138,6 +138,7 @@ export interface AuditLogEntry {
 interface AgentState {
   activeCountry: AgentCountry
   agentName: string
+  setAgentName: (name: string) => void
   orders: AgentOrder[]
   suppliers: FieldSupplier[]
   auditLogs: AuditLogEntry[]
@@ -188,6 +189,11 @@ export const useAgentStore = create<AgentState>()(
       setActiveCountry: (activeCountry) => {
         set({ activeCountry })
         get().logAuditAction('Country Switched', `Switched active field hub to ${activeCountry}`)
+      },
+
+      setAgentName: (name) => {
+        set({ agentName: name })
+        get().logAuditAction('Agent Name Updated', `Agent name changed to ${name}`)
       },
 
       addOrder: (partialOrder) => {
