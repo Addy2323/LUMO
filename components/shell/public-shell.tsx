@@ -5,6 +5,7 @@ import { GlobalHeader } from '@/components/layout/global-header'
 import { FlyingCartContainer } from '@/components/cart/flying-cart-item'
 import { LocaleTransitionProvider } from '@/components/i18n/locale-transition-provider'
 import { ScrollToTop } from '@/components/ui/scroll-to-top'
+import { WhatsAppChatButton } from '@/components/ui/whatsapp-chat-button'
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </LocaleTransitionProvider>
+      <WhatsAppChatButton />
       <ScrollToTop />
     </div>
   )
