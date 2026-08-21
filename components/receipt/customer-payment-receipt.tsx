@@ -109,15 +109,25 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>LUMO Official Payment Receipt - ${orderNum}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @page { size: A4 portrait; margin: 8mm; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #0f172a; padding: 20px; }
+    @page { size: A4 portrait; margin: 6mm; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; padding: 8px; margin: 0; }
+    .receipt-container { max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    @media (max-width: 640px) {
+      body { padding: 4px; }
+      .receipt-container { border-radius: 0; }
+    }
+    @media print {
+      body { background: #fff !important; padding: 0 !important; }
+      .receipt-container { max-width: 100% !important; box-shadow: none !important; }
+    }
   </style>
 </head>
 <body>
-  <div style="max-width: 850px; margin: 0 auto;">
+  <div class="receipt-container">
     ${content}
   </div>
 </body>
@@ -175,9 +185,9 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
         `}</style>
 
         {/* ACTION BAR (Hidden when printing) */}
-        <div className="bg-slate-900 text-white px-6 py-3 flex items-center justify-between sticky top-0 z-30 border-b border-slate-800 print:hidden">
+        <div className="bg-slate-900 text-white p-3.5 sm:px-6 sm:py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sticky top-0 z-30 border-b border-slate-800 print:hidden">
           <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs">
+            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs shrink-0">
               <FileText className="size-4" />
             </div>
             <div>
@@ -186,29 +196,29 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-end w-full sm:w-auto">
             <Button
               size="sm"
               onClick={handleDownloadFile}
-              className="bg-primary hover:bg-primary/80 text-white font-extrabold text-xs h-8 rounded-xl gap-1.5 shadow-xs"
+              className="bg-primary hover:bg-primary/80 text-white font-extrabold text-xs h-8 rounded-xl gap-1.5 shadow-xs flex-1 sm:flex-none"
             >
               <Download className="size-3.5" />
-              Download Receipt
+              Download
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={handlePrint}
-              className="border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 font-bold text-xs h-8 rounded-xl gap-1.5"
+              className="border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 font-bold text-xs h-8 rounded-xl gap-1.5 flex-1 sm:flex-none"
             >
               <Printer className="size-3.5" />
-              Print / PDF Preview
+              Print / PDF
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={onClose}
-              className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-bold text-xs h-8 rounded-xl"
+              className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-bold text-xs h-8 rounded-xl shrink-0"
             >
               <X className="size-4" />
             </Button>
@@ -219,7 +229,7 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
         <div
           id="printable-receipt-canvas"
           ref={receiptRef}
-          className="p-6 sm:p-8 space-y-5 bg-white text-slate-900 font-sans print:p-2 print:w-full"
+          className="p-4 sm:p-8 space-y-5 bg-white text-slate-900 font-sans print:p-2 print:w-full overflow-x-hidden"
         >
           {/* HEADER ROW */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
@@ -363,65 +373,67 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
           </div>
 
           {/* ITEM DESCRIPTION TABLE */}
-          <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
-            <div className="bg-lumo-navy-dark text-white text-[11px] font-black uppercase tracking-wider grid grid-cols-12 px-5 py-3 items-center">
-              <div className="col-span-6 sm:col-span-6">ITEM DESCRIPTION &amp; SPECIFICATIONS</div>
-              <div className="col-span-2 text-center">QTY</div>
-              <div className="col-span-2 text-right">UNIT PRICE (TZS)</div>
-              <div className="col-span-2 text-right">LINE TOTAL (TZS)</div>
-            </div>
+          <div className="rounded-2xl border border-slate-200 overflow-x-auto bg-white shadow-2xs">
+            <div className="min-w-[540px]">
+              <div className="bg-lumo-navy-dark text-white text-[11px] font-black uppercase tracking-wider grid grid-cols-12 px-5 py-3 items-center">
+                <div className="col-span-6 sm:col-span-6">ITEM DESCRIPTION &amp; SPECIFICATIONS</div>
+                <div className="col-span-2 text-center">QTY</div>
+                <div className="col-span-2 text-right">UNIT PRICE (TZS)</div>
+                <div className="col-span-2 text-right">LINE TOTAL (TZS)</div>
+              </div>
 
-            <div className="divide-y divide-slate-100 bg-white">
-              {items.length > 0 ? (
-                items.map((item, idx) => {
-                  const title = cleanProductTitle(item.product?.title || item.productTitle || item.title || 'Standard Wholesale Order Package')
-                  const qty = item.quantity || 1
-                  const unitPrice = item.unitPriceTZS || item.unitPrice || item.price || totalPaid
-                  const lineTotal = unitPrice * qty
+              <div className="divide-y divide-slate-100 bg-white">
+                {items.length > 0 ? (
+                  items.map((item, idx) => {
+                    const title = cleanProductTitle(item.product?.title || item.productTitle || item.title || 'Standard Wholesale Order Package')
+                    const qty = item.quantity || 1
+                    const unitPrice = item.unitPriceTZS || item.unitPrice || item.price || totalPaid
+                    const lineTotal = unitPrice * qty
 
-                  return (
-                    <div key={idx} className="grid grid-cols-12 px-5 py-3.5 text-xs items-center hover:bg-slate-50/60 transition-colors">
-                      <div className="col-span-6 sm:col-span-6 flex items-start gap-3">
-                        <div className="size-10 rounded-xl bg-amber-50 border border-amber-200 text-primary flex items-center justify-center shrink-0">
-                          <Package className="size-5" />
+                    return (
+                      <div key={idx} className="grid grid-cols-12 px-5 py-3.5 text-xs items-center hover:bg-slate-50/60 transition-colors">
+                        <div className="col-span-6 sm:col-span-6 flex items-start gap-3">
+                          <div className="size-10 rounded-xl bg-amber-50 border border-amber-200 text-primary flex items-center justify-center shrink-0">
+                            <Package className="size-5" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="font-extrabold text-slate-900 text-xs">{title}</p>
+                            <p className="text-[11px] text-slate-500 font-medium">Order Type: B2B Wholesale</p>
+                            <p className="text-[10px] text-slate-400 font-mono">Order ID: {orderNum}</p>
+                          </div>
                         </div>
-                        <div className="space-y-0.5">
-                          <p className="font-extrabold text-slate-900 text-xs">{title}</p>
-                          <p className="text-[11px] text-slate-500 font-medium">Order Type: B2B Wholesale</p>
-                          <p className="text-[10px] text-slate-400 font-mono">Order ID: {orderNum}</p>
+                        <div className="col-span-2 text-center font-bold font-mono text-slate-800 text-xs">{qty}</div>
+                        <div className="col-span-2 text-right font-semibold font-mono text-slate-700 text-xs">
+                          {unitPrice.toLocaleString()}
+                        </div>
+                        <div className="col-span-2 text-right font-black font-mono text-slate-900 text-xs">
+                          {lineTotal.toLocaleString()}
                         </div>
                       </div>
-                      <div className="col-span-2 text-center font-bold font-mono text-slate-800 text-xs">{qty}</div>
-                      <div className="col-span-2 text-right font-semibold font-mono text-slate-700 text-xs">
-                        {unitPrice.toLocaleString()}
+                    )
+                  })
+                ) : (
+                  <div className="grid grid-cols-12 px-5 py-3.5 text-xs items-center">
+                    <div className="col-span-6 flex items-start gap-3">
+                      <div className="size-10 rounded-xl bg-amber-50 border border-amber-200 text-primary flex items-center justify-center shrink-0">
+                        <Package className="size-5" />
                       </div>
-                      <div className="col-span-2 text-right font-black font-mono text-slate-900 text-xs">
-                        {lineTotal.toLocaleString()}
+                      <div className="space-y-0.5">
+                        <p className="font-extrabold text-slate-900 text-xs">Standard Wholesale Order Package</p>
+                        <p className="text-[11px] text-slate-500 font-medium">Order Type: B2B Wholesale</p>
+                        <p className="text-[10px] text-slate-400 font-mono">Order ID: {orderNum}</p>
                       </div>
                     </div>
-                  )
-                })
-              ) : (
-                <div className="grid grid-cols-12 px-5 py-3.5 text-xs items-center">
-                  <div className="col-span-6 flex items-start gap-3">
-                    <div className="size-10 rounded-xl bg-amber-50 border border-amber-200 text-primary flex items-center justify-center shrink-0">
-                      <Package className="size-5" />
+                    <div className="col-span-2 text-center font-bold font-mono text-slate-800 text-xs">1</div>
+                    <div className="col-span-2 text-right font-semibold font-mono text-slate-700 text-xs">
+                      {totalPaid.toLocaleString()}
                     </div>
-                    <div className="space-y-0.5">
-                      <p className="font-extrabold text-slate-900 text-xs">Standard Wholesale Order Package</p>
-                      <p className="text-[11px] text-slate-500 font-medium">Order Type: B2B Wholesale</p>
-                      <p className="text-[10px] text-slate-400 font-mono">Order ID: {orderNum}</p>
+                    <div className="col-span-2 text-right font-black font-mono text-slate-900 text-xs">
+                      {totalPaid.toLocaleString()}
                     </div>
                   </div>
-                  <div className="col-span-2 text-center font-bold font-mono text-slate-800 text-xs">1</div>
-                  <div className="col-span-2 text-right font-semibold font-mono text-slate-700 text-xs">
-                    {totalPaid.toLocaleString()}
-                  </div>
-                  <div className="col-span-2 text-right font-black font-mono text-slate-900 text-xs">
-                    {totalPaid.toLocaleString()}
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
