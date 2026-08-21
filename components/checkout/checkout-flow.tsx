@@ -480,34 +480,34 @@ export function CheckoutFlow() {
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-3 space-y-2.5">
             <Button
               size="lg"
               onClick={() => setShowReceiptModal(true)}
-              className="w-full font-black bg-primary hover:bg-primary/90 text-white shadow-md h-12 text-xs rounded-2xl flex items-center justify-center gap-2 transition-transform active:scale-[0.99]"
+              className="w-full h-12 font-black text-xs sm:text-sm text-white bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
             >
-              <FileText className="size-4" />
-              Generate &amp; Download Official Payment Receipt
+              <FileText className="size-4 shrink-0 text-white" />
+              <span>Download Official Payment Receipt</span>
             </Button>
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <Button
-              size="sm"
-              className="flex-1 font-extrabold bg-lumo-navy-dark hover:bg-slate-800 text-white shadow-xs h-10 text-xs rounded-xl"
-              render={<Link href="/account/orders" />}
-            >
-              Track Order in Account
-              <ArrowRight className="size-3.5 ml-1 text-primary" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 font-bold text-xs h-10 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
-              render={<Link href="/marketplace" />}
-            >
-              Continue Shopping
-            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Button
+                size="lg"
+                className="w-full h-11 font-extrabold text-xs text-white bg-lumo-navy-dark hover:bg-slate-900 rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                render={<Link href="/account/orders" />}
+              >
+                <span>Track Order in Account</span>
+                <ArrowRight className="size-3.5 text-primary shrink-0" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-11 font-extrabold text-xs text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl flex items-center justify-center transition-all cursor-pointer"
+                render={<Link href="/marketplace" />}
+              >
+                Continue Shopping
+              </Button>
+            </div>
           </div>
 
           {/* CUSTOMER PAYMENT RECEIPT MODAL */}
