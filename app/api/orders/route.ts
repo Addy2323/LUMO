@@ -218,11 +218,20 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    const productMap = new Map(dbProducts.map((p) => [p.id, p]))
+    const productMap = new Map<string, any>()
     dbProducts.forEach((p) => {
+      productMap.set(p.id, p)
       productMap.set(p.slug, p)
       if (p.productCode) productMap.set(p.productCode, p)
     })
+
+    // Ensure category exists for fallback creation
+    let category = await prisma.category.findFirst({ where: { slug: 'general-wholesale' } }).catch(() => null)
+    if (!category) {
+      category = await prisma.category.create({
+        data: { name: 'General Wholesale', slug: 'general-wholesale' },
+      }).catch(() => null)
+    }
 
     let subtotalTZS = new Prisma.Decimal(0)
     const preparedItems: Prisma.OrderItemCreateWithoutOrderInput[] = []
@@ -238,17 +247,14 @@ export async function POST(req: NextRequest) {
       const itemPriceTZS = item.priceTZS || 100000
 
       if (!product) {
+        product = await prisma.product.findUnique({ where: { id: item.productId } }).catch(() => null)
+      }
+
+      if (!product) {
         try {
           const uniqueSuffix = Date.now().toString(36) + Math.floor(100 + Math.random() * 900)
           const safeSlug = `p-${uniqueSuffix}`
           const safeCode = `PC-${uniqueSuffix}`
-
-          let category = await prisma.category.findFirst({ where: { slug: 'general-wholesale' } })
-          if (!category) {
-            category = await prisma.category.create({
-              data: { name: 'General Wholesale', slug: 'general-wholesale' },
-            }).catch(() => null)
-          }
 
           product = await prisma.product.create({
             data: {
@@ -261,16 +267,35 @@ export async function POST(req: NextRequest) {
               priceUSD: new Prisma.Decimal(Math.round(itemPriceTZS / 2500)),
               stock: 1000,
               status: 'PUBLISHED',
-              categoryId: category?.id || (await prisma.category.findFirst())?.id || '',
+              categoryId: category?.id || 'general-wholesale',
               imageUrl: fallbackImg,
             },
           })
-        } catch (upsertErr) {
-          console.warn('[ORDER POST] Product creation failed, falling back to existing product:', upsertErr)
-          product = await prisma.product.findFirst({ where: { id: item.productId } }).catch(() => null) as any
-          if (!product) {
-            product = await prisma.product.findFirst().catch(() => null) as any
-          }
+        } catch (createErr) {
+          console.warn('[ORDER POST] Product creation failed, falling back to existing product:', createErr)
+          product = await prisma.product.findFirst().catch(() => null)
+        }
+      }
+
+      if (!product) {
+        try {
+          const uniqueSuffix = Date.now().toString(36) + Math.floor(1000 + Math.random() * 9000)
+          product = await prisma.product.create({
+            data: {
+              productCode: `PC-FALLBACK-${uniqueSuffix}`,
+              title: fallbackTitle,
+              slug: `p-fallback-${uniqueSuffix}`,
+              description: 'General Wholesale Goods',
+              priceTZS: new Prisma.Decimal(itemPriceTZS),
+              priceUSD: new Prisma.Decimal(Math.round(itemPriceTZS / 2500)),
+              stock: 1000,
+              status: 'PUBLISHED',
+              categoryId: category?.id || 'general-wholesale',
+              imageUrl: fallbackImg,
+            },
+          })
+        } catch (fbErr) {
+          console.error('[ORDER POST] Fatal product creation failure:', fbErr)
         }
       }
 
@@ -333,6 +358,7 @@ export async function POST(req: NextRequest) {
       initialPaymentStatus = PaymentStatus.PENDING
     }
 
+    // Atomic transaction for core Order and PaymentRecord creation only
     const createdOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
@@ -351,24 +377,6 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      for (const item of inputItems) {
-        try {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stock: { decrement: item.quantity },
-              totalSales: { increment: item.quantity },
-            },
-          })
-        } catch {
-          console.warn(`[ORDER POST] Stock decrement skipped for product ${item.productId}`)
-        }
-      }
-
-      await tx.cartItem.deleteMany({
-        where: { userId: buyerUser.id },
-      }).catch(() => {})
-
       const transactionRef = `AZM-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`
       await tx.paymentRecord.create({
         data: {
@@ -380,21 +388,32 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      try {
-        await tx.escrowLedger.create({
-          data: {
-            orderId: order.id,
-            buyerId: buyerUser.id,
-            amountTZS: finalTotalAmountTZS,
-            status: EscrowStatus.INITIATED,
-          },
-        })
-      } catch (escrowErr) {
-        console.warn('[ORDER POST] Non-blocking EscrowLedger creation warning:', escrowErr)
-      }
-
       return order
     })
+
+    // Execute secondary non-critical side effects outside transaction
+    Promise.allSettled([
+      ...inputItems.map((item) =>
+        prisma.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { decrement: item.quantity },
+            totalSales: { increment: item.quantity },
+          },
+        }).catch(() => null)
+      ),
+      prisma.cartItem.deleteMany({
+        where: { userId: buyerUser.id },
+      }).catch(() => null),
+      prisma.escrowLedger.create({
+        data: {
+          orderId: createdOrder.id,
+          buyerId: buyerUser.id,
+          amountTZS: finalTotalAmountTZS,
+          status: EscrowStatus.INITIATED,
+        },
+      }).catch((e) => console.warn('[ESCROW LEDGER] Non-blocking warning:', e)),
+    ])
 
     return NextResponse.json(
       {
