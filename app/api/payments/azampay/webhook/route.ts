@@ -4,6 +4,9 @@ import { prisma } from '@/lib/db'
 import { azamPayClient } from '@/lib/payments/azampay'
 import { escrowLedger } from '@/lib/payments/escrow-ledger'
 import { checkRateLimit } from '@/lib/security/rate-limiter'
+import { OutboxService } from '@/lib/notifications/outbox-service'
+import { getSalesAndAdminRecipients } from '@/lib/notifications/recipient-resolver'
+import { createInAppNotification } from '@/lib/notifications/in-app-service'
 
 export async function POST(req: NextRequest) {
   // 1. Rate limiting check (protect webhook endpoint against flooding)
@@ -35,6 +38,15 @@ export async function POST(req: NextRequest) {
       where: {
         OR: [{ orderNumber }, { id: orderNumber }],
       },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
     })
 
     if (!order) {
@@ -56,10 +68,11 @@ export async function POST(req: NextRequest) {
 
     // 4. Idempotency check: If order is already in a terminal/paid state, acknowledge webhook safely
     if (
-      order.status === OrderStatus.PAID ||
-      order.status === OrderStatus.PROCESSING ||
-      order.status === OrderStatus.SHIPPED ||
-      order.status === OrderStatus.COMPLETED
+      (order.status as string) === 'PAID' ||
+      (order.status as string) === 'ORDER_CONFIRMED' ||
+      (order.status as string) === 'PROCESSING' ||
+      (order.status as string) === 'SHIPPED' ||
+      (order.status as string) === 'COMPLETED'
     ) {
       return NextResponse.json({ success: true, message: 'Already processed' })
     }
@@ -67,13 +80,19 @@ export async function POST(req: NextRequest) {
     const isSuccess = status === 'success' || status === 'SUCCESS' || status === '00'
 
     if (isSuccess) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumo.co.tz'
+      const customerPhone = order.buyer.phone || (order.shippingAddress as any)?.phone || '0712345678'
+      const staffRecipients = await getSalesAndAdminRecipients()
+
       // Execute atomic transaction for payment status transition & payment protection locking
       await prisma.$transaction(async (tx) => {
+        // A. Update Order Status
         await tx.order.update({
           where: { id: order.id },
           data: { status: OrderStatus.PAID },
         })
 
+        // B. Update Payment Record
         await tx.paymentRecord.updateMany({
           where: { orderId: order.id },
           data: {
@@ -82,45 +101,96 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // Enqueue Customer Payment Confirmation SMS in Transactional Outbox
-        const customerPhone = (order as any).phone || (order as any).shippingAddressPhone || (order as any).customerPhone || '0712345678'
-        await (tx as any).notificationOutbox.create({
+        // C. Record Order Status History
+        await tx.orderStatusHistory.create({
           data: {
+            orderId: order.id,
+            previousStatus: order.status,
+            newStatus: OrderStatus.PAID,
+            actorRole: 'SYSTEM',
+            reason: `LUMO Pay Webhook Confirmed: Ref ${transactionId || reference}`,
+          },
+        })
+
+        // D. Write Audit Log
+        await tx.auditLog.create({
+          data: {
+            userId: order.buyer.id,
+            userRole: 'BUYER',
+            action: 'PAYMENT_CONFIRMED',
+            targetResource: `order:${order.id}`,
+            details: `LUMO Pay webhook verified. Payment ref: ${transactionId || reference}`,
+          },
+        })
+
+        // E. Enqueue Customer Payment Confirmation SMS in Transactional Outbox
+        await OutboxService.enqueue(
+          {
             eventType: 'ORDER_PAID',
             aggregateId: order.id,
-            recipientId: (order as any).buyerId || customerPhone,
+            recipientId: order.buyer.id,
             recipientPhone: customerPhone,
-            channel: 'SMS',
             templateKey: 'ORDER_PAID_CUSTOMER',
-            templateVersion: 1,
-            payloadJson: JSON.stringify({
-              firstName: (order as any).customerName || 'Customer',
+            payloadJson: {
+              firstName: order.buyer.name || 'Customer',
+              customerName: order.buyer.name || 'Customer',
               orderReference: order.orderNumber,
-              trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://lumo.co.tz'}/orders/${order.orderNumber}`,
-            }),
-            status: 'PENDING',
+              trackingUrl: `${appUrl}/orders/${order.orderNumber}`,
+              currency: 'TZS',
+              amount: String(order.totalAmountTZS),
+            },
           },
-        }).catch((err: any) => console.log('[OUTBOX DUP] ORDER_PAID customer notification already enqueued:', err.message))
+          tx
+        )
 
-        // Enqueue Internal Sales/Duty Group Order Alert
-        const dutyGroupPhone = process.env.INTERNAL_SALES_DUTY_PHONE || '255768828247'
-        await (tx as any).notificationOutbox.create({
-          data: {
-            eventType: 'ORDER_PAID_INTERNAL',
-            aggregateId: order.id,
-            recipientId: 'sales_duty_group',
-            recipientPhone: dutyGroupPhone,
-            channel: 'SMS',
-            templateKey: 'ORDER_PAID_INTERNAL',
-            templateVersion: 1,
-            payloadJson: JSON.stringify({
-              orderReference: order.orderNumber,
-              customerDisplayName: (order as any).customerName || 'Buyer',
-              internalOrderUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://lumo.co.tz'}/admin/orders/${order.id}`,
-            }),
-            status: 'PENDING',
+        // F. Create In-App Notification for Customer
+        await createInAppNotification(
+          {
+            userId: order.buyer.id,
+            eventType: 'ORDER_PAID',
+            title: `Payment Received for Order ${order.orderNumber}`,
+            body: `Your payment of TZS ${order.totalAmountTZS.toLocaleString()} for Order ${order.orderNumber} has been received and confirmed.`,
+            resourceType: 'ORDER',
+            resourceId: order.id,
           },
-        }).catch((err: any) => console.log('[OUTBOX DUP] ORDER_PAID_INTERNAL notification already enqueued:', err.message))
+          tx
+        )
+
+        // G. Enqueue Internal Sales/Admin Group Order Alerts (Deduplicated)
+        for (const staff of staffRecipients) {
+          await OutboxService.enqueue(
+            {
+              eventType: 'ORDER_PAID_INTERNAL',
+              aggregateId: order.id,
+              recipientId: staff.userId,
+              recipientPhone: staff.e164,
+              templateKey: 'ORDER_PAID_INTERNAL',
+              payloadJson: {
+                orderReference: order.orderNumber,
+                customerName: order.buyer.name || 'Buyer',
+                currency: 'TZS',
+                amount: String(order.totalAmountTZS),
+                staffOrderUrl: `${appUrl}/admin/orders/${order.id}`,
+              },
+            },
+            tx
+          )
+
+          // Also create staff in-app notification if user ID exists
+          if (staff.userId && !staff.userId.includes('system')) {
+            await createInAppNotification(
+              {
+                userId: staff.userId,
+                eventType: 'ORDER_PAID_INTERNAL',
+                title: `New Paid Order ${order.orderNumber}`,
+                body: `Order ${order.orderNumber} paid by ${order.buyer.name || 'Customer'}. TZS ${order.totalAmountTZS.toLocaleString()}`,
+                resourceType: 'ORDER',
+                resourceId: order.id,
+              },
+              tx
+            )
+          }
+        }
       })
 
       // Lock funds in Payment Vault Ledger
@@ -140,3 +210,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 }
+

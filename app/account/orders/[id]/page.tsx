@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
-import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
-import { CustomerPaymentReceipt } from '@/components/receipt/customer-payment-receipt'
+import { OrderTrackingTimeline } from '@/components/orders/OrderTrackingTimeline'
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -88,6 +87,16 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
           Download Official Receipt
         </Button>
       </div>
+
+      {/* Live Order Tracking Timeline */}
+      <OrderTrackingTimeline
+        orderNumber={order.orderNumber}
+        currentStatus={order.status}
+        totalAmountTZS={Number(order.totalAmountTZS)}
+        history={order.statusHistory || []}
+        pickupOtp={order.deliveryPreference?.pickupOtp}
+        deliveryMethod={order.deliveryPreference?.method}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2">

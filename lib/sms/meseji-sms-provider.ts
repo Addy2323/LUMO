@@ -208,4 +208,35 @@ export class MesejiSmsProvider implements SmsProvider {
       rawResponse: data,
     }
   }
+
+  /**
+   * Send a single transactional SMS and return a status result.
+   */
+  async sendTransactionalSms(input: {
+    recipientPhone: string
+    message: string
+    senderId?: string
+    referenceId?: string
+  }): Promise<{ success: boolean; batchId?: string; error?: string }> {
+    try {
+      const result = await this.send({
+        senderId: input.senderId || env.MESEJI_SENDER_ID || 'LUMO',
+        message: input.message,
+        contacts: [input.recipientPhone],
+        correlationId: input.referenceId || `tx_${Date.now()}`,
+      })
+      return {
+        success: true,
+        batchId: result.batchId,
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.message || 'SMS send failed',
+      }
+    }
+  }
 }
+
+export const mesejiSmsProvider = new MesejiSmsProvider()
+

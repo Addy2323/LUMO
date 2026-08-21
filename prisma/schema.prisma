@@ -80,16 +80,37 @@ enum KycStatus {
 }
 
 enum OrderStatus {
-  DRAFT
+  PAYMENT_PENDING
   PENDING_PAYMENT
+  PAYMENT_VERIFICATION
+  PAYMENT_FAILED
   PAID
+  ORDER_CONFIRMED
+  PENDING_PROCESSING
   PROCESSING
+  SOURCING
+  SUPPLIER_CONFIRMED
+  PROCUREMENT_IN_PROGRESS
+  QUALITY_INSPECTION
+  INSPECTION_PASSED
+  INSPECTION_FAILED
+  PACKAGING
+  READY_TO_SHIP
   SHIPPED
+  IN_TRANSIT
+  ARRIVED_IN_TANZANIA
+  CUSTOMS_CLEARANCE
+  DELIVERY_SELECTION_REQUIRED
+  OUT_FOR_DELIVERY
+  READY_FOR_PICKUP
   DELIVERED
   COMPLETED
   CANCELLED
+  REFUND_PENDING
   REFUNDED
   DISPUTED
+  // Legacy backward-compatibility aliases
+  DRAFT
 }
 
 enum PaymentStatus {
@@ -900,21 +921,94 @@ model Order {
   taxAmountTZS    Decimal     @default(0) @db.Decimal(14, 2)
   discountTZS     Decimal     @default(0) @db.Decimal(14, 2)
   totalAmountTZS  Decimal     @db.Decimal(14, 2)
-  status          OrderStatus @default(PENDING_PAYMENT)
+  status          OrderStatus @default(PAYMENT_PENDING)
   paymentMethod   String      @default("AzamPay Escrow")
   shippingAddress Json?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  buyer         User                @relation(fields: [buyerId], references: [id])
-  items         OrderItem[]
-  shipments     Shipment[]
-  disputes      Dispute[]
-  payments      PaymentRecord[]
-  escrowRecords EscrowLedger[]
-  waybills      ElectronicWaybill[]
+  buyer              User                @relation(fields: [buyerId], references: [id])
+  items              OrderItem[]
+  shipments          Shipment[]
+  disputes           Dispute[]
+  payments           PaymentRecord[]
+  escrowRecords      EscrowLedger[]
+  waybills           ElectronicWaybill[]
+  deliveryPreference DeliveryPreference?
+  statusHistory      OrderStatusHistory[]
 
   @@map("orders")
+}
+
+enum DeliveryMethod {
+  DOOR_DELIVERY
+  OFFICE_PICKUP
+}
+
+model DeliveryPreference {
+  id               String         @id @default(uuid())
+  orderId          String         @unique
+  deliveryMethod   DeliveryMethod @default(DOOR_DELIVERY)
+  recipientName    String
+  recipientPhone   String
+  altPhone         String?
+  region           String         @default("Dar es Salaam")
+  district         String?
+  ward             String?
+  street           String?
+  buildingDetails  String?
+  nearbyLandmark   String?
+  deliveryNotes    String?
+  preferredDate    String?
+  preferredTime    String?
+  gpsLat           Float?
+  gpsLng           Float?
+  authorizedPerson String?
+  deliveryFeeTZS   Decimal        @default(0) @db.Decimal(14, 2)
+  pickupLocationId String?
+  pickupCode       String?
+  storageDeadline  DateTime?
+  status           String         @default("CONFIRMED")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  pickupLocation PickupLocation? @relation(fields: [pickupLocationId], references: [id], onDelete: SetNull)
+
+  @@map("delivery_preferences")
+}
+
+model PickupLocation {
+  id                 String               @id @default(uuid())
+  name               String
+  code               String               @unique
+  city               String               @default("Dar es Salaam")
+  address            String
+  mapLink            String?
+  operatingHours     String               @default("Mon-Fri 08:30 - 17:30, Sat 09:00 - 14:00")
+  supportPhone       String               @default("+255 768 828 247")
+  storagePolicy      String               @default("Free storage for 7 days. Valid ID and OTP required.")
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  deliveryPreferences DeliveryPreference[]
+
+  @@map("pickup_locations")
+}
+
+model OrderStatusHistory {
+  id             String      @id @default(uuid())
+  orderId        String
+  previousStatus OrderStatus
+  newStatus      OrderStatus
+  actorId        String?
+  actorRole      String?
+  reason         String?
+  createdAt      DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_status_histories")
 }
 
 model OrderItem {
