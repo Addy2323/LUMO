@@ -1,10 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db'
+<<<<<<< HEAD
 import { getSessionUser } from '@/lib/auth'
+=======
+import { getAuthenticatedUser } from '@/lib/auth/server'
+>>>>>>> bdc1fd3 (backup: preserve server Mongike payment changes)
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser(req)
+    const user = await getAuthenticatedUser(req)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

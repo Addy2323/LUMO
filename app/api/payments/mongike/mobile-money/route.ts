@@ -1,6 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db'
+<<<<<<< HEAD
 import { getSessionUser } from '@/lib/auth'
+=======
+import { getAuthenticatedUser } from '@/lib/auth/server'
+>>>>>>> bdc1fd3 (backup: preserve server Mongike payment changes)
 import {
   initiatePaymentInputSchema,
   normalizeTanzanianPhone,
@@ -8,10 +12,10 @@ import {
   redactSensitiveData,
 } from '@/lib/payments/mongike-service'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // 1. Authenticate customer
-    const user = await getSessionUser(req)
+    const user = await getAuthenticatedUser(req)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized. Please sign in to complete payment.' }, { status: 401 })
     }
