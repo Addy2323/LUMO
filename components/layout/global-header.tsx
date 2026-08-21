@@ -188,6 +188,7 @@ export function GlobalHeader({
   }
 
   function isNavActive(href: string) {
+    if (!mounted) return false
     if (href === '/') return pathname === '/'
     return pathname === href || pathname.startsWith(href + '/')
   }

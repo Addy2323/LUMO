@@ -1,9 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export function WhatsAppChatButton() {
+  const [mounted, setMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
   const phoneNumber = '255711788830'
   const displayPhone = '+255 711 788 830'
   const defaultMessage = encodeURIComponent('Hello Lumo Team, I would like to inquire about sourcing and order support.')
