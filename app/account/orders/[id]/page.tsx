@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatTZS, formatDate, cleanProductTitle } from '@/lib/format'
 import { OrderTrackingTimeline } from '@/components/orders/OrderTrackingTimeline'
+import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
+import { CustomerPaymentReceipt } from '@/components/receipt/customer-payment-receipt'
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)

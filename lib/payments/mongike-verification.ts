@@ -18,7 +18,7 @@ export interface ProcessPaymentSuccessParams {
 export async function processPaymentSuccess(params: ProcessPaymentSuccessParams) {
   const { paymentAttemptId, providerPaymentId, gatewayReference, paidAt = new Date(), rawResponse } = params
 
-  return await db.$transaction(async (tx) => {
+  return await db.$transaction(async (tx: any) => {
     // 1. Fetch payment attempt with order and buyer details
     const attempt = await tx.paymentAttempt.findUnique({
       where: { id: paymentAttemptId },
@@ -72,7 +72,7 @@ export async function processPaymentSuccess(params: ProcessPaymentSuccessParams)
     await tx.orderStatusHistory.create({
       data: {
         orderId: order.id,
-        previousStatus,
+        previousStatus: previousOrderStatus,
         newStatus: OrderStatus.PAID,
         reason: `Paid via Mongike Mobile Money (${updatedAttempt.buyerPhone}). Ref: ${providerPaymentId || gatewayReference}`,
       },
@@ -103,7 +103,7 @@ export async function processPaymentSuccess(params: ProcessPaymentSuccessParams)
         recipientPhone: order.buyer.phone || attempt.buyerPhone,
         templateKey: 'ORDER_PAID_CUSTOMER',
         templateVersion: 1,
-        renderParams: {
+        payloadJson: {
           customerName: order.buyer.name || 'Valued Customer',
           orderNumber: order.orderNumber,
           amount: formattedAmount,
@@ -121,9 +121,9 @@ export async function processPaymentSuccess(params: ProcessPaymentSuccessParams)
         aggregateId: order.id,
         recipientId: 'ADMIN_NOTIFY',
         recipientPhone: '+255711788830',
-        templateKey: 'ORDER_PAID_ADMIN',
+        templateKey: 'ORDER_PAID_INTERNAL',
         templateVersion: 1,
-        renderParams: {
+        payloadJson: {
           orderNumber: order.orderNumber,
           customerName: order.buyer.name || 'Customer',
           amount: formattedAmount,
@@ -167,7 +167,7 @@ export interface ProcessPaymentFailureParams {
 export async function processPaymentFailure(params: ProcessPaymentFailureParams) {
   const { paymentAttemptId, failureCode, failureMessage, rawResponse } = params
 
-  return await db.paymentAttempt.update({
+  return await (db as any).paymentAttempt.update({
     where: { id: paymentAttemptId },
     data: {
       status: 'FAILED',

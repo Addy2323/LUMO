@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getSessionUser } from '@/lib/auth/session'
+import { getSessionUser } from '@/lib/auth'
 
 export async function GET(req: Request) {
   try {
@@ -20,12 +20,12 @@ export async function GET(req: Request) {
     let attempt = null
 
     if (attemptId) {
-      attempt = await db.paymentAttempt.findUnique({
+      attempt = await (db as any).paymentAttempt.findUnique({
         where: { id: attemptId },
         include: { order: true },
       })
     } else if (orderId) {
-      attempt = await db.paymentAttempt.findFirst({
+      attempt = await (db as any).paymentAttempt.findFirst({
         where: { orderId },
         orderBy: { createdAt: 'desc' },
         include: { order: true },
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     let currentStatus = attempt.status
     if (currentStatus === 'PENDING' && attempt.expiresAt && attempt.expiresAt < new Date()) {
       currentStatus = 'EXPIRED'
-      await db.paymentAttempt.update({
+      await (db as any).paymentAttempt.update({
         where: { id: attempt.id },
         data: { status: 'EXPIRED', failureMessage: 'Payment request expired. Please try again.' },
       })

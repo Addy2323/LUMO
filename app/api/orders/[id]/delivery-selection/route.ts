@@ -6,7 +6,7 @@ import { checkRateLimit } from '@/lib/security/rate-limiter'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const rateLimit = checkRateLimit(req, { limit: 30, windowMs: 60000, prefix: 'delivery_selection' })
   if (!rateLimit.success && rateLimit.response) {
@@ -14,7 +14,7 @@ export async function POST(
   }
 
   try {
-    const orderId = params.id
+    const { id: orderId } = await params
     const body = await req.json()
     const {
       method, // 'DOOR_DELIVERY' | 'OFFICE_PICKUP'
@@ -45,11 +45,11 @@ export async function POST(
     const pickupOtp = Math.floor(100000 + Math.random() * 900000).toString()
 
     // 1. Create or update DeliveryPreference record
-    const preference = await prisma.deliveryPreference.upsert({
+    const preference = await (prisma as any).deliveryPreference.upsert({
       where: { orderId: order.id },
       create: {
         orderId: order.id,
-        method,
+        deliveryMethod: method as any,
         pickupLocationId: pickupLocationId || null,
         streetAddress: streetAddress || null,
         city: city || 'Dar es Salaam',
@@ -59,7 +59,7 @@ export async function POST(
         pickupOtp: method === 'OFFICE_PICKUP' ? pickupOtp : null,
       },
       update: {
-        method,
+        deliveryMethod: method as any,
         pickupLocationId: pickupLocationId || null,
         streetAddress: streetAddress || null,
         city: city || 'Dar es Salaam',

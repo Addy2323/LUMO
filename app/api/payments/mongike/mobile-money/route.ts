@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getSessionUser } from '@/lib/auth/session'
+import { getSessionUser } from '@/lib/auth'
 import {
   initiatePaymentInputSchema,
   normalizeTanzanianPhone,
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     }
 
     // 8. Prevent duplicate active attempts (Concurrency Control)
-    const existingActiveAttempt = await db.paymentAttempt.findFirst({
+    const existingActiveAttempt = await (db as any).paymentAttempt.findFirst({
       where: {
         orderId: order.id,
         status: 'PENDING',
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
     }
 
     // 9. Create PaymentAttempt record in CREATED state
-    const paymentAttempt = await db.paymentAttempt.create({
+    const paymentAttempt = await (db as any).paymentAttempt.create({
       data: {
         orderId: order.id,
         provider: 'MONGIKE',
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     })
 
     // 10. Dispatch server-side request to Mongike (Use unique reference per attempt to prevent provider duplicate errors)
-    const attemptCount = await db.paymentAttempt.count({ where: { orderId: order.id } })
+    const attemptCount = await (db as any).paymentAttempt.count({ where: { orderId: order.id } })
     const uniqueAttemptReference = attemptCount > 1 ? `${order.orderNumber}-A${attemptCount}` : order.orderNumber
 
     const apiResult = await initiateMongikeMobileMoneyPayment({
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
     })
 
     // 11. Update PaymentAttempt with Mongike provider details
-    const updatedAttempt = await db.paymentAttempt.update({
+    const updatedAttempt = await (db as any).paymentAttempt.update({
       where: { id: paymentAttempt.id },
       data: {
         providerPaymentId: apiResult.providerPaymentId,

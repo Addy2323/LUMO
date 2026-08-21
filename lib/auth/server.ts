@@ -232,11 +232,19 @@ export async function clearPasswordResetTokenCookie(authId?: string): Promise<vo
 /**
  * Get authenticated user & active session from request/cookies.
  */
-export async function getAuthenticatedUser(req?: NextRequest) {
+export async function getAuthenticatedUser(req?: Request | NextRequest) {
   let token: string | undefined
 
   if (req) {
-    token = req.cookies.get(COOKIE_NAME)?.value
+    if ('cookies' in req && typeof (req as any).cookies?.get === 'function') {
+      token = (req as NextRequest).cookies.get(COOKIE_NAME)?.value
+    } else {
+      const cookieHeader = req.headers.get('cookie')
+      if (cookieHeader) {
+        const match = cookieHeader.split(';').find((c) => c.trim().startsWith(`${COOKIE_NAME}=`))
+        if (match) token = match.split('=')[1]?.trim()
+      }
+    }
     if (!token) {
       const authHeader = req.headers.get('authorization')
       if (authHeader?.startsWith('Bearer ')) {
@@ -294,7 +302,7 @@ export async function getAuthenticatedUser(req?: NextRequest) {
   return null
 }
 
-export async function getCurrentUser(req?: NextRequest) {
+export async function getCurrentUser(req?: Request | NextRequest) {
   const auth = await getAuthenticatedUser(req)
   return auth?.user ?? null
 }
