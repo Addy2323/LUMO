@@ -104,7 +104,11 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
 
   const handleDownloadFile = () => {
     if (!receiptRef.current) return
-    const content = receiptRef.current.outerHTML
+    // Replace relative logo src with absolute domain URL for downloaded offline HTML files
+    let content = receiptRef.current.outerHTML
+    content = content.replace(/src="\/logo\.png"/g, 'src="https://lumo.co.tz/logo.png"')
+    content = content.replace(/src='\/logo\.png'/g, 'src="https://lumo.co.tz/logo.png"')
+
     const fullDocument = `<!DOCTYPE html>
 <html>
 <head>
@@ -112,7 +116,26 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>LUMO Official Payment Receipt - ${orderNum}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#F97316',
+            'lumo-navy-dark': '#0F172A',
+            'lumo-orange': '#F97316',
+            'lumo-orange-hover': '#EA580C',
+          }
+        }
+      }
+    }
+  </script>
   <style>
+    .bg-lumo-navy-dark { background-color: #0F172A !important; color: #ffffff !important; }
+    .text-lumo-navy-dark { color: #0F172A !important; }
+    .bg-primary { background-color: #F97316 !important; color: #ffffff !important; }
+    .text-primary { color: #F97316 !important; }
+    .text-lumo-orange-hover { color: #EA580C !important; }
     @page { size: A4 portrait; margin: 6mm; }
     body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; padding: 8px; margin: 0; }
     .receipt-container { max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }

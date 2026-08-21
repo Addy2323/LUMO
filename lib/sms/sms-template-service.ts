@@ -68,7 +68,7 @@ export interface SmsSegmentInfo {
   estimatedCostTzs: number
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lumo.co.tz'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') ? process.env.NEXT_PUBLIC_APP_URL : 'https://lumo.co.tz'
 
 export const DEFAULT_TEMPLATES: Record<SmsTemplateType, { en: string; sw: string }> = {
   REGISTRATION_OTP: {

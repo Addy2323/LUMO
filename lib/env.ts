@@ -5,7 +5,7 @@
 
 export const env = {
   DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/lumo_db?schema=public',
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') ? process.env.NEXT_PUBLIC_APP_URL : 'https://lumo.co.tz',
   JWT_SECRET: process.env.JWT_SECRET || process.env.SESSION_SECRET || 'lumo_dev_jwt_secret_must_be_changed_in_prod_env_min_32_bytes_key_2026',
   AUTH_HMAC_SECRET: process.env.AUTH_HMAC_SECRET || 'lumo_auth_hmac_secret_min_32_bytes_key_2026',
   OTP_HMAC_SECRET: process.env.OTP_HMAC_SECRET || 'lumo_otp_hmac_secret_min_32_bytes_key_2026',

@@ -461,11 +461,11 @@ export function CheckoutFlow() {
           <div className="space-y-2">
             <h4 className="text-xs font-extrabold text-[#0F172A]">Fulfillment Status</h4>
             <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
-              <div className="p-2 rounded-lg bg-[#E6F4EA] border border-[#A7F3D0] text-[#137333] font-bold">
-                <Check className="size-3.5 mx-auto mb-0.5 stroke-[3]" />
+              <div className="p-2 rounded-lg bg-lumo-navy-dark text-white font-black shadow-xs">
+                <Check className="size-3.5 mx-auto mb-0.5 stroke-[3] text-primary" />
                 Paid
               </div>
-              <div className="p-2 rounded-lg bg-lumo-orange-light border border-lumo-orange-soft text-primary font-bold">
+              <div className="p-2 rounded-lg bg-orange-50 border border-orange-200 text-primary font-bold">
                 <Package className="size-3.5 mx-auto mb-0.5 animate-bounce" />
                 Packing
               </div>
@@ -484,7 +484,7 @@ export function CheckoutFlow() {
             <Button
               size="lg"
               onClick={() => setShowReceiptModal(true)}
-              className="w-full font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md h-11 text-xs rounded-xl flex items-center justify-center gap-2"
+              className="w-full font-black bg-primary hover:bg-primary/90 text-white shadow-md h-12 text-xs rounded-2xl flex items-center justify-center gap-2 transition-transform active:scale-[0.99]"
             >
               <FileText className="size-4" />
               Generate &amp; Download Official Payment Receipt
@@ -494,16 +494,16 @@ export function CheckoutFlow() {
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
             <Button
               size="sm"
-              className="flex-1 font-extrabold bg-primary hover:bg-primary/80 text-white shadow-xs h-10 text-xs rounded-xl"
+              className="flex-1 font-extrabold bg-lumo-navy-dark hover:bg-slate-800 text-white shadow-xs h-10 text-xs rounded-xl"
               render={<Link href="/account/orders" />}
             >
               Track Order in Account
-              <ArrowRight className="size-3.5 ml-1" />
+              <ArrowRight className="size-3.5 ml-1 text-primary" />
             </Button>
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 font-bold text-xs h-10 rounded-xl border-[#E2E8F0]"
+              className="flex-1 font-bold text-xs h-10 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
               render={<Link href="/marketplace" />}
             >
               Continue Shopping
