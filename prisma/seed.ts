@@ -1,10 +1,44 @@
-import { PrismaClient, ProductStatus, SourceType } from '@prisma/client'
+import { PrismaClient, ProductStatus, SourceType, AccountStatus, KycStatus, Role } from '@prisma/client'
 import { Prisma } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting LUMO Hierarchical Category & 100 Product Catalog Seeding...')
+  console.log('🌱 Starting LUMO Hierarchical Category, Admin Accounts & Catalog Seeding...')
+
+  const defaultPassword = '0987654321'
+  const salt = await bcrypt.genSalt(12)
+  const hashedPassword = await bcrypt.hash(defaultPassword, salt)
+
+  // Seed Primary & Production Admin Users
+  const adminAccounts = [
+    { name: 'LUMO Super Admin', email: 'admin@lumo.co.tz', phone: '+255711788830' },
+    { name: 'Ado Myamba (Admin)', email: 'myambaado@gmail.com', phone: '+255768828247' },
+  ]
+
+  for (const adminAcc of adminAccounts) {
+    await prisma.user.upsert({
+      where: { email: adminAcc.email },
+      update: {
+        role: Role.ADMIN,
+        passwordHash: hashedPassword,
+        accountStatus: AccountStatus.ACTIVE,
+        kycStatus: KycStatus.VERIFIED,
+        phoneVerifiedAt: new Date(),
+      },
+      create: {
+        name: adminAcc.name,
+        email: adminAcc.email,
+        role: Role.ADMIN,
+        passwordHash: hashedPassword,
+        phone: adminAcc.phone,
+        accountStatus: AccountStatus.ACTIVE,
+        kycStatus: KycStatus.VERIFIED,
+        phoneVerifiedAt: new Date(),
+      },
+    })
+  }
 
   const categoryTree = [
     {
@@ -102,18 +136,7 @@ async function main() {
     }
   }
 
-  // Seed Primary Admin User
-  await prisma.user.upsert({
-    where: { email: 'admin@lumo.co.tz' },
-    update: {},
-    create: {
-      name: 'LUMO Super Admin',
-      email: 'admin@lumo.co.tz',
-      role: 'ADMIN',
-      phone: '+255700000001',
-      kycStatus: 'VERIFIED',
-    },
-  })
+
 
   // Seed 100 Demo Products (20 per category)
   console.log('📦 Seeding 100 Catalog Products across 5 categories...')

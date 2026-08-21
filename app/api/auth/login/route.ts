@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         riskLevel: 'LOW',
         details: 'Invalid credentials submitted.',
       })
-      return NextResponse.json({ error: 'Invalid email/phone or password.' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 })
     }
 
     // Account Status & Phone Verification check
