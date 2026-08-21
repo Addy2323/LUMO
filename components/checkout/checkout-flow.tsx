@@ -418,8 +418,8 @@ export function CheckoutFlow() {
   // Final Confirmation Screen
   if (status === 'confirmed' && lastPaidOrder) {
     return (
-      <Card className="mx-auto max-w-lg border-[#A7F3D0] bg-white shadow-md overflow-hidden rounded-2xl">
-        <div className="bg-[#137333] text-white py-5 px-6 text-center flex flex-col items-center gap-2">
+      <Card className="mx-auto max-w-lg border-orange-200 bg-white shadow-md overflow-hidden rounded-2xl">
+        <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white py-5 px-6 text-center flex flex-col items-center gap-2">
           <div className="size-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white ring-4 ring-white/20">
             <CheckCircle2 className="size-7" />
           </div>
@@ -427,7 +427,7 @@ export function CheckoutFlow() {
             TRANSACTION VERIFIED
           </Badge>
           <h2 className="text-xl font-extrabold">Order Successfully Placed!</h2>
-          <p className="text-xs text-emerald-100 max-w-sm">
+          <p className="text-xs text-orange-100 max-w-sm">
             Payment of <strong className="text-white tnum">{formatTZS(lastPaidOrder.total)}</strong> confirmed via{' '}
             {lastPaidOrder.methodName}. Reference: <span className="font-mono font-bold text-white">{lastPaidOrder.reference}</span>.
           </p>
@@ -437,7 +437,7 @@ export function CheckoutFlow() {
           <div className="p-4 rounded-xl border border-[#E2E8F0] bg-slate-50 space-y-2.5 text-xs">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2 font-extrabold text-[#0F172A]">
               <span>Ref: {lastPaidOrder.reference}</span>
-              <span className="text-[#137333]">Payment Secured</span>
+              <span className="text-primary">Payment Secured</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-1">

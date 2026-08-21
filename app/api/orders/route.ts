@@ -3,6 +3,9 @@ import { z } from 'zod'
 import { Prisma, OrderStatus, PaymentStatus, EscrowStatus } from '@prisma/client'
 import { prisma } from '@/lib/db'
 import { authorizeApiRequest } from '@/lib/auth/authorize'
+import { OutboxService } from '@/lib/notifications/outbox-service'
+import { processOutboxBatch } from '@/lib/notifications/outbox-worker'
+import { SmsTemplateType } from '@/lib/sms/sms-template-service'
 
 const CreateOrderItemSchema = z.object({
   productId: z.string().min(1),
@@ -392,6 +395,8 @@ export async function POST(req: NextRequest) {
     })
 
     // Execute secondary non-critical side effects outside transaction
+    const targetPhone = shippingAddress?.phone || buyerUser.phone
+
     Promise.allSettled([
       ...inputItems.map((item) =>
         prisma.product.update({
@@ -413,6 +418,23 @@ export async function POST(req: NextRequest) {
           status: EscrowStatus.INITIATED,
         },
       }).catch((e) => console.warn('[ESCROW LEDGER] Non-blocking warning:', e)),
+      (async () => {
+        if (targetPhone) {
+          await OutboxService.enqueue({
+            eventType: 'ORDER_PAID_CUSTOMER',
+            aggregateId: createdOrder.id,
+            recipientId: buyerUser.id,
+            recipientPhone: targetPhone,
+            templateKey: 'ORDER_PAID_CUSTOMER',
+            payloadJson: {
+              orderReference: createdOrder.orderNumber,
+              amountTZS: Number(createdOrder.totalAmountTZS).toLocaleString(),
+            },
+          }).catch((err) => console.warn('[ORDER SMS ENQUEUE WARN]', err))
+
+          await processOutboxBatch(10).catch((err) => console.warn('[ORDER SMS DISPATCH WARN]', err))
+        }
+      })(),
     ])
 
     return NextResponse.json(

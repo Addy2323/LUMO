@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import Image from 'next/image'
 import {
   Printer,
   Download,
@@ -221,23 +222,17 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
           className="p-6 sm:p-8 space-y-5 bg-white text-slate-900 font-sans print:p-2 print:w-full"
         >
           {/* HEADER ROW */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
             {/* LOGO & TAGLINE */}
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-gradient-to-br from-[#024731] to-[#047857] p-2 flex items-center justify-center shadow-md relative overflow-hidden shrink-0">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-400/30 via-transparent to-transparent pointer-events-none" />
-                <svg viewBox="0 0 40 40" className="size-7 text-white fill-current">
-                  <path d="M20 2L35 11V29L20 38L5 29V11L20 2Z" fill="none" stroke="currentColor" strokeWidth="3" />
-                  <path d="M20 9L30 15V25L20 31L10 25V15L20 9Z" fill="var(--lumo-orange)" />
-                </svg>
+              <div className="relative h-12 w-40 shrink-0">
+                <Image src="/logo.png" alt="LUMO Logo" fill className="object-contain object-left" priority />
               </div>
-              <div>
-                <div className="flex items-center gap-1">
-                  <span className="text-2xl font-black tracking-tight text-lumo-navy-dark font-sans">
-                    LUMO<span className="text-primary">®</span>
-                  </span>
-                </div>
-                <p className="text-[11px] font-semibold text-slate-500 tracking-tight">
+              <div className="border-l border-slate-200 pl-3">
+                <p className="text-xs font-black text-lumo-navy-dark tracking-tight">
+                  LUMO Trade Protection
+                </p>
+                <p className="text-[10.5px] font-semibold text-slate-500 tracking-tight">
                   Trade. Trust. Grow Together.
                 </p>
               </div>
@@ -248,34 +243,34 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
               <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-lumo-navy-dark">
                 OFFICIAL PAYMENT RECEIPT
               </h1>
-              <p className="text-xs font-bold text-lumo-orange-hover tracking-wide">
+              <p className="text-xs font-bold text-primary tracking-wide">
                 Tax Invoice &amp; Receipt
               </p>
-              <p className="text-xs font-mono font-bold text-emerald-700">
-                Receipt No: <span className="font-extrabold">{receiptNo}</span>
+              <p className="text-xs font-mono font-bold text-slate-700">
+                Receipt No: <span className="font-extrabold text-lumo-navy-dark">{receiptNo}</span>
               </p>
             </div>
 
             {/* PAYMENT STATUS BADGE BOX */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 flex items-center gap-3 shadow-2xs shrink-0">
-              <div className="size-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="rounded-2xl border border-orange-200 bg-[#FFF8F5] p-3 flex items-center gap-3 shadow-2xs shrink-0">
+              <div className="size-10 rounded-full bg-primary text-white flex items-center justify-center shadow-xs shrink-0">
                 <ShieldCheck className="size-6 stroke-[2.5]" />
               </div>
               <div className="space-y-0.5 text-left">
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">
                   PAYMENT STATUS
                 </span>
-                <span className="text-xs font-black tracking-wide text-emerald-700 block">
+                <span className="text-xs font-black tracking-wide text-primary block">
                   PAID &amp; VERIFIED
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium block">
+                <span className="text-[10px] text-slate-600 font-medium block">
                   Thank you for trading with LUMO
                 </span>
               </div>
             </div>
           </div>
 
-          {/* HERO GREEN BANNER */}
+          {/* HERO NAVY & ORANGE BANNER */}
           <div className="relative overflow-hidden rounded-2xl bg-lumo-navy-dark p-5 text-white shadow-md">
             {/* Background SVG Grid Pattern */}
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -288,10 +283,10 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
                     OFFICIAL RECEIPT
                   </span>
                 </div>
-                <p className="text-xs font-medium text-emerald-100">
+                <p className="text-xs font-medium text-orange-100">
                   LUMO Trade Protection &amp; Global B2B Sourcing Hub
                 </p>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-emerald-200 font-mono pt-0.5">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-300 font-mono pt-0.5">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="size-3.5 text-primary" />
                     <span>TIN: 142-998-311 &nbsp;|&nbsp; VRN: 40019283-X</span>
@@ -304,12 +299,12 @@ export function CustomerPaymentReceipt({ receipt, open, onClose }: CustomerPayme
               </div>
 
               {/* EMBLEM STAMP */}
-              <div className="flex items-center gap-3 bg-emerald-900/50 border border-emerald-500/30 p-2.5 rounded-xl backdrop-blur-xs">
-                <div className="size-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shrink-0">
-                  <CheckCircle2 className="size-6 text-emerald-400 stroke-[2.5]" />
+              <div className="flex items-center gap-3 bg-white/10 border border-white/20 p-2.5 rounded-xl backdrop-blur-xs">
+                <div className="size-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shrink-0">
+                  <CheckCircle2 className="size-6 text-primary stroke-[2.5]" />
                 </div>
                 <div className="text-right font-mono text-xs">
-                  <span className="text-emerald-200 block text-[10px] uppercase font-bold tracking-wider">Verification Code</span>
+                  <span className="text-slate-300 block text-[10px] uppercase font-bold tracking-wider">Verification Code</span>
                   <span className="font-extrabold text-white">Ref: {orderNum}</span>
                 </div>
               </div>
