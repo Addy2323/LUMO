@@ -932,6 +932,7 @@ model Order {
   shipments          Shipment[]
   disputes           Dispute[]
   payments           PaymentRecord[]
+  paymentAttempts    PaymentAttempt[]
   escrowRecords      EscrowLedger[]
   waybills           ElectronicWaybill[]
   deliveryPreference DeliveryPreference?
@@ -1041,6 +1042,47 @@ model PaymentRecord {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("payment_records")
+}
+
+model PaymentAttempt {
+  id                String    @id @default(uuid())
+  orderId           String
+  provider          String    @default("MONGIKE")
+  providerPaymentId String?
+  gatewayReference  String?
+  amount            Decimal   @db.Decimal(14, 2)
+  currency          String    @default("TZS")
+  buyerPhone        String
+  feePayer          String    @default("MERCHANT")
+  status            String    @default("CREATED") // CREATED, PENDING, SUCCEEDED, FAILED, EXPIRED, CANCELLED
+  failureCode       String?
+  failureMessage    String?
+  expiresAt         DateTime?
+  paidAt            DateTime?
+  providerResponse  Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, status])
+  @@index([providerPaymentId])
+  @@map("payment_attempts")
+}
+
+model PaymentWebhookEvent {
+  id                 String    @id @default(uuid())
+  provider           String    @default("MONGIKE")
+  providerEventId    String?   @unique
+  payloadHash        String?   @unique
+  payload            Json
+  signatureVerified  Boolean   @default(false)
+  receivedAt         DateTime  @default(now())
+  processedAt        DateTime?
+  processingError    String?
+
+  @@index([provider, providerEventId])
+  @@map("payment_webhook_events")
 }
 
 model EscrowLedger {
