@@ -102,10 +102,13 @@ export async function POST(req: Request) {
       },
     })
 
-    // 10. Dispatch server-side request to Mongike
+    // 10. Dispatch server-side request to Mongike (Use unique reference per attempt to prevent provider duplicate errors)
+    const attemptCount = await db.paymentAttempt.count({ where: { orderId: order.id } })
+    const uniqueAttemptReference = attemptCount > 1 ? `${order.orderNumber}-A${attemptCount}` : order.orderNumber
+
     const apiResult = await initiateMongikeMobileMoneyPayment({
       orderId: order.id,
-      orderNumber: order.orderNumber,
+      orderNumber: uniqueAttemptReference,
       amountTZS,
       buyerPhone: normalizedPhone,
       feePayer,

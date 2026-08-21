@@ -15,18 +15,26 @@ export type InitiatePaymentInput = z.infer<typeof initiatePaymentInputSchema>
  * Zod schema for Mongike API Initiation Response
  */
 export const mongikeInitiationResponseSchema = z.object({
+  status: z.string().optional(),
   success: z.boolean().optional(),
+  message: z.string().optional(),
+  code: z.string().optional(),
+  error: z.string().optional(),
   id: z.string().optional(),
   payment_id: z.string().optional(),
   gateway_reference: z.string().optional(),
   reference: z.string().optional(),
-  status: z.string().default('PENDING'),
-  amount: z.number().optional(),
-  fee_payer: z.string().optional(),
   expires_at: z.string().optional(),
-  message: z.string().optional(),
-  code: z.string().optional(),
-  error: z.string().optional(),
+  data: z
+    .object({
+      id: z.string().optional(),
+      payment_id: z.string().optional(),
+      order_id: z.string().optional(),
+      gateway_ref: z.string().optional(),
+      gateway_reference: z.string().optional(),
+      amount: z.number().optional(),
+    })
+    .optional(),
 })
 
 export type MongikeInitiationResponse = z.infer<typeof mongikeInitiationResponseSchema>
@@ -153,8 +161,20 @@ export async function initiateMongikeMobileMoneyPayment(
 
     const parsed = mongikeInitiationResponseSchema.parse(responseJson)
 
-    const providerPaymentId = parsed.id || parsed.payment_id || parsed.reference || `MNG-${Date.now()}`
-    const gatewayReference = parsed.gateway_reference || parsed.reference || providerPaymentId
+    const providerPaymentId =
+      parsed.data?.id ||
+      parsed.data?.payment_id ||
+      parsed.id ||
+      parsed.payment_id ||
+      parsed.reference ||
+      `MNG-${Date.now()}`
+
+    const gatewayReference =
+      parsed.data?.gateway_ref ||
+      parsed.data?.gateway_reference ||
+      parsed.gateway_reference ||
+      parsed.reference ||
+      providerPaymentId
 
     let status: MongikeApiResult['status'] = 'PENDING'
     if (res.ok || res.status === 201 || res.status === 200) {
