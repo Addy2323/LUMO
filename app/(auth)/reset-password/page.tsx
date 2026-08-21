@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
         <div className="rounded-3xl bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 space-y-6">
           
           <div className="space-y-2 text-center">
-            <div className="mx-auto size-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#F95700] flex items-center justify-center">
+            <div className="mx-auto size-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-primary flex items-center justify-center">
               <Lock className="size-6 stroke-[2.5]" />
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
+                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-[#F95700]/30"
                   />
                   <button
                     type="button"
@@ -144,7 +144,7 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#F95700] focus:ring-2 focus:ring-[#F95700]/30"
+                    className="w-full h-11 pl-4 pr-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-[#F95700]/30"
                   />
                   <button
                     type="button"
@@ -190,7 +190,7 @@ export default function ResetPasswordPage() {
               <Button
                 type="submit"
                 disabled={loading || !isValidPassword}
-                className="w-full h-11 bg-[#F95700] hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2 cursor-pointer"
+                className="w-full h-11 bg-primary hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>

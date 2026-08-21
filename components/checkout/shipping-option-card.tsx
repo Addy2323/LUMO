@@ -38,7 +38,7 @@ export function ShippingOptionCard({ option, isSelected, onSelect }: ShippingOpt
       className={cn(
         'w-full max-w-full relative flex items-center justify-between gap-2.5 sm:gap-3 rounded-2xl border p-3 sm:p-4 cursor-pointer transition-all duration-200 min-h-[44px] overflow-hidden',
         isSelected
-          ? 'border-[#F95700] bg-[#FFF8F3] shadow-2xs'
+          ? 'border-primary bg-lumo-orange-light shadow-2xs'
           : 'border-[#E2E8F0] bg-white hover:bg-slate-50/50'
       )}
     >
@@ -56,7 +56,7 @@ export function ShippingOptionCard({ option, isSelected, onSelect }: ShippingOpt
           <div
             className={cn(
               'size-5 rounded-full border-2 flex items-center justify-center transition-colors',
-              isSelected ? 'border-[#F95700] bg-[#F95700]' : 'border-slate-300 bg-white'
+              isSelected ? 'border-primary bg-primary' : 'border-slate-300 bg-white'
             )}
           >
             {isSelected && <div className="size-2 rounded-full bg-white" />}
@@ -64,7 +64,7 @@ export function ShippingOptionCard({ option, isSelected, onSelect }: ShippingOpt
         </div>
 
         {/* Shipping Icon */}
-        <div className="shrink-0 pt-0.5 sm:pt-0 text-[#F95700]">
+        <div className="shrink-0 pt-0.5 sm:pt-0 text-primary">
           <Icon className="size-5" />
         </div>
 

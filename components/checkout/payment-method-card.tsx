@@ -34,7 +34,7 @@ export function PaymentMethodCard({
         !isAvailable
           ? 'opacity-60 bg-slate-50 border-slate-200 cursor-not-allowed'
           : isSelected
-            ? 'border-[#F95700] bg-[#FFF8F3] shadow-2xs cursor-pointer'
+            ? 'border-primary bg-lumo-orange-light shadow-2xs cursor-pointer'
             : 'border-[#E2E8F0] bg-white hover:bg-slate-50/50 cursor-pointer'
       )}
     >
@@ -55,7 +55,7 @@ export function PaymentMethodCard({
             !isAvailable
               ? 'border-slate-300 bg-slate-100'
               : isSelected
-                ? 'border-[#F95700] bg-[#F95700]'
+                ? 'border-primary bg-primary'
                 : 'border-slate-300 bg-white'
           )}
         >
@@ -76,7 +76,7 @@ export function PaymentMethodCard({
             />
           </div>
         ) : (
-          <Icon className="size-5 text-[#F95700]" />
+          <Icon className="size-5 text-primary" />
         )}
       </div>
 

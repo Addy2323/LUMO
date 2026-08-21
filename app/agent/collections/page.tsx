@@ -145,7 +145,7 @@ export default function AgentCollectionsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-12 text-center text-xs text-slate-400">
-              <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+              <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
               Loading factory collections...
             </div>
           ) : activeCollections.length === 0 ? (

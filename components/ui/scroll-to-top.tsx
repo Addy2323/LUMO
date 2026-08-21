@@ -36,7 +36,7 @@ export function ScrollToTop({ className }: { className?: string }) {
       aria-label="Scroll back to top"
       title="Scroll back to top"
       className={cn(
-        'hidden sm:flex fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#E05E00] hover:from-[#E05E00] hover:to-[#C44F00] text-white p-3 shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 border border-white/20 cursor-pointer group',
+        'hidden sm:flex fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 items-center gap-2 rounded-full bg-gradient-to-r from-primary to-lumo-orange-hover hover:from-lumo-orange-hover hover:to-lumo-orange-hover text-white p-3 shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 border border-white/20 cursor-pointer group',
         className,
       )}
     >

@@ -69,7 +69,7 @@ export function MobileOrderSummary({
       <div className="border-t border-[#E2E8F0] pt-3 flex items-baseline justify-between">
         <span className="text-sm font-black text-[#0F172A]">Total Amount</span>
         <div className="text-right">
-          <span className="text-xl sm:text-2xl font-black text-[#F95700] tnum block leading-none">
+          <span className="text-xl sm:text-2xl font-black text-primary tnum block leading-none">
             {formatTZS(total)}
           </span>
           <span className="text-[10px] text-[#64748B] font-medium block mt-1">

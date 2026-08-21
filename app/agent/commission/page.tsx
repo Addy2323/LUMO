@@ -93,7 +93,7 @@ export default function AgentCommissionPage() {
           <Button
             onClick={handleDownloadStatement}
             disabled={downloading}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs gap-1.5"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs gap-1.5"
           >
             <Download className="size-4" /> Download Statement
           </Button>

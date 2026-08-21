@@ -248,7 +248,7 @@ export function GlobalHeader({
               >
                 <ShoppingCart className="size-6 text-[#0B4385] dark:text-sky-400" aria-hidden="true" />
                 {mounted && cartCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 size-5 rounded-full bg-[#FF6B00] text-[10px] font-extrabold text-white flex items-center justify-center shadow-xs border-2 border-white dark:border-[#0B1F3A]">
+                  <span className="absolute -top-1 -right-1 size-5 rounded-full bg-primary text-[10px] font-extrabold text-white flex items-center justify-center shadow-xs border-2 border-white dark:border-[#0B1F3A]">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 ) : null}

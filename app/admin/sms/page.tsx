@@ -98,15 +98,15 @@ export default function AdminSmsCampaignsPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Top Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Send className="size-6 text-[#FF6B00]" /> Broadcast SMS Campaigns
+              <Send className="size-6 text-primary" /> Broadcast SMS Campaigns
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live PostgreSQL Data
             </Badge>
           </div>
@@ -118,7 +118,7 @@ export default function AdminSmsCampaignsPage() {
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setModalOpen(true)}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
           >
             <Plus className="size-4" /> Create Broadcast Campaign
           </Button>
@@ -187,7 +187,7 @@ export default function AdminSmsCampaignsPage() {
 
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading campaigns from PostgreSQL...
+            <RefreshCw className="size-4 animate-spin text-primary" /> Loading campaigns from PostgreSQL...
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center space-y-2">
@@ -295,7 +295,7 @@ export default function AdminSmsCampaignsPage() {
                   value={messageContent}
                   onChange={(e) => setMessageContent(e.target.value)}
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2.5 text-xs outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2.5 text-xs outline-none focus:border-primary"
                 />
                 <span className="text-[10px] text-slate-400 block text-right">
                   {messageContent.length} Chars | {Math.ceil(messageContent.length / 160)} Segment(s)
@@ -314,7 +314,7 @@ export default function AdminSmsCampaignsPage() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5"
+                  className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5"
                 >
                   {submitting ? <RefreshCw className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
                   Dispatch Broadcast

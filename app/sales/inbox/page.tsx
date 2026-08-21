@@ -204,7 +204,7 @@ export default function SharedInboxPage() {
             <div className="divide-y border-t border-border max-h-[600px] overflow-y-auto">
               {loading ? (
                 <div className="p-12 text-center text-xs text-muted-foreground">
-                  <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                  <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                   Loading tickets from PostgreSQL database...
                 </div>
               ) : filteredTickets.length === 0 ? (

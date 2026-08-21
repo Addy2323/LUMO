@@ -85,7 +85,7 @@ export default function CustomerReturnsPage() {
       {loading ? (
         <Card className="py-12 text-center bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="space-y-2">
-            <Loader2 className="size-8 animate-spin text-[#FF6B00] mx-auto" />
+            <Loader2 className="size-8 animate-spin text-primary mx-auto" />
             <p className="text-xs text-muted-foreground font-medium">Loading eligible orders from database...</p>
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ export default function CustomerReturnsPage() {
                 You currently have no orders eligible for return or dispute in the system.
               </p>
             </div>
-            <Button render={<Link href="/marketplace" />} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl shadow-xs gap-2">
+            <Button render={<Link href="/marketplace" />} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl shadow-xs gap-2">
               <ShoppingBag className="size-4" /> Browse Marketplace
             </Button>
           </CardContent>
@@ -118,7 +118,7 @@ export default function CustomerReturnsPage() {
               <Button variant="outline" size="sm" render={<Link href="/account/orders" />}>
                 View My Orders
               </Button>
-              <Button size="sm" render={<Link href="/account/support" />} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold">
+              <Button size="sm" render={<Link href="/account/support" />} className="bg-primary hover:bg-primary/80 text-white font-bold">
                 Track Ticket Status
               </Button>
             </div>
@@ -164,7 +164,7 @@ export default function CustomerReturnsPage() {
                   </ul>
                   <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-foreground font-bold">
                     <span>Original Payment Method:</span>
-                    <span className="uppercase text-[#FF6B00]">{selectedOrder.paymentMethod || 'LUMO Payment Protection'} (Direct Refund)</span>
+                    <span className="uppercase text-primary">{selectedOrder.paymentMethod || 'LUMO Payment Protection'} (Direct Refund)</span>
                   </div>
                 </div>
               ) : null}
@@ -200,7 +200,7 @@ export default function CustomerReturnsPage() {
                 <Button type="button" variant="outline" render={<Link href="/account" />}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs">
+                <Button type="submit" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs">
                   Submit Return Request
                 </Button>
               </div>

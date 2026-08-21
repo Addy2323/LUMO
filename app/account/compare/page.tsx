@@ -83,7 +83,7 @@ export default function ProductComparisonPage() {
           <Link href="/marketplace">
             <Button
               size="sm"
-              className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-2 rounded-xl shadow-xs"
+              className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-2 rounded-xl shadow-xs"
             >
               <Store className="size-4" /> Browse Marketplace
             </Button>
@@ -104,7 +104,7 @@ export default function ProductComparisonPage() {
               </p>
             </div>
             <Link href="/marketplace">
-              <Button className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl shadow-md gap-2 mt-2 px-5">
+              <Button className="bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl shadow-md gap-2 mt-2 px-5">
                 Explore B2B Marketplace <ArrowRight className="size-4" />
               </Button>
             </Link>
@@ -150,7 +150,7 @@ export default function ProductComparisonPage() {
                         size="sm"
                         onClick={() => handleAddToCart(item)}
                         disabled={!item.inStock}
-                        className="w-full bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl shadow-xs mt-1"
+                        className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl shadow-xs mt-1"
                       >
                         <ShoppingCart className="size-3.5 mr-1" /> Add to Cart
                       </Button>

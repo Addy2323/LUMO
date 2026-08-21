@@ -310,7 +310,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
     themeMode === 'dark' ? 'text-slate-300' : 'text-[#0F172A] font-extrabold'
 
   return (
-    <div className={`min-h-dvh min-h-svh ${pageBgClass} flex items-center justify-center p-3 sm:p-4 lg:p-6 pb-[env(safe-area-inset-bottom)] relative overflow-hidden transition-colors duration-300 antialiased selection:bg-[#F95700] selection:text-white`}>
+    <div className={`min-h-dvh min-h-svh ${pageBgClass} flex items-center justify-center p-3 sm:p-4 lg:p-6 pb-[env(safe-area-inset-bottom)] relative overflow-hidden transition-colors duration-300 antialiased selection:bg-primary selection:text-white`}>
       
       {/* Decorative Logistics Illustration at bottom of page */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 overflow-hidden z-0">
@@ -323,7 +323,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
         className={`relative z-10 w-full max-w-4xl rounded-2xl sm:rounded-3xl border ${rightPanelBgClass} shadow-xl shadow-slate-200/50 dark:shadow-black/50 grid grid-cols-1 lg:grid-cols-12 overflow-hidden my-auto transition-all duration-300`}
       >
         {/* LEFT PANEL: Orange Hero Banner (Hidden on Mobile < lg, Only Displayed on Desktop ≥ lg) */}
-        <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-br from-[#FF6B00] via-[#F97316] to-[#EA580C] p-6 lg:p-8 flex-col justify-between text-white relative overflow-hidden">
+        <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-br from-primary via-[#F97316] to-[#EA580C] p-6 lg:p-8 flex-col justify-between text-white relative overflow-hidden">
           {/* Top Section */}
           <div className="space-y-4">
             {/* Pill Badge */}
@@ -452,11 +452,11 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                   onClick={() => handleRoleSelect('CUSTOMER')}
                   className={`py-1.5 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'CUSTOMER'
-                      ? 'border-[#F95700] bg-[#FFF0E6] text-[#F95700] shadow-xs'
+                      ? 'border-primary bg-lumo-orange-light text-primary shadow-xs'
                       : 'border-[#DCE7F5] bg-[#F0F5FD] dark:bg-slate-900 text-slate-600 dark:text-slate-300'
                   }`}
                 >
-                  <User className="size-3.5 text-[#F95700]" />
+                  <User className="size-3.5 text-primary" />
                   <span>Buyer</span>
                 </button>
 
@@ -465,7 +465,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                   onClick={() => handleRoleSelect('SUPPLIER')}
                   className={`py-1.5 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'SUPPLIER'
-                      ? 'border-[#F95700] bg-[#FFF0E6] text-[#F95700] shadow-xs'
+                      ? 'border-primary bg-lumo-orange-light text-primary shadow-xs'
                       : 'border-[#DCE7F5] bg-[#F0F5FD] dark:bg-slate-900 text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -478,7 +478,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                   onClick={() => handleRoleSelect('LOGISTICS')}
                   className={`py-1.5 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     selectedRole === 'LOGISTICS'
-                      ? 'border-[#F95700] bg-[#FFF0E6] text-[#F95700] shadow-xs'
+                      ? 'border-primary bg-lumo-orange-light text-primary shadow-xs'
                       : 'border-[#DCE7F5] bg-[#F0F5FD] dark:bg-slate-900 text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -630,15 +630,15 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                       type="checkbox"
                       checked={formData.acceptTerms}
                       onChange={(e) => setFormData({ ...formData, acceptTerms: e.target.checked })}
-                      className="rounded border-slate-300 text-[#F95700] focus:ring-[#F95700]"
+                      className="rounded border-slate-300 text-primary focus:ring-primary"
                     />
                     <span>
                       I agree to the Lumo{' '}
-                      <Link href="/terms" target="_blank" className="text-[#F95700] font-bold hover:underline">
+                      <Link href="/terms" target="_blank" className="text-primary font-bold hover:underline">
                         terms
                       </Link>{' '}
                       and{' '}
-                      <Link href="/privacy" target="_blank" className="text-[#F95700] font-bold hover:underline">
+                      <Link href="/privacy" target="_blank" className="text-primary font-bold hover:underline">
                         privacy
                       </Link>
                       .
@@ -650,7 +650,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#F95700] hover:bg-[#E04E00] text-white font-extrabold h-11 text-xs rounded-xl mt-2 transition-all shadow-md shadow-orange-500/20 cursor-pointer"
+                  className="w-full bg-primary hover:bg-[#E04E00] text-white font-extrabold h-11 text-xs rounded-xl mt-2 transition-all shadow-md shadow-orange-500/20 cursor-pointer"
                 >
                   {loading
                     ? 'Processing...'
@@ -664,7 +664,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                 {/* Sign In Link for Mobile & Desktop */}
                 <div className="pt-2 text-center text-xs font-semibold text-[#64748B] dark:text-slate-400">
                   Already registered?{' '}
-                  <Link href="/login" className="font-extrabold text-[#F95700] hover:underline cursor-pointer ml-1">
+                  <Link href="/login" className="font-extrabold text-primary hover:underline cursor-pointer ml-1">
                     Sign in
                   </Link>
                 </div>
@@ -721,7 +721,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                 <Button
                   type="submit"
                   disabled={loading || otp.length < 6 || isVerified}
-                  className="w-full bg-[#F95700] hover:bg-[#E04E00] text-white font-extrabold h-11 text-xs rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                  className="w-full bg-primary hover:bg-[#E04E00] text-white font-extrabold h-11 text-xs rounded-xl shadow-md cursor-pointer disabled:opacity-50"
                 >
                   {isVerified ? (
                     <span className="flex items-center gap-2">
@@ -749,7 +749,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                         type="button"
                         onClick={handleResendOtp}
                         disabled={loading || isVerified}
-                        className="text-xs font-extrabold text-[#F95700] hover:underline disabled:opacity-50 cursor-pointer"
+                        className="text-xs font-extrabold text-primary hover:underline disabled:opacity-50 cursor-pointer"
                       >
                         Didn&apos;t receive code? Resend SMS OTP
                       </button>
@@ -804,14 +804,14 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
                 Congratulations, {submittedAppInfo.name}!
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md font-medium leading-relaxed">
-                Your <span className="font-extrabold text-[#F95700]">{submittedAppInfo.role === 'SUPPLIER' ? 'Supplier Partner' : 'Logistics Partner'}</span> application has been successfully submitted and is under active review by the Lumo Operations Team.
+                Your <span className="font-extrabold text-primary">{submittedAppInfo.role === 'SUPPLIER' ? 'Supplier Partner' : 'Logistics Partner'}</span> application has been successfully submitted and is under active review by the Lumo Operations Team.
               </p>
             </div>
 
             <div className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-left space-y-2 text-xs">
               <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Application Reference</span>
-                <span className="font-mono font-bold text-[#F95700] bg-[#FFF0E6] px-2 py-0.5 rounded text-[11px]">
+                <span className="font-mono font-bold text-primary bg-lumo-orange-light px-2 py-0.5 rounded text-[11px]">
                   {submittedAppInfo.appId}
                 </span>
               </div>
@@ -844,7 +844,7 @@ export function SplitRegisterCard({ initialRole = 'CUSTOMER' }: SplitRegisterCar
               <Button
                 type="button"
                 onClick={handleNavigateHome}
-                className="flex-1 bg-[#F95700] hover:bg-[#E04E00] text-white font-extrabold text-xs h-11 rounded-xl shadow-md transition-transform active:scale-[0.98]"
+                className="flex-1 bg-primary hover:bg-[#E04E00] text-white font-extrabold text-xs h-11 rounded-xl shadow-md transition-transform active:scale-[0.98]"
               >
                 OK (Go to Home)
               </Button>

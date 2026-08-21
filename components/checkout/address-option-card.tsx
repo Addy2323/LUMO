@@ -31,7 +31,7 @@ export function AddressOptionCard({ address, isSelected, onSelect }: AddressOpti
       className={cn(
         'w-full max-w-full relative flex items-start gap-3 rounded-2xl border p-3.5 sm:p-4 cursor-pointer transition-all duration-200 min-h-[44px] overflow-hidden',
         isSelected
-          ? 'border-[#F95700] bg-[#FFF8F3] shadow-2xs'
+          ? 'border-primary bg-lumo-orange-light shadow-2xs'
           : 'border-[#E2E8F0] bg-white hover:bg-slate-50/50'
       )}
     >
@@ -48,7 +48,7 @@ export function AddressOptionCard({ address, isSelected, onSelect }: AddressOpti
         <div
           className={cn(
             'size-5 rounded-full border-2 flex items-center justify-center transition-colors',
-            isSelected ? 'border-[#F95700] bg-[#F95700]' : 'border-slate-300 bg-white'
+            isSelected ? 'border-primary bg-primary' : 'border-slate-300 bg-white'
           )}
         >
           {isSelected && <div className="size-2 rounded-full bg-white" />}
@@ -56,7 +56,7 @@ export function AddressOptionCard({ address, isSelected, onSelect }: AddressOpti
       </div>
 
       {/* Address Icon */}
-      <div className="pt-0.5 shrink-0 text-[#F95700]">
+      <div className="pt-0.5 shrink-0 text-primary">
         <Icon className="size-5" />
       </div>
 
@@ -65,7 +65,7 @@ export function AddressOptionCard({ address, isSelected, onSelect }: AddressOpti
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-extrabold text-sm text-[#0F172A]">{address.label}</span>
           {address.isDefault && (
-            <span className="shrink-0 rounded-full bg-[#FFF0E6] px-2 py-0.5 text-[10px] font-bold text-[#F95700] border border-[#FFD9C2]">
+            <span className="shrink-0 rounded-full bg-lumo-orange-light px-2 py-0.5 text-[10px] font-bold text-primary border border-lumo-orange-soft">
               Default Address
             </span>
           )}

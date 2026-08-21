@@ -95,15 +95,15 @@ export default function QuotationCentrePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <FileText className="size-6 text-[#FF6B00]" /> B2B Quotation Centre &amp; Landed Cost Builder
+              <FileText className="size-6 text-primary" /> B2B Quotation Centre &amp; Landed Cost Builder
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold">
               Live Calculator
             </Badge>
           </div>
@@ -123,7 +123,7 @@ export default function QuotationCentrePage() {
 
           <Button
             onClick={handleSendQuotation}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
           >
             <Send className="size-3.5" /> Dispatch Quotation
           </Button>
@@ -136,7 +136,7 @@ export default function QuotationCentrePage() {
         <Card className="bg-white border-slate-200 p-5 shadow-sm lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Calculator className="size-5 text-[#FF6B00]" />
+              <Calculator className="size-5 text-primary" />
               <h3 className="text-base font-extrabold text-slate-900">Landed Cost Calculation Sheet</h3>
             </div>
             {requiresApproval && (
@@ -241,7 +241,7 @@ export default function QuotationCentrePage() {
                 value={lumoServiceFee || ''}
                 onChange={(e) => setLumoServiceFee(Number(e.target.value))}
                 placeholder="0"
-                className="bg-slate-50 border-slate-200 h-9 font-mono text-[#FF6B00] font-bold"
+                className="bg-slate-50 border-slate-200 h-9 font-mono text-primary font-bold"
               />
             </div>
           </div>
@@ -250,12 +250,12 @@ export default function QuotationCentrePage() {
           <div className="p-4 bg-slate-900 text-white rounded-xl flex items-center justify-between mt-4">
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Total Calculated Landed Cost</span>
-              <div className="text-2xl font-black font-mono text-[#FF6B00]">{formatTZS(totalLandedCost)}</div>
+              <div className="text-2xl font-black font-mono text-primary">{formatTZS(totalLandedCost)}</div>
             </div>
 
             <Button
               onClick={handleSendQuotation}
-              className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5"
+              className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5"
             >
               Submit Quotation To Customer
             </Button>
@@ -282,7 +282,7 @@ export default function QuotationCentrePage() {
           <div className="space-y-3 text-xs">
             {loadingQuotes ? (
               <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading supplier quotes...
+                <RefreshCw className="size-4 animate-spin text-primary" /> Loading supplier quotes...
               </div>
             ) : supplierQuotes.length === 0 ? (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs text-slate-500">

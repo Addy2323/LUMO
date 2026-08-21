@@ -182,7 +182,7 @@ export default function LogisticsShipmentsPage() {
           <div className="divide-y border-t border-border">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live database shipments...
               </div>
             ) : filteredOrders.length === 0 ? (
@@ -230,7 +230,7 @@ export default function LogisticsShipmentsPage() {
                         render={<Link href={`/logistics/shipments/${order.id}`} />}
                         className="text-xs font-bold gap-1 h-8"
                       >
-                        <Barcode className="size-3.5 text-[#FF6B00]" />
+                        <Barcode className="size-3.5 text-primary" />
                         Open Barcode Scanner
                       </Button>
                     </div>

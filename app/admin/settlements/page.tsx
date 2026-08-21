@@ -100,7 +100,7 @@ export default function AdminSettlementsPage() {
         </Card>
         <Card className="p-4">
           <span className="text-xs text-muted-foreground font-medium">Net Payable to Merchants</span>
-          <h3 className="text-2xl font-mono font-extrabold text-[#FF6B00] mt-1">{formatTZS(totalNet)}</h3>
+          <h3 className="text-2xl font-mono font-extrabold text-primary mt-1">{formatTZS(totalNet)}</h3>
         </Card>
       </div>
 
@@ -123,7 +123,7 @@ export default function AdminSettlementsPage() {
           <div className="divide-y border-t">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live settlement ledgers from database...
               </div>
             ) : filtered.length === 0 ? (
@@ -154,7 +154,7 @@ export default function AdminSettlementsPage() {
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block">Net Payout</span>
-                      <strong className="text-[#FF6B00] text-sm font-extrabold">{formatTZS(s.netPayoutTZS)}</strong>
+                      <strong className="text-primary text-sm font-extrabold">{formatTZS(s.netPayoutTZS)}</strong>
                     </div>
                   </div>
                 </div>

@@ -112,7 +112,7 @@ export default function AdminInspectionsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
@@ -132,7 +132,7 @@ export default function AdminInspectionsPage() {
         <div className="flex items-center gap-2.5">
           <Button
             onClick={() => setAssignModalOpen(true)}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 rounded-lg shadow-sm gap-1.5"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-sm gap-1.5"
           >
             <Plus className="size-4 stroke-[3]" /> Assign New Inspection
           </Button>
@@ -241,7 +241,7 @@ export default function AdminInspectionsPage() {
               {loading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-10 text-slate-400">
-                    <RotateCw className="size-5 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                    <RotateCw className="size-5 animate-spin mx-auto mb-2 text-primary" />
                     Fetching live PostgreSQL inspection records...
                   </td>
                 </tr>
@@ -329,8 +329,8 @@ export default function AdminInspectionsPage() {
             <DialogHeader>
               <DialogTitle className="text-base font-black flex items-center justify-between text-slate-900 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-5 text-[#FF6B00]" />
-                  Inspection Audit: <span className="font-mono text-[#FF6B00]">{selectedInspection.orderRef}</span>
+                  <ShieldCheck className="size-5 text-primary" />
+                  Inspection Audit: <span className="font-mono text-primary">{selectedInspection.orderRef}</span>
                 </div>
                 <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">{selectedInspection.status}</Badge>
               </DialogTitle>
@@ -390,7 +390,7 @@ export default function AdminInspectionsPage() {
           <DialogContent className="max-w-md bg-white text-slate-900 p-6 space-y-4 rounded-xl">
             <DialogHeader>
               <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
-                <Plus className="size-5 text-[#FF6B00]" /> Assign Quality Inspection
+                <Plus className="size-5 text-primary" /> Assign Quality Inspection
               </DialogTitle>
             </DialogHeader>
 
@@ -420,7 +420,7 @@ export default function AdminInspectionsPage() {
                   toast.success('Inspection task created & dispatched to Inspector!')
                   setAssignModalOpen(false)
                 }}
-                className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+                className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
               >
                 Dispatch Inspection Assignment
               </Button>

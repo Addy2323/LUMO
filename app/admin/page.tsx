@@ -286,7 +286,7 @@ export default function AdminOperationsPage() {
   const smsSegmentCount = Math.ceil((smsMessage.length || 1) / 160)
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-5 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-5 pb-24">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
@@ -301,7 +301,7 @@ export default function AdminOperationsPage() {
         <div className="flex items-center gap-2.5">
           <Button
             onClick={() => setAssignmentModalOpen(true)}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-3.5 rounded-lg shadow-sm gap-1.5"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-3.5 rounded-lg shadow-sm gap-1.5"
           >
             <Plus className="size-4 stroke-[3]" /> Create Assignment
           </Button>
@@ -309,7 +309,7 @@ export default function AdminOperationsPage() {
           <Button
             onClick={() => setSmsModalOpen(true)}
             variant="outline"
-            className="border-[#FF6B00] text-[#FF6B00] hover:bg-orange-50 text-xs font-extrabold h-9 px-3.5 rounded-lg shadow-sm gap-1.5"
+            className="border-primary text-primary hover:bg-orange-50 text-xs font-extrabold h-9 px-3.5 rounded-lg shadow-sm gap-1.5"
           >
             <Send className="size-3.5" /> Broadcast SMS
           </Button>
@@ -317,7 +317,7 @@ export default function AdminOperationsPage() {
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
             <button className="p-1.5 text-slate-500 hover:text-slate-700 relative">
               <Bell className="size-4" />
-              <span className="absolute top-1 right-1 size-2 rounded-full bg-[#FF6B00]" />
+              <span className="absolute top-1 right-1 size-2 rounded-full bg-primary" />
             </button>
 
             <button className="p-1.5 text-slate-500 hover:text-slate-700">
@@ -325,7 +325,7 @@ export default function AdminOperationsPage() {
             </button>
 
             <div className="flex items-center gap-2 pl-1">
-              <div className="size-8 rounded-full bg-[#FF6B00] text-white font-black text-xs flex items-center justify-center shadow-sm">
+              <div className="size-8 rounded-full bg-primary text-white font-black text-xs flex items-center justify-center shadow-sm">
                 AM
               </div>
               <div className="hidden sm:block text-left text-xs">
@@ -500,7 +500,7 @@ export default function AdminOperationsPage() {
                           <Card
                             key={ord.id}
                             onClick={() => setSelectedOrder(ord)}
-                            className="bg-white border-slate-200 p-2 hover:border-[#FF6B00] hover:shadow-md cursor-pointer transition-all space-y-1.5 shadow-sm"
+                            className="bg-white border-slate-200 p-2 hover:border-primary hover:shadow-md cursor-pointer transition-all space-y-1.5 shadow-sm"
                           >
                             <div className="flex items-start gap-2">
                               <OrderProductThumbnail src={ord.image} alt={ord.itemTitle || ord.ref} className="size-10 rounded-lg shrink-0" />
@@ -532,7 +532,7 @@ export default function AdminOperationsPage() {
                               <select
                                 value={ord.stage}
                                 onChange={(e) => handleUpdateOrderStage(ord.id, e.target.value as PipelineStage)}
-                                className="text-[9px] bg-slate-50 border border-slate-200 rounded px-1 py-0.5 font-bold text-slate-800 hover:border-[#FF6B00] cursor-pointer"
+                                className="text-[9px] bg-slate-50 border border-slate-200 rounded px-1 py-0.5 font-bold text-slate-800 hover:border-primary cursor-pointer"
                               >
                                 {PIPELINE_STAGES.map((s) => (
                                   <option key={s} value={s}>
@@ -543,7 +543,7 @@ export default function AdminOperationsPage() {
                             </div>
 
                             {ord.assigned && (
-                              <p className="text-[8px] text-[#FF6B00] font-bold pt-0.5 truncate">
+                              <p className="text-[8px] text-primary font-bold pt-0.5 truncate">
                                 {ord.assigned}
                               </p>
                             )}
@@ -585,7 +585,7 @@ export default function AdminOperationsPage() {
                   onClick={() => setSelectedRole(role)}
                   className={`flex-1 py-1.5 text-center text-xs font-bold transition-all border-b-2 ${
                     selectedRole === role
-                      ? 'border-[#FF6B00] text-[#FF6B00]'
+                      ? 'border-primary text-primary'
                       : 'border-transparent text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -615,7 +615,7 @@ export default function AdminOperationsPage() {
                   </p>
                   <Link href="/admin/users">
                     <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold mt-1 border-slate-300 gap-1">
-                      <UserPlus className="size-3 text-[#FF6B00]" /> + Add {selectedRole} User
+                      <UserPlus className="size-3 text-primary" /> + Add {selectedRole} User
                     </Button>
                   </Link>
                 </div>
@@ -662,7 +662,7 @@ export default function AdminOperationsPage() {
 
               <Button
                 onClick={() => setAssignmentModalOpen(true)}
-                className="w-full bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 mt-2 rounded-lg shadow-sm gap-2"
+                className="w-full bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 mt-2 rounded-lg shadow-sm gap-2"
               >
                 Assign Order <Send className="size-3.5" />
               </Button>
@@ -677,7 +677,7 @@ export default function AdminOperationsPage() {
           <DialogContent className="max-w-md bg-white text-slate-900 p-6 space-y-4 rounded-xl shadow-xl">
             <DialogHeader>
               <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Send className="size-5 text-[#FF6B00]" /> Broadcast SMS Campaign
+                <Send className="size-5 text-primary" /> Broadcast SMS Campaign
               </DialogTitle>
             </DialogHeader>
 
@@ -732,7 +732,7 @@ export default function AdminOperationsPage() {
                   value={smsMessage}
                   onChange={(e) => setSmsMessage(e.target.value)}
                   placeholder="Habari, Lumo Platform updates: Order LUMO-100982 has been dispatched..."
-                  className="w-full bg-slate-50 border border-slate-300 rounded-md p-2.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-md p-2.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -745,7 +745,7 @@ export default function AdminOperationsPage() {
                 size="sm"
                 disabled={isSendingSms}
                 onClick={handleBroadcastSms}
-                className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs gap-1.5"
+                className="bg-primary hover:bg-primary/80 text-white font-bold text-xs gap-1.5"
               >
                 {isSendingSms ? <RotateCw className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
                 Dispatch Broadcast SMS
@@ -762,7 +762,7 @@ export default function AdminOperationsPage() {
             <DialogHeader>
               <DialogTitle className="text-lg font-black flex items-center justify-between text-slate-900 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[#FF6B00]">{selectedOrder.ref}</span>
+                  <span className="font-mono text-primary">{selectedOrder.ref}</span>
                   <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">{selectedOrder.stage}</Badge>
                 </div>
                 <span className="font-mono text-slate-900 text-base">{formatTZS(selectedOrder.amountTZS)}</span>
@@ -888,7 +888,7 @@ export default function AdminOperationsPage() {
                     setSelectedOrder(null)
                     setAssignmentModalOpen(true)
                   }}
-                  className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+                  className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
                 >
                   + Assign Agent / Staff
                 </Button>
@@ -904,7 +904,7 @@ export default function AdminOperationsPage() {
           <DialogContent className="max-w-md bg-white text-slate-900 p-6 space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-black text-slate-900 flex items-center gap-2">
-                <Plus className="size-5 text-[#FF6B00]" /> Create New Order Assignment
+                <Plus className="size-5 text-primary" /> Create New Order Assignment
               </DialogTitle>
             </DialogHeader>
 
@@ -969,7 +969,7 @@ export default function AdminOperationsPage() {
               <Button variant="outline" size="sm" onClick={() => setAssignmentModalOpen(false)} className="border-slate-300 text-slate-700 text-xs">
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleCreateAssignment} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs">
+              <Button size="sm" onClick={handleCreateAssignment} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs">
                 Create &amp; Dispatch Assignment
               </Button>
             </DialogFooter>

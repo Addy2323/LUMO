@@ -75,7 +75,7 @@ export default function SalesTicketsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-extrabold flex items-center gap-2">
-              <MessageSquare className="size-5 text-[#FF6B00]" /> Support Queue ({filtered.length})
+              <MessageSquare className="size-5 text-primary" /> Support Queue ({filtered.length})
             </CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -93,7 +93,7 @@ export default function SalesTicketsPage() {
           <div className="divide-y border-t">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live support tickets from database...
               </div>
             ) : filtered.length === 0 ? (

@@ -152,7 +152,7 @@ export default function SalesSourcingPage() {
           <div className="divide-y border-t border-border">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live database sourcing queue...
               </div>
             ) : filteredItems.length === 0 ? (
@@ -166,7 +166,7 @@ export default function SalesSourcingPage() {
                   <div className="flex flex-col gap-1.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono font-extrabold text-xs text-primary">SRC-{req.id.slice(0, 8).toUpperCase()}</span>
-                      <Badge className="text-[10px] uppercase font-bold bg-orange-500/10 text-[#FF6B00] border border-orange-500/20">
+                      <Badge className="text-[10px] uppercase font-bold bg-orange-500/10 text-primary border border-orange-500/20">
                         {req.status}
                       </Badge>
                     </div>
@@ -190,7 +190,7 @@ export default function SalesSourcingPage() {
                     <Button
                       size="sm"
                       onClick={() => setSelectedItemId(req.id)}
-                      className="font-bold text-xs bg-[#FF6B00] hover:bg-[#E85F00] text-white shadow-xs"
+                      className="font-bold text-xs bg-primary hover:bg-primary/80 text-white shadow-xs"
                     >
                       <MessageSquare className="size-3.5 mr-1" />
                       Inspect &amp; Quote Ticket
@@ -210,13 +210,13 @@ export default function SalesSourcingPage() {
             <DialogHeader className="border-b pb-3.5">
               <DialogTitle className="flex items-center justify-between text-base font-extrabold">
                 <div className="flex items-center gap-2.5">
-                  <Package className="size-5 text-[#FF6B00]" />
+                  <Package className="size-5 text-primary" />
                   <span>Inspect Sourcing Ticket</span>
                   <Badge variant="outline" className="font-mono text-xs text-primary bg-primary/5">
                     SRC-{selectedItem.id.slice(0, 8).toUpperCase()}
                   </Badge>
                 </div>
-                <Badge className="capitalize text-xs px-3 py-0.5 bg-[#FF6B00] text-white font-bold">{selectedItem.status}</Badge>
+                <Badge className="capitalize text-xs px-3 py-0.5 bg-primary text-white font-bold">{selectedItem.status}</Badge>
               </DialogTitle>
             </DialogHeader>
 
@@ -254,7 +254,7 @@ export default function SalesSourcingPage() {
 
                   <div className="p-3 rounded-xl bg-card border space-y-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Target Price / Budget</span>
-                    <p className="font-extrabold text-[#FF6B00] font-mono text-sm">
+                    <p className="font-extrabold text-primary font-mono text-sm">
                       {selectedItem.targetPriceTZS ? formatTZS(selectedItem.targetPriceTZS) : 'RFQ / Market Quote'}
                     </p>
                     <p className="text-[11px] text-muted-foreground">Est. Landed TZS Budget</p>
@@ -282,7 +282,7 @@ export default function SalesSourcingPage() {
                     toast.success(`Quote notification dispatched to buyer for ticket SRC-${selectedItem.id.slice(0, 8)}`)
                     setSelectedItemId(null)
                   }}
-                  className="bg-[#FF6B00] hover:bg-[#E85F00] text-white font-bold h-9 px-5 shadow-md shadow-orange-500/20 text-xs"
+                  className="bg-primary hover:bg-primary/80 text-white font-bold h-9 px-5 shadow-md shadow-orange-500/20 text-xs"
                 >
                   <Send className="size-3.5 mr-1.5" />
                   Confirm &amp; Send Landed TZS Quote

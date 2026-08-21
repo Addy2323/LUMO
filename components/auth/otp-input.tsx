@@ -139,8 +139,8 @@ export function OtpInput({
                     : error
                     ? 'border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-600 dark:text-red-400 focus:ring-red-500'
                     : isFilled
-                    ? 'border-[#F95700]/70 bg-orange-50/40 dark:bg-orange-950/20 text-[#0F172A] dark:text-white focus:border-[#F95700] focus:ring-[#F95700]/30'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#0F172A] dark:text-white focus:border-[#F95700] focus:ring-[#F95700]/30'
+                    ? 'border-primary/70 bg-orange-50/40 dark:bg-orange-950/20 text-[#0F172A] dark:text-white focus:border-primary focus:ring-primary/30'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#0F172A] dark:text-white focus:border-primary focus:ring-primary/30'
                 } ${(disabled || isVerifying) && !isVerified ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
               {isVerified && idx === length - 1 && (

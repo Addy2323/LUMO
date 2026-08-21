@@ -51,7 +51,7 @@ export default function HomePage() {
   }, [sessionUser])
 
   return (
-    <div className="flex min-h-svh flex-col bg-[#F4F8FC] text-[#0B1F3A] antialiased selection:bg-[#FF6B00] selection:text-white">
+    <div className="flex min-h-svh flex-col bg-surface-page text-[#0B1F3A] antialiased selection:bg-primary selection:text-white">
       {/* Unified Global Header */}
       <GlobalHeader />
 

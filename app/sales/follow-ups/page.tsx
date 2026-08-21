@@ -41,12 +41,12 @@ export default function CustomerFollowupsPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Clock className="size-6 text-[#FF6B00]" /> Customer Follow-ups Console
+              <Clock className="size-6 text-primary" /> Customer Follow-ups Console
             </h1>
             <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
               Live PostgreSQL
@@ -81,7 +81,7 @@ export default function CustomerFollowupsPage() {
       <Card className="bg-white border-slate-200 p-4 shadow-sm space-y-3">
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading customer follow-ups from PostgreSQL...
+            <RefreshCw className="size-4 animate-spin text-primary" /> Loading customer follow-ups from PostgreSQL...
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400 space-y-1">
@@ -94,7 +94,7 @@ export default function CustomerFollowupsPage() {
               <div key={item.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 font-bold text-slate-900">
-                    <User className="size-3.5 text-[#FF6B00]" />
+                    <User className="size-3.5 text-primary" />
                     <span>{item.customer}</span>
                   </div>
                   <p className="text-slate-600 font-medium">{item.task}</p>

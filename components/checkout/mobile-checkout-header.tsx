@@ -54,7 +54,7 @@ export function MobileCheckoutHeader() {
             <div className="relative flex items-center justify-center p-1.5 rounded-lg text-[#0F172A] hover:bg-slate-100 transition-colors">
               <ShoppingCart className="size-5 text-[#0F172A]" aria-hidden="true" />
               {activeCount > 0 && (
-                <span className="absolute -top-1 -right-1 size-4.5 rounded-full bg-[#F95700] text-[10px] font-extrabold text-white flex items-center justify-center border-2 border-white shadow-2xs">
+                <span className="absolute -top-1 -right-1 size-4.5 rounded-full bg-primary text-[10px] font-extrabold text-white flex items-center justify-center border-2 border-white shadow-2xs">
                   {activeCount}
                 </span>
               )}

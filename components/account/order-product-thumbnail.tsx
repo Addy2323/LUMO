@@ -33,7 +33,7 @@ export function OrderProductThumbnail({
       className={`${className} rounded-xl border border-slate-200 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs`}
     >
       {showFallback ? (
-        <div className="w-full h-full bg-gradient-to-br from-orange-50 to-slate-100 flex items-center justify-center text-[#FF6B00]">
+        <div className="w-full h-full bg-gradient-to-br from-orange-50 to-slate-100 flex items-center justify-center text-primary">
           <Package className="size-6 shrink-0" />
         </div>
       ) : (

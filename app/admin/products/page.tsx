@@ -341,7 +341,7 @@ export default function AdminProductsPage() {
           <Button
             size="sm"
             onClick={openCreateModal}
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white text-xs font-bold gap-1.5 h-9"
+            className="bg-primary hover:bg-primary/80 text-white text-xs font-bold gap-1.5 h-9"
           >
             <Plus className="size-3.5" /> Add Database Product
           </Button>
@@ -355,7 +355,7 @@ export default function AdminProductsPage() {
             <span className="text-xs text-muted-foreground font-medium">Total Products</span>
             <h3 className="text-2xl font-black text-foreground">{products.length}</h3>
           </div>
-          <div className="p-3 bg-orange-500/10 text-[#FF6B00] rounded-lg">
+          <div className="p-3 bg-orange-500/10 text-primary rounded-lg">
             <Layers className="size-5" />
           </div>
         </Card>
@@ -440,7 +440,7 @@ export default function AdminProductsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-12 text-center text-xs text-muted-foreground">
-              <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+              <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
               Loading database products...
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -497,7 +497,7 @@ export default function AdminProductsPage() {
                           </Badge>
                         </td>
 
-                        <td className="p-3 font-mono font-bold text-[#FF6B00]">{formatTZS(p.fromPrice)}</td>
+                        <td className="p-3 font-mono font-bold text-primary">{formatTZS(p.fromPrice)}</td>
 
                         <td className="p-3 text-muted-foreground">{p.supplier?.name || 'Supplier Direct Portal'}</td>
 
@@ -611,7 +611,7 @@ export default function AdminProductsPage() {
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t">
                 <Button type="button" variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-                <Button type="submit" size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold">Save to Database</Button>
+                <Button type="submit" size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold">Save to Database</Button>
               </div>
             </form>
           </div>

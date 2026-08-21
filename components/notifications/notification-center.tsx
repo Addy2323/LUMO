@@ -91,7 +91,7 @@ export function NotificationCenter({ currentRole = 'Customer' }: { currentRole?:
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="size-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 size-2 rounded-full bg-[#FF6B00] animate-pulse" />
+            <span className="absolute top-1 right-1 size-2 rounded-full bg-primary animate-pulse" />
           )}
         </Button>
       </PopoverTrigger>
@@ -103,7 +103,7 @@ export function NotificationCenter({ currentRole = 'Customer' }: { currentRole?:
               {currentRole} Notification Center
             </h4>
             {unreadCount > 0 && (
-              <Badge className="bg-[#FF6B00] text-white text-[10px]">{unreadCount} New</Badge>
+              <Badge className="bg-primary text-white text-[10px]">{unreadCount} New</Badge>
             )}
           </div>
           <Button variant="ghost" size="sm" onClick={markAllRead} className="text-[11px] h-7 px-2 font-bold">
@@ -116,7 +116,7 @@ export function NotificationCenter({ currentRole = 'Customer' }: { currentRole?:
             <div
               key={n.id}
               className={`p-3 space-y-1 transition-colors ${
-                !n.read ? 'bg-[#FF6B00]/5 font-medium' : 'hover:bg-muted/30'
+                !n.read ? 'bg-primary/5 font-medium' : 'hover:bg-muted/30'
               }`}
             >
               <div className="flex items-center justify-between">

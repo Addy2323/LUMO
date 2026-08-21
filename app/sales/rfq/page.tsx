@@ -137,7 +137,7 @@ export default function SalesRfqInboxPage() {
               <Calculator className="size-4 mr-1.5" /> Open Landed Cost Calculator
             </Link>
           }
-          className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs"
+          className="bg-primary hover:bg-primary/80 text-white font-bold text-xs"
         />
       </div>
 
@@ -157,7 +157,7 @@ export default function SalesRfqInboxPage() {
             <Card key={rfq.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1.5 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-extrabold text-xs text-[#FF6B00]">{rfq.reference}</span>
+                  <span className="font-mono font-extrabold text-xs text-primary">{rfq.reference}</span>
                   <Badge
                     className={`text-[10px] uppercase ${
                       rfq.status === 'Unreviewed'
@@ -176,7 +176,7 @@ export default function SalesRfqInboxPage() {
                 <p className="text-xs text-muted-foreground">
                   Buyer: <strong className="text-foreground">{rfq.customerName}</strong> · Quantity:{' '}
                   <strong className="text-foreground font-mono">{rfq.quantity} Units</strong> · Budget:{' '}
-                  <strong className="text-[#FF6B00] font-mono">${rfq.targetBudgetUSD.toLocaleString()} USD</strong>
+                  <strong className="text-primary font-mono">${rfq.targetBudgetUSD.toLocaleString()} USD</strong>
                 </p>
 
                 {rfq.productLink && (
@@ -216,7 +216,7 @@ export default function SalesRfqInboxPage() {
                   }
                   size="sm"
                   variant="outline"
-                  className="text-xs font-bold border-[#FF6B00]/40 text-[#FF6B00]"
+                  className="text-xs font-bold border-primary/40 text-primary"
                 />
               </div>
             </Card>

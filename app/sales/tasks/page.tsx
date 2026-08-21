@@ -72,11 +72,11 @@ export default function SalesTasksPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <h1 className="text-xl font-black text-slate-900 flex items-center gap-2">
-            <Clock className="size-6 text-[#FF6B00]" /> Today's Sales Tasks & Customer Follow-ups
+            <Clock className="size-6 text-primary" /> Today's Sales Tasks & Customer Follow-ups
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">Priority checklist derived from live sourcing requests, disputes, and escalations in PostgreSQL.</p>
         </div>
@@ -92,7 +92,7 @@ export default function SalesTasksPage() {
       <Card className="bg-white border-slate-200 p-4 shadow-sm space-y-3">
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Loading tasks from database...
+            <RefreshCw className="size-4 animate-spin text-primary" /> Loading tasks from database...
           </div>
         ) : tasks.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
@@ -108,7 +108,7 @@ export default function SalesTasksPage() {
                     type="checkbox"
                     checked={task.completed}
                     onChange={() => toggleTask(task.id)}
-                    className="size-4 accent-[#FF6B00] rounded cursor-pointer"
+                    className="size-4 accent-primary rounded cursor-pointer"
                   />
                   <span className={task.completed ? 'line-through text-slate-400 font-semibold' : 'font-bold text-slate-900'}>
                     {task.title}
@@ -117,7 +117,7 @@ export default function SalesTasksPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-slate-500">{task.due}</span>
-                  <Badge className={task.priority === 'URGENT' ? 'bg-rose-50 text-rose-700' : task.priority === 'HIGH' ? 'bg-orange-50 text-[#FF6B00]' : 'bg-slate-50 text-slate-700'}>
+                  <Badge className={task.priority === 'URGENT' ? 'bg-rose-50 text-rose-700' : task.priority === 'HIGH' ? 'bg-orange-50 text-primary' : 'bg-slate-50 text-slate-700'}>
                     {task.priority}
                   </Badge>
                   <Badge variant="outline" className="text-[9px]">

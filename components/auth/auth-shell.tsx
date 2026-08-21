@@ -45,7 +45,7 @@ export function AuthShell({
   footer?: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-dvh min-h-svh flex-col lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(480px,1fr)] xl:grid-cols-[minmax(0,1.25fr)_minmax(540px,1fr)] antialiased bg-background overflow-x-hidden selection:bg-[#F95700] selection:text-white">
+    <div className="flex min-h-dvh min-h-svh flex-col lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(480px,1fr)] xl:grid-cols-[minmax(0,1.25fr)_minmax(540px,1fr)] antialiased bg-background overflow-x-hidden selection:bg-primary selection:text-white">
       {/* Left Brand / Global Trade Highlight Panel in Structural Dark Navy */}
       <aside className="hidden bg-navy-900 text-white px-10 py-10 lg:flex lg:flex-col lg:justify-between relative overflow-hidden border-r border-navy-700/80">
         {/* Ambient radial glow background */}

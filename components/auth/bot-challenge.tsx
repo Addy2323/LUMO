@@ -67,7 +67,7 @@ export function BotChallenge({ onVerified, siteKey }: BotChallengeProps) {
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 space-y-3 shadow-sm">
       <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-        <ShieldCheck className="size-4 text-[#F95700] shrink-0" />
+        <ShieldCheck className="size-4 text-primary shrink-0" />
         <span>Managed Security Challenge (Risk Triggered)</span>
       </div>
 
@@ -86,12 +86,12 @@ export function BotChallenge({ onVerified, siteKey }: BotChallengeProps) {
           >
             {loading ? (
               <>
-                <Loader2 className="size-4 animate-spin text-[#F95700]" />
+                <Loader2 className="size-4 animate-spin text-primary" />
                 <span>Verifying Browser Integrity...</span>
               </>
             ) : (
               <>
-                <Lock className="size-4 text-[#F95700]" />
+                <Lock className="size-4 text-primary" />
                 <span>Click to Verify Security Challenge</span>
               </>
             )}

@@ -100,7 +100,7 @@ export function PasskeyVerification({ userId, onSuccess, onCancel }: PasskeyVeri
         <Button
           onClick={handlePasskeyAuthenticate}
           disabled={loading}
-          className="w-full h-11 bg-[#F95700] hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2"
+          className="w-full h-11 bg-primary hover:bg-[#e04f00] text-white font-extrabold rounded-xl shadow-md gap-2"
         >
           {loading ? (
             <>

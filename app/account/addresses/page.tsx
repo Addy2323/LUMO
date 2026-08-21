@@ -188,9 +188,9 @@ export default function CustomerAddressesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
-              <MapPin className="size-6 text-[#FF6B00]" /> Saved Delivery Addresses
+              <MapPin className="size-6 text-primary" /> Saved Delivery Addresses
             </h1>
-            <Badge className="bg-orange-50 text-[#FF6B00] dark:bg-orange-950/40 border-orange-200 text-[10px] font-bold">
+            <Badge className="bg-orange-50 text-primary dark:bg-orange-950/40 border-orange-200 text-[10px] font-bold">
               {addressList.length} Saved
             </Badge>
           </div>
@@ -211,14 +211,14 @@ export default function CustomerAddressesPage() {
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger render={
-              <Button size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 rounded-xl shadow-xs">
+              <Button size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5 rounded-xl shadow-xs">
                 <Plus className="size-4" /> Add Delivery Address
               </Button>
             } />
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-base font-extrabold flex items-center gap-2">
-                  <MapPin className="size-5 text-[#FF6B00]" /> Add New Delivery Address
+                  <MapPin className="size-5 text-primary" /> Add New Delivery Address
                 </DialogTitle>
               </DialogHeader>
 
@@ -263,7 +263,7 @@ export default function CustomerAddressesPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={saving} size="sm" className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs">
+                  <Button type="submit" disabled={saving} size="sm" className="bg-primary hover:bg-primary/80 text-white font-bold text-xs">
                     {saving && <Loader2 className="size-3.5 animate-spin mr-1" />}
                     Save Address to DB
                   </Button>
@@ -277,7 +277,7 @@ export default function CustomerAddressesPage() {
       {loading ? (
         <Card className="py-12 text-center bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="space-y-2">
-            <Loader2 className="size-8 animate-spin text-[#FF6B00] mx-auto" />
+            <Loader2 className="size-8 animate-spin text-primary mx-auto" />
             <p className="text-xs text-muted-foreground font-medium">Loading saved delivery addresses from database...</p>
           </CardContent>
         </Card>
@@ -289,7 +289,7 @@ export default function CustomerAddressesPage() {
               <h3 className="text-base font-extrabold">No saved addresses found</h3>
               <p className="text-xs text-muted-foreground mt-1">Add a delivery destination for fast 1-click LUMO Pay checkout.</p>
             </div>
-            <Button onClick={() => setOpen(true)} className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs rounded-xl">
+            <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/80 text-white font-bold text-xs rounded-xl">
               <Plus className="size-4 mr-1.5" />
               Add First Delivery Address
             </Button>
@@ -298,15 +298,15 @@ export default function CustomerAddressesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {addressList.map((addr) => (
-            <Card key={addr.id} className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs transition-shadow ${addr.isDefault ? 'border-[#FF6B00] ring-1 ring-[#FF6B00]/30' : ''}`}>
+            <Card key={addr.id} className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs transition-shadow ${addr.isDefault ? 'border-primary ring-1 ring-[#FF6B00]/30' : ''}`}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-2">
-                  <MapPin className="size-4 text-[#FF6B00]" />
+                  <MapPin className="size-4 text-primary" />
                   <CardTitle className="text-sm font-extrabold">{addr.label}</CardTitle>
                 </div>
                 {addr.isDefault && (
-                  <Badge className="bg-orange-50 text-[#FF6B00] border-orange-200 text-[10px] font-bold gap-1">
-                    <CheckCircle2 className="size-3 text-[#FF6B00]" /> Default Destination
+                  <Badge className="bg-orange-50 text-primary border-orange-200 text-[10px] font-bold gap-1">
+                    <CheckCircle2 className="size-3 text-primary" /> Default Destination
                   </Badge>
                 )}
               </CardHeader>
@@ -322,11 +322,11 @@ export default function CustomerAddressesPage() {
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                   {!addr.isDefault ? (
-                    <Button variant="ghost" size="sm" className="text-xs font-bold text-[#FF6B00] hover:bg-orange-50" onClick={() => handleSetDefault(addr.id)}>
+                    <Button variant="ghost" size="sm" className="text-xs font-bold text-primary hover:bg-orange-50" onClick={() => handleSetDefault(addr.id)}>
                       Set as default
                     </Button>
                   ) : (
-                    <span className="text-[11px] text-[#FF6B00] font-bold">✓ Primary Checkout Address</span>
+                    <span className="text-[11px] text-primary font-bold">✓ Primary Checkout Address</span>
                   )}
                   <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50" onClick={() => handleDelete(addr.id)}>
                     <Trash2 className="size-4" />

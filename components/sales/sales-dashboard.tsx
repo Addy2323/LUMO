@@ -90,7 +90,7 @@ export function SalesDashboard() {
       : workQueue.filter((i: any) => (i.category || '').toLowerCase() === queueTab)
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* 1. Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -98,8 +98,8 @@ export function SalesDashboard() {
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">
               Sales &amp; Customer Operations
             </h1>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF6B00] bg-orange-50 border border-orange-200/80 px-2.5 py-0.5 rounded-full">
-              <Sparkles className="size-3 text-[#FF6B00]" /> Lumo Live Database
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-orange-50 border border-orange-200/80 px-2.5 py-0.5 rounded-full">
+              <Sparkles className="size-3 text-primary" /> Lumo Live Database
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -119,7 +119,7 @@ export function SalesDashboard() {
 
           <Button
             size="sm"
-            className="bg-[#FF6B00] hover:bg-[#E05E00] text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
+            className="bg-primary hover:bg-primary/80 text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-sm"
             render={<Link href="/sales/quotations" />}
           >
             <FileText className="size-3.5" /> Create Quotation
@@ -146,7 +146,7 @@ export function SalesDashboard() {
       {/* 3. Top 6 KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {/* Card 1 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
               <Users className="size-4" />
@@ -163,7 +163,7 @@ export function SalesDashboard() {
         </Card>
 
         {/* Card 2 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
               <User className="size-4" />
@@ -179,7 +179,7 @@ export function SalesDashboard() {
         </Card>
 
         {/* Card 3 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
               <FileText className="size-4" />
@@ -195,7 +195,7 @@ export function SalesDashboard() {
         </Card>
 
         {/* Card 4 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
               <FileText className="size-4" />
@@ -211,7 +211,7 @@ export function SalesDashboard() {
         </Card>
 
         {/* Card 5 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
               <AlertTriangle className="size-4" />
@@ -227,7 +227,7 @@ export function SalesDashboard() {
         </Card>
 
         {/* Card 6 */}
-        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-[#FF6B00] transition">
+        <Card className="bg-white border-slate-200/80 p-3.5 shadow-xs hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="size-8 rounded-lg bg-cyan-50 flex items-center justify-center text-cyan-600">
               <TrendingUp className="size-4" />
@@ -269,7 +269,7 @@ export function SalesDashboard() {
 
           {loading ? (
             <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-              <RefreshCw className="size-4 animate-spin text-[#FF6B00]" /> Querying live PostgreSQL tables...
+              <RefreshCw className="size-4 animate-spin text-primary" /> Querying live PostgreSQL tables...
             </div>
           ) : filteredQueue.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-400">No items found in database queue</div>
@@ -339,7 +339,7 @@ export function SalesDashboard() {
           <div className="border-t border-slate-100 pt-2.5">
             <Link
               href="/sales/inbox"
-              className="text-xs text-[#FF6B00] font-bold hover:underline inline-flex items-center gap-1"
+              className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
             >
               View all items in queue <ArrowRight className="size-3.5" />
             </Link>
@@ -387,7 +387,7 @@ export function SalesDashboard() {
                         type="checkbox"
                         checked={!!completedFollowups[f.id]}
                         onChange={() => toggleFollowup(f.id)}
-                        className="size-3.5 accent-[#FF6B00] rounded cursor-pointer"
+                        className="size-3.5 accent-primary rounded cursor-pointer"
                       />
                     </td>
                   </tr>
@@ -399,7 +399,7 @@ export function SalesDashboard() {
           <div className="border-t border-slate-100 pt-2.5">
             <Link
               href="/sales/tasks"
-              className="text-xs text-[#FF6B00] font-bold hover:underline inline-flex items-center gap-1"
+              className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
             >
               View all follow-ups <ArrowRight className="size-3.5" />
             </Link>
@@ -413,7 +413,7 @@ export function SalesDashboard() {
           <h3 className="text-sm font-extrabold text-slate-900">Sales Pipeline (Live PostgreSQL)</h3>
           <Link
             href="/sales/pipeline"
-            className="text-xs text-[#FF6B00] font-bold hover:underline inline-flex items-center gap-1"
+            className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
           >
             View full pipeline <ArrowRight className="size-3.5" />
           </Link>
@@ -436,7 +436,7 @@ export function SalesDashboard() {
                 {stage.deals.map((deal: any, idx: number) => (
                   <div
                     key={idx}
-                    className="p-2.5 bg-white border border-slate-200/80 rounded-lg shadow-2xs hover:border-[#FF6B00] transition cursor-pointer space-y-1.5"
+                    className="p-2.5 bg-white border border-slate-200/80 rounded-lg shadow-2xs hover:border-primary transition cursor-pointer space-y-1.5"
                   >
                     <div className="text-xs font-bold text-slate-900 truncate">{deal.name}</div>
                     <div className="flex items-center justify-between text-[11px]">
@@ -463,7 +463,7 @@ export function SalesDashboard() {
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
               Urgent Escalations
             </h3>
-            <Link href="/sales/escalations" className="text-xs text-[#FF6B00] font-bold hover:underline">
+            <Link href="/sales/escalations" className="text-xs text-primary font-bold hover:underline">
               View all
             </Link>
           </div>
@@ -501,7 +501,7 @@ export function SalesDashboard() {
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
               Recent Customer Activity
             </h3>
-            <Link href="/sales/history" className="text-xs text-[#FF6B00] font-bold hover:underline">
+            <Link href="/sales/history" className="text-xs text-primary font-bold hover:underline">
               View all
             </Link>
           </div>
@@ -532,7 +532,7 @@ export function SalesDashboard() {
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
               Team Capacity &amp; SLA
             </h3>
-            <Link href="/sales/workload" className="text-xs text-[#FF6B00] font-bold hover:underline">
+            <Link href="/sales/workload" className="text-xs text-primary font-bold hover:underline">
               View team workload
             </Link>
           </div>

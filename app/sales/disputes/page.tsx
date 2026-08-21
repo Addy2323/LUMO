@@ -102,13 +102,13 @@ export default function SalesDisputeDeskPage() {
   )
 
   return (
-    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-[#f8fafc] min-h-screen p-3 md:p-6 pb-24">
+    <div className="flex flex-col gap-5 font-sans antialiased text-slate-900 bg-surface-secondary min-h-screen p-3 md:p-6 pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Scale className="size-6 text-[#FF6B00]" /> 8-Stage Dispute Resolution Workspace
+              <Scale className="size-6 text-primary" /> 8-Stage Dispute Resolution Workspace
             </h1>
             <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
               Live PostgreSQL
@@ -141,7 +141,7 @@ export default function SalesDisputeDeskPage() {
               key={stg}
               className={`p-2 rounded-lg border font-bold ${
                 i === 2
-                  ? 'bg-orange-50 border-[#FF6B00] text-[#FF6B00]'
+                  ? 'bg-orange-50 border-primary text-primary'
                   : 'bg-slate-50 border-slate-200 text-slate-600'
               }`}
             >
@@ -184,7 +184,7 @@ export default function SalesDisputeDeskPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between font-bold text-slate-900">
-                    <span className="font-mono text-[#FF6B00]">DSP-{disp.id.slice(0, 8)}</span>
+                    <span className="font-mono text-primary">DSP-{disp.id.slice(0, 8)}</span>
                     <Badge className="bg-rose-100 text-rose-800 text-[9px] uppercase font-bold">
                       {disp.status}
                     </Badge>
@@ -254,7 +254,7 @@ export default function SalesDisputeDeskPage() {
                   value={recommendationMsg}
                   onChange={(e) => setRecommendationMsg(e.target.value)}
                   placeholder="State evidence findings and justification..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs outline-none focus:border-primary"
                 />
 
                 <div className="flex flex-wrap items-center justify-end gap-2 pt-1">

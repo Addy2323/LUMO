@@ -137,11 +137,11 @@ export default function AdminSourcingPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground font-medium">Total Sourcing Volume</span>
-              <span className="text-lg font-extrabold text-[#FF6B00] font-mono tnum">
+              <span className="text-lg font-extrabold text-primary font-mono tnum">
                 {formatTZS(totalVolume)}
               </span>
             </div>
-            <div className="rounded-lg bg-orange-500/10 text-[#FF6B00] p-2.5">
+            <div className="rounded-lg bg-orange-500/10 text-primary p-2.5">
               <Globe className="size-5" />
             </div>
           </CardContent>
@@ -191,7 +191,7 @@ export default function AdminSourcingPage() {
           <div className="divide-y border-t border-border">
             {loading ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-[#FF6B00]" />
+                <RefreshCw className="size-6 animate-spin mx-auto mb-2 text-primary" />
                 Loading live sourcing tickets from PostgreSQL...
               </div>
             ) : filteredItems.length === 0 ? (
@@ -208,7 +208,7 @@ export default function AdminSourcingPage() {
                   <div className="flex flex-col gap-1.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono font-extrabold text-xs text-primary">SRC-{req.id.slice(0, 8).toUpperCase()}</span>
-                      <Badge className="text-[10px] uppercase font-bold bg-orange-500/10 text-[#FF6B00] border border-orange-500/20">
+                      <Badge className="text-[10px] uppercase font-bold bg-orange-500/10 text-primary border border-orange-500/20">
                         {req.status}
                       </Badge>
                       <span className="text-xs text-muted-foreground">Placed: {formatDate(req.createdAt)}</span>
@@ -231,7 +231,7 @@ export default function AdminSourcingPage() {
                       onClick={() => setSelectedItemId(req.id)}
                       className="font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
                     >
-                      <ShieldCheck className="size-3.5 mr-1 text-[#FF6B00]" />
+                      <ShieldCheck className="size-3.5 mr-1 text-primary" />
                       Audit Ticket Detail
                     </Button>
                   </div>
