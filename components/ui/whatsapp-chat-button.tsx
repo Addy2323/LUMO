@@ -64,18 +64,7 @@ export function WhatsAppChatButton() {
       )}
 
       {/* Main Trigger Button */}
-      <div className="flex items-center gap-2">
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl hover:shadow-2xl text-xs font-black text-slate-800 dark:text-white transition-all group hover:border-[#25D366]"
-        >
-          <span className="size-2 rounded-full bg-[#25D366] animate-pulse" />
-          <span>Chat via WhatsApp</span>
-          <span className="text-[10px] font-mono text-slate-400 group-hover:text-[#25D366]">({displayPhone})</span>
-        </a>
-
+      <div className="flex items-center justify-end">
         <button
           onClick={() => setIsOpen((prev) => !prev)}
           aria-label="Chat via WhatsApp"
