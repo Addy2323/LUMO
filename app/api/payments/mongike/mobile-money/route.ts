@@ -11,10 +11,11 @@ import {
 export async function POST(req: NextRequest) {
   try {
     // 1. Authenticate customer
-    const user = await getAuthenticatedUser(req)
-    if (!user) {
+    const auth = await getAuthenticatedUser(req)
+    if (!auth || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized. Please sign in to complete payment.' }, { status: 401 })
     }
+    const user = auth.user
 
     // 2. Validate request body
     const body = await req.json().catch(() => ({}))

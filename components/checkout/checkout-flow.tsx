@@ -52,6 +52,7 @@ import { ShippingOptionCard, type ShippingOption } from './shipping-option-card'
 import { PaymentMethodCard } from './payment-method-card'
 import { BuyerProtectionCard } from './buyer-protection-card'
 import { MobileOrderSummary } from './mobile-order-summary'
+import { MongikeMobileMoneyModal } from './mongike-mobile-money-modal'
 
 type Step = 0 | 1 | 2
 
@@ -261,6 +262,36 @@ export function CheckoutFlow() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Mongike Mobile Money Modal state
+  const [showMongikeModal, setShowMongikeModal] = useState(false)
+  const [mongikeModalData, setMongikeModalData] = useState<{
+    orderId: string
+    orderNumber: string
+    amountTZS: number
+    phone: string
+  } | null>(null)
+
+  const handleMongikeSuccess = () => {
+    if (!mongikeModalData) return
+    setLastPaidOrder({
+      reference: mongikeModalData.orderNumber,
+      total: mongikeModalData.amountTZS,
+      methodName: method.name,
+      recipient: address.recipient,
+      phone: mongikeModalData.phone,
+      ward: address.ward,
+      region: address.region,
+      shippingName: shipping.name,
+    })
+    setStatus('confirmed')
+    setIsAuthorizing(false)
+    isSubmittingRef.current = false
+    clear()
+    toast.success('Payment Verified & Order Confirmed!', {
+      description: `Order ${mongikeModalData.orderNumber} successfully paid via Mobile Money.`,
+    })
+  }
+
   async function authorizeAndPay() {
     if (!user) {
       setShowAuthModal(true)
@@ -306,36 +337,7 @@ export function CheckoutFlow() {
     registerPendingIdempotency(key, authoritative.total)
 
     try {
-      // Execute payment charge via LUMO Pay integration
-      const result = await requestLumoPayCharge({
-        methodId,
-        amount: authoritative.total,
-        phone: phoneCheck.normalized,
-      })
-
-      if (result.status !== 'success') {
-        failIdempotency(key, 'Payment failed or declined by carrier.')
-        setStatus('failed')
-        setIsAuthorizing(false)
-        isSubmittingRef.current = false
-        toast.error('Payment failed', { description: 'No money was charged. Please verify details and try again.' })
-        return
-      }
-
-      // Prepare order line items
-      const orderItems = active.map((line) => ({
-        productId: line.id,
-        slug: line.id,
-        title: line.title,
-        variantLabel: line.variantLabel,
-        sku: `SKU-${line.id.substring(0, 8).toUpperCase()}`,
-        image: line.image,
-        unitPrice: line.unitPrice,
-        quantity: line.quantity,
-      }))
-
-      // PostgreSQL database persistence (Mandatory)
-      let apiOrderData: any = null
+      // 1. Create order in PostgreSQL database with PENDING status
       const dbPayload = {
         items: active.map((l: any) => ({
           productId: l.id,
@@ -356,8 +358,8 @@ export function CheckoutFlow() {
           city: address.region || 'Dar es Salaam',
         },
         paymentMethod: method.name,
-        status: 'PAID',
-        paymentStatus: 'SUCCESSFUL',
+        status: 'PENDING_PAYMENT',
+        paymentStatus: 'PENDING',
       }
 
       const apiRes = await fetch('/api/orders', {
@@ -368,7 +370,7 @@ export function CheckoutFlow() {
 
       if (!apiRes.ok) {
         const errorJson = await apiRes.json().catch(() => ({}))
-        throw new Error(errorJson.error || `Database order persistence failed (${apiRes.status})`)
+        throw new Error(errorJson.error || `Order creation failed (${apiRes.status})`)
       }
 
       const apiJson = await apiRes.json()
@@ -376,40 +378,22 @@ export function CheckoutFlow() {
         throw new Error('Server returned invalid order creation response.')
       }
 
-      apiOrderData = apiJson.order
+      const createdOrder = apiJson.order
 
-      const createdReference = apiOrderData?.orderNumber || result.reference
-
-      completeIdempotency(key, createdReference, result.reference)
-
-      setLastPaidOrder({
-        reference: createdReference,
-        total: authoritative.total,
-        methodName: method.name,
-        recipient: address.recipient,
+      // 2. Trigger real Mongike USSD Push Modal
+      setMongikeModalData({
+        orderId: createdOrder.id,
+        orderNumber: createdOrder.orderNumber,
+        amountTZS: authoritative.total,
         phone: phoneCheck.normalized,
-        ward: address.ward,
-        region: address.region,
-        shippingName: shipping.name,
       })
-
-      setStatus('confirmed')
-      setIsAuthorizing(false)
-      isSubmittingRef.current = false
-      clear()
-      toast.success('Order Successfully Placed & Recorded in Database!', {
-        description: `Order ${createdReference} saved to PostgreSQL database under LUMO Trade Protection.`,
-      })
-
-
-      clear()
+      setShowMongikeModal(true)
     } catch (err: any) {
       failIdempotency(key, 'Unexpected client error during payment.')
       setStatus('failed')
       const errMsg = err?.message || 'An error occurred while authorizing payment.'
       console.error('[CHECKOUT ERROR]', errMsg, err)
       toast.error('Transaction Error', { description: `${errMsg} Please retry.` })
-    } finally {
       setIsAuthorizing(false)
       isSubmittingRef.current = false
     }
@@ -1031,6 +1015,22 @@ export function CheckoutFlow() {
         description="To authorize payment and complete your order with LUMO Pay buyer protection, please sign in or register an account."
         redirectUrl="/checkout"
       />
+
+      {mongikeModalData && (
+        <MongikeMobileMoneyModal
+          isOpen={showMongikeModal}
+          onClose={() => {
+            setShowMongikeModal(false)
+            setIsAuthorizing(false)
+            isSubmittingRef.current = false
+          }}
+          orderId={mongikeModalData.orderId}
+          orderNumber={mongikeModalData.orderNumber}
+          amountTZS={mongikeModalData.amountTZS}
+          defaultPhone={mongikeModalData.phone}
+          onSuccess={handleMongikeSuccess}
+        />
+      )}
     </div>
   )
 }

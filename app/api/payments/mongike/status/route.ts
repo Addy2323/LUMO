@@ -4,10 +4,11 @@ import { getAuthenticatedUser } from '@/lib/auth/server'
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(req)
-    if (!user) {
+    const auth = await getAuthenticatedUser(req)
+    if (!auth || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const user = auth.user
 
     const { searchParams } = new URL(req.url)
     const attemptId = searchParams.get('attemptId')
