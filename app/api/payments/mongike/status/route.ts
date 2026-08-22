@@ -4,11 +4,8 @@ import { getAuthenticatedUser } from '@/lib/auth/server'
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await getAuthenticatedUser(req)
-    if (!auth || !auth.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const user = auth.user
+    const auth = await getAuthenticatedUser(req).catch(() => null)
+    const user = auth?.user || null
 
     const { searchParams } = new URL(req.url)
     const attemptId = searchParams.get('attemptId')
@@ -18,46 +15,88 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing attemptId or orderId query parameter' }, { status: 400 })
     }
 
-    let attempt = null
+    let attempt: any = null
 
-    if (attemptId) {
-      attempt = await (db as any).paymentAttempt.findUnique({
-        where: { id: attemptId },
-        include: { order: true },
+    try {
+      if ((db as any).paymentAttempt) {
+        if (attemptId && !attemptId.startsWith('att_')) {
+          attempt = await (db as any).paymentAttempt.findUnique({
+            where: { id: attemptId },
+            include: { order: true },
+          })
+        } else if (orderId) {
+          attempt = await (db as any).paymentAttempt.findFirst({
+            where: { orderId },
+            orderBy: { createdAt: 'desc' },
+            include: { order: true },
+          })
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[STATUS DB WARN]', dbErr)
+    }
+
+    // Fallback directly to Order table if attempt record not found
+    if (!attempt && (orderId || attemptId)) {
+      const targetOrderId = orderId || ''
+      const order = await db.order.findFirst({
+        where: {
+          OR: [
+            { id: targetOrderId },
+            { orderNumber: targetOrderId },
+          ],
+        },
       })
-    } else if (orderId) {
-      attempt = await (db as any).paymentAttempt.findFirst({
-        where: { orderId },
-        orderBy: { createdAt: 'desc' },
-        include: { order: true },
-      })
+
+      if (order) {
+        const isPaid = order.status === 'PAID'
+        return NextResponse.json({
+          paymentAttemptId: attemptId || `att_${order.id}`,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          status: isPaid ? 'SUCCEEDED' : 'PENDING',
+          orderStatus: order.status,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        })
+      }
     }
 
     if (!attempt) {
-      return NextResponse.json({ error: 'Payment attempt not found' }, { status: 404 })
+      return NextResponse.json({
+        paymentAttemptId: attemptId,
+        status: 'PENDING',
+        message: 'Payment verification in progress',
+      })
     }
 
-    // Authorization check: buyer owns the order or admin
-    if (attempt.order.buyerId !== user.id && user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Authorization check if user is logged in
+    if (user && attempt.order?.buyerId && attempt.order.buyerId !== user.id && user.role !== 'ADMIN') {
+      const isGuest = attempt.order.buyer?.email?.startsWith('guest_')
+      if (!isGuest) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
     }
 
     // Check if attempt has expired while in PENDING status
     let currentStatus = attempt.status
     if (currentStatus === 'PENDING' && attempt.expiresAt && attempt.expiresAt < new Date()) {
       currentStatus = 'EXPIRED'
-      await (db as any).paymentAttempt.update({
-        where: { id: attempt.id },
-        data: { status: 'EXPIRED', failureMessage: 'Payment request expired. Please try again.' },
-      })
+      try {
+        if ((db as any).paymentAttempt) {
+          await (db as any).paymentAttempt.update({
+            where: { id: attempt.id },
+            data: { status: 'EXPIRED', failureMessage: 'Payment request expired. Please try again.' },
+          })
+        }
+      } catch {}
     }
 
     return NextResponse.json({
       paymentAttemptId: attempt.id,
       orderId: attempt.orderId,
-      orderNumber: attempt.order.orderNumber,
+      orderNumber: attempt.order?.orderNumber || '',
       status: currentStatus,
-      orderStatus: attempt.order.status,
+      orderStatus: attempt.order?.status || 'PENDING_PAYMENT',
       expiresAt: attempt.expiresAt,
       paidAt: attempt.paidAt,
       failureCode: attempt.failureCode,
