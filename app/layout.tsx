@@ -3,6 +3,7 @@ import { Outfit, Plus_Jakarta_Sans, Geist_Mono } from 'next/font/google'
 import { AppProviders } from '@/components/providers/app-providers'
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { DevRoleSwitcher } from '@/components/dev/dev-role-switcher'
+import { PromotionPopup } from '@/components/promotions/promotion-popup'
 import './globals.css'
 
 const outfit = Outfit({
@@ -75,6 +76,7 @@ export default function RootLayout({
       >
         <AppProviders>
           {children}
+          <PromotionPopup />
           <MobileBottomNav />
           {process.env.NODE_ENV === 'development' && <DevRoleSwitcher />}
         </AppProviders>

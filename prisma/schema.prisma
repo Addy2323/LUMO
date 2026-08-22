@@ -285,6 +285,9 @@ model User {
   sentMessages               Message[]
   inAppNotifications         InAppNotification[]
   assignmentEvents           AssignmentEvent[]            @relation("AssignmentActor")
+  createdPromotions          Promotion[]                  @relation("PromotionCreator")
+  publishedPromotions        Promotion[]                  @relation("PromotionPublisher")
+  promotionInteractions      PromotionInteraction[]
 
   @@map("users")
 }
@@ -2253,5 +2256,111 @@ model ShipmentRecord {
   @@index([orderId])
   @@map("shipment_records")
 }
+
+// ──────────────────────────────────────────────
+// Promotional Campaigns & Popups Engine
+// ──────────────────────────────────────────────
+
+enum PromotionStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  EXPIRED
+  ARCHIVED
+}
+
+enum PromotionPlacement {
+  ENTRY_POPUP
+  HOMEPAGE_BANNER
+  MARKETPLACE_BANNER
+}
+
+enum PromotionAudience {
+  ALL_VISITORS
+  GUESTS_ONLY
+  LOGGED_IN_CUSTOMERS
+  NEW_CUSTOMERS
+  RETURNING_CUSTOMERS
+}
+
+enum DisplayFrequency {
+  EVERY_VISIT
+  ONCE_PER_SESSION
+  ONCE_PER_DAY
+  ONCE_PER_WEEK
+  ONCE_PER_PROMOTION
+}
+
+enum PromotionInteractionEvent {
+  IMPRESSION
+  CLICK
+  DISMISS
+}
+
+model Promotion {
+  id                   String             @id @default(uuid())
+  title                String
+  subtitle             String?
+  description          String
+  desktopImageUrl      String
+  mobileImageUrl       String?
+  imageAltText         String?
+  buttonText           String             @default("Explore the Offer")
+  buttonUrl            String             @default("/marketplace")
+  secondaryButtonText  String?
+  secondaryButtonUrl   String?
+  backgroundColor      String             @default("#FFF8F2")
+  textColor            String             @default("#0B1F3A")
+  buttonColor          String             @default("#FF6B00")
+  placement            PromotionPlacement @default(ENTRY_POPUP)
+  status               PromotionStatus    @default(DRAFT)
+  priority             Int                @default(0)
+  audience             PromotionAudience  @default(ALL_VISITORS)
+  displayFrequency     DisplayFrequency   @default(EVERY_VISIT)
+  delaySeconds         Int                @default(2)
+  startAt              DateTime           @default(now())
+  endAt                DateTime
+  timezone             String             @default("Africa/Dar_es_Salaam")
+  dismissible          Boolean            @default(true)
+  openInNewTab         Boolean            @default(false)
+  impressions          Int                @default(0)
+  clicks               Int                @default(0)
+  dismissals           Int                @default(0)
+  createdById          String?
+  publishedById        String?
+  publishedAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  createdBy            User?              @relation("PromotionCreator", fields: [createdById], references: [id])
+  publishedBy          User?              @relation("PromotionPublisher", fields: [publishedById], references: [id])
+  interactions         PromotionInteraction[]
+
+  @@index([status, placement, startAt, endAt, priority])
+  @@index([startAt, endAt])
+  @@index([status, priority])
+  @@map("promotions")
+}
+
+model PromotionInteraction {
+  id                  String                    @id @default(uuid())
+  promotionId         String
+  userId              String?
+  anonymousSessionId  String?
+  event               PromotionInteractionEvent
+  deviceType          String?                   @default("DESKTOP")
+  occurredAt          DateTime                  @default(now())
+  metadata            Json?
+
+  promotion           Promotion                 @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  user                User?                     @relation(fields: [userId], references: [id])
+
+  @@index([promotionId, event, occurredAt])
+  @@index([userId, promotionId])
+  @@index([anonymousSessionId, promotionId])
+  @@map("promotion_interactions")
+}
+
 
 

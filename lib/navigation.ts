@@ -233,10 +233,16 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       ],
     },
     {
+      label: 'Marketing & Growth',
+      items: [
+        { label: 'Promotions', href: '/admin/promotions', icon: Sparkles },
+        { label: 'SMS Campaigns', href: '/admin/sms', icon: Inbox },
+      ],
+    },
+    {
       label: 'Communication',
       items: [
         { label: 'Messaging', href: '/admin/messaging', icon: MessageSquare },
-        { label: 'SMS Campaigns', href: '/admin/sms', icon: Inbox },
         { label: 'Support Tickets', href: '/admin/tickets', icon: LifeBuoy },
         { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       ],
