@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { X, Clock, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { useSessionStore } from '@/lib/stores/session-store'
+import { getSafePromotionImageUrl, FALLBACK_PROMO_IMAGE } from '@/lib/promotions/image-helper'
 
 interface PublicPromotion {
   id: string
@@ -311,10 +312,13 @@ export function PromotionPopup() {
           {/* Left Column: Image Creative */}
           <div className="md:col-span-5 relative min-h-[220px] md:min-h-full overflow-hidden rounded-t-2xl md:rounded-tr-none md:rounded-l-3xl bg-slate-200">
             <img
-              src={promo.desktopImageUrl || promo.mobileImageUrl || 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800'}
+              src={getSafePromotionImageUrl(promo.desktopImageUrl || promo.mobileImageUrl)}
               alt={promo.imageAltText || promo.title}
               className="size-full object-cover"
               loading="eager"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+              }}
             />
             {/* Soft inner glow */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:hidden" />

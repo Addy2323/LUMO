@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Logo } from '@/components/brand/logo'
+import { getSafePromotionImageUrl, FALLBACK_PROMO_IMAGE } from '@/lib/promotions/image-helper'
 import { toast } from 'sonner'
 
 export default function AdminPromotionsPage() {
@@ -311,7 +312,14 @@ export default function AdminPromotionsPage() {
                           className="size-12 rounded-lg overflow-hidden border bg-slate-100 cursor-pointer shrink-0"
                           onClick={() => setPreviewPromo(p)}
                         >
-                          <img src={p.desktopImageUrl} alt={p.title} className="size-full object-cover" />
+                          <img
+                            src={getSafePromotionImageUrl(p.desktopImageUrl)}
+                            alt={p.title}
+                            className="size-full object-cover"
+                            onError={(e) => {
+                              ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+                            }}
+                          />
                         </div>
                       </td>
 
@@ -482,7 +490,14 @@ export default function AdminPromotionsPage() {
             </button>
 
             <div className="col-span-5 relative min-h-[300px] bg-slate-200">
-              <img src={previewPromo.desktopImageUrl} alt={previewPromo.title} className="size-full object-cover" />
+              <img
+                src={getSafePromotionImageUrl(previewPromo.desktopImageUrl)}
+                alt={previewPromo.title}
+                className="size-full object-cover"
+                onError={(e) => {
+                  ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+                }}
+              />
             </div>
 
             <div className="col-span-7 flex flex-col justify-center items-center text-center p-6 space-y-3">

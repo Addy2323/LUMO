@@ -20,6 +20,7 @@ import {
   Layers,
   Calendar,
   Users,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Logo } from '@/components/brand/logo'
+import {
+  getSafePromotionImageUrl,
+  fileToOptimizedDataUrl,
+  VERIFIED_PRESET_IMAGES,
+  FALLBACK_PROMO_IMAGE,
+} from '@/lib/promotions/image-helper'
 import { toast } from 'sonner'
 
 export interface PromotionFormData {
@@ -68,25 +75,6 @@ const COLOR_PRESETS = {
   button: ['#FF6B00', '#E85F00', '#0B1F3A', '#059669', '#2563EB', '#D97706'],
 }
 
-const SAMPLE_LIFESTYLE_IMAGES = [
-  {
-    name: 'Lumo Shopping & Laptop Deals',
-    url: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800',
-  },
-  {
-    name: 'Happy Customer Unboxing',
-    url: 'https://images.unsplash.com/photo-1556742049-0a67e55722c3?w=800',
-  },
-  {
-    name: 'Electronics & Smart Tech',
-    url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
-  },
-  {
-    name: 'Fashion & Quality Apparel',
-    url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800',
-  },
-]
-
 export function PromotionForm({ initialData, isEdit = false }: PromotionFormProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -105,7 +93,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
       'Trusted products. Secure payments. Delivered with care across Tanzania.',
     desktopImageUrl:
       initialData?.desktopImageUrl ||
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800',
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
     mobileImageUrl: initialData?.mobileImageUrl || '',
     imageAltText: initialData?.imageAltText || 'Lumo Promotional Offer',
     buttonText: initialData?.buttonText || 'EXPLORE THE OFFER',
@@ -128,36 +116,30 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
     openInNewTab: initialData?.openInNewTab ?? false,
   })
 
-  // Handle Image Upload
+  // Client-Side Image Optimizer & Processor
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error('File size exceeds 3MB limit')
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size exceeds 10MB limit')
       return
     }
 
-    const toastId = toast.loading('Uploading promotional image...')
+    const toastId = toast.loading('Processing and optimizing image...')
     try {
-      const data = new FormData()
-      data.append('file', file)
+      // 1. Client-side canvas compression to WebP/JPEG data URL (1200px max, ~150KB)
+      const dataUrl = await fileToOptimizedDataUrl(file, 1200, 0.85)
 
-      const res = await fetch('/api/admin/promotions/upload', {
-        method: 'POST',
-        body: data,
-      })
+      setFormData((prev) => ({
+        ...prev,
+        desktopImageUrl: dataUrl,
+      }))
 
-      const resData = await res.json()
-      if (res.ok && resData.url) {
-        setFormData((prev) => ({ ...prev, desktopImageUrl: resData.url }))
-        toast.success('Image uploaded successfully!', { id: toastId })
-      } else {
-        toast.error(resData.error || 'Failed to upload image', { id: toastId })
-      }
+      toast.success('Image loaded and optimized successfully!', { id: toastId })
     } catch (err) {
-      console.error(err)
-      toast.error('Error uploading image', { id: toastId })
+      console.error('[IMAGE OPTIMIZE ERROR]', err)
+      toast.error('Failed to process image. Please try another image.', { id: toastId })
     }
   }
 
@@ -196,6 +178,8 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
     try {
       const payload = {
         ...formData,
+        desktopImageUrl: formData.desktopImageUrl.trim(),
+        mobileImageUrl: formData.mobileImageUrl ? formData.mobileImageUrl.trim() : null,
         status: finalStatus,
         priority: Number(formData.priority) || 0,
         delaySeconds: Number(formData.delaySeconds) || 2,
@@ -234,6 +218,9 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
     }
   }
 
+  // Resolved safe image URL for preview
+  const previewImageUrl = getSafePromotionImageUrl(formData.desktopImageUrl)
+
   return (
     <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
       {/* Top Action Bar */}
@@ -268,7 +255,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-black shadow-md"
+            className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-black shadow-md cursor-pointer"
           >
             <Save className="size-3.5 mr-1.5" />
             {isEdit ? 'Save Changes' : 'Publish Promotion'}
@@ -335,33 +322,33 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
                 <Upload className="size-4 text-brand-500" /> 2. Image Creative
               </CardTitle>
               <CardDescription className="text-xs">
-                Upload a 1200×800px promotional image or select from gallery presets.
+                Upload any picture from your device or paste an image URL (Unsplash, Alibaba, AliExpress, etc.).
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-foreground">
-                  Desktop Image URL <span className="text-red-500">*</span>
+                  Desktop Image (URL or Uploaded Asset) <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <Input
-                    value={formData.desktopImageUrl}
+                    value={formData.desktopImageUrl.startsWith('data:') ? '✓ Uploaded image active (data URL)' : formData.desktopImageUrl}
                     onChange={(e) => setFormData({ ...formData, desktopImageUrl: e.target.value })}
-                    placeholder="https://..."
+                    placeholder="Paste image URL (https://...)"
                     required
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    className="shrink-0 text-xs font-bold"
+                    className="shrink-0 text-xs font-bold cursor-pointer"
                   >
-                    <Upload className="size-3.5 mr-1" /> Upload Image
+                    <Upload className="size-3.5 mr-1 text-brand-500" /> Upload Image
                   </Button>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
+                    accept="image/*"
                     className="hidden"
                     onChange={handleImageUpload}
                   />
@@ -370,21 +357,30 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
 
               {/* Sample Preset Chooser */}
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-muted-foreground">Quick Lifestyle Presets:</span>
+                <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
+                  <ImageIcon className="size-3" /> Or Select a Verified Lifestyle Preset:
+                </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {SAMPLE_LIFESTYLE_IMAGES.map((img, idx) => (
+                  {VERIFIED_PRESET_IMAGES.map((img, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setFormData({ ...formData, desktopImageUrl: img.url })}
-                      className={`group relative aspect-video rounded-lg overflow-hidden border transition-all text-left ${
+                      className={`group relative aspect-video rounded-lg overflow-hidden border transition-all text-left cursor-pointer ${
                         formData.desktopImageUrl === img.url
                           ? 'ring-2 ring-brand-500 border-brand-500'
-                          : 'hover:border-foreground/30 opacity-70 hover:opacity-100'
+                          : 'hover:border-foreground/30 opacity-75 hover:opacity-100'
                       }`}
                     >
-                      <img src={img.url} alt={img.name} className="size-full object-cover" />
-                      <span className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[9px] font-semibold px-1 py-0.5 truncate">
+                      <img
+                        src={img.url}
+                        alt={img.name}
+                        className="size-full object-cover"
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+                        }}
+                      />
+                      <span className="absolute inset-x-0 bottom-0 bg-black/70 text-white text-[9px] font-semibold px-1 py-0.5 truncate">
                         {img.name}
                       </span>
                     </button>
@@ -397,7 +393,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
                 <Input
                   value={formData.imageAltText}
                   onChange={(e) => setFormData({ ...formData, imageAltText: e.target.value })}
-                  placeholder="e.g. Shopper holding Lumo package with laptop discount"
+                  placeholder="e.g. Shopper holding Lumo package with discount offer"
                 />
               </div>
             </CardContent>
@@ -674,7 +670,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
               <button
                 type="button"
                 onClick={() => setPreviewDevice('desktop')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                   previewDevice === 'desktop' ? 'bg-background shadow-xs text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -683,7 +679,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
               <button
                 type="button"
                 onClick={() => setPreviewDevice('mobile')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                   previewDevice === 'mobile' ? 'bg-background shadow-xs text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -693,7 +689,7 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
           </div>
 
           {/* Simulated Browser Viewport */}
-          <div className="relative rounded-2xl bg-slate-950/80 p-3 sm:p-4 border shadow-2xl flex items-center justify-center min-h-[460px]">
+          <div className="relative rounded-2xl bg-slate-950/85 p-3 sm:p-4 border shadow-2xl flex items-center justify-center min-h-[460px]">
             {/* Split Desktop Modal Preview */}
             {previewDevice === 'desktop' ? (
               <div
@@ -713,9 +709,12 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
                 {/* Left Image */}
                 <div className="col-span-5 relative min-h-[260px] bg-slate-200">
                   <img
-                    src={formData.desktopImageUrl}
+                    src={previewImageUrl}
                     alt={formData.imageAltText || formData.title}
                     className="size-full object-cover"
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+                    }}
                   />
                 </div>
 
@@ -781,9 +780,12 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
                 {/* Top Image */}
                 <div className="relative aspect-16/10 w-full bg-slate-200">
                   <img
-                    src={formData.mobileImageUrl || formData.desktopImageUrl}
+                    src={getSafePromotionImageUrl(formData.mobileImageUrl || formData.desktopImageUrl)}
                     alt={formData.imageAltText || formData.title}
                     className="size-full object-cover"
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).src = FALLBACK_PROMO_IMAGE
+                    }}
                   />
                 </div>
 
