@@ -419,7 +419,9 @@ export async function POST(req: NextRequest) {
         },
       }).catch((e) => console.warn('[ESCROW LEDGER] Non-blocking warning:', e)),
       (async () => {
-        if (targetPhone) {
+        // Only send payment confirmation SMS if order was created directly in PAID status (e.g. admin manual order)
+        // For online checkouts with PENDING_PAYMENT, SMS is dispatched only after Mongike/carrier payment confirmation
+        if (targetPhone && initialOrderStatus === OrderStatus.PAID && initialPaymentStatus === PaymentStatus.SUCCESSFUL) {
           await OutboxService.enqueue({
             eventType: 'ORDER_PAID_CUSTOMER',
             aggregateId: createdOrder.id,
