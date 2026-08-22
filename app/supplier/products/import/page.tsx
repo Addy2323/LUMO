@@ -194,46 +194,55 @@ export default function BulkImportProductsPage() {
         return nh.includes('sku') || nh.includes('code') || nh.includes('model')
       }) || ''
 
-      // Detect Image Column: find column with most image URLs in first 5 rows
+      // Detect Image Column with strict priority (MainImageURL > Image > Image1 > Image_URL > ImageURLs)
+      const priorityImageNames = [
+        'mainimageurl',
+        'mainimage',
+        'image1',
+        'imageurl',
+        'image_url',
+        'main_image',
+        'productimage',
+        'cover_image',
+        'picture',
+        'photo',
+        'image',
+        'images',
+        'imageurls',
+      ]
+
       let bestImageCol = ''
-      let maxImagesFound = 0
 
-      headers.forEach((h, colIdx) => {
-        const nh = normHeaders[colIdx]
-        const isImageNamed =
-          nh.includes('image') ||
-          nh.includes('img') ||
-          nh.includes('pic') ||
-          nh.includes('photo') ||
-          nh.includes('thumbnail') ||
-          nh.includes('gallery') ||
-          nh.includes('url') ||
-          nh.includes('src')
-
-        let count = 0
-        for (let r = 1; r < Math.min(rows.length, 6); r++) {
-          const imgs = extractImageUrlsFromCell(rows[r][colIdx])
-          if (imgs.length > 0) count += imgs.length
+      for (const name of priorityImageNames) {
+        const found = headers.find((h, i) => normHeaders[i] === name || normHeaders[i].startsWith(name))
+        if (found) {
+          const colIdx = headers.indexOf(found)
+          const hasImages = rows.slice(1, 6).some((r) => extractImageUrlsFromCell(r[colIdx]).length > 0)
+          if (hasImages) {
+            bestImageCol = found
+            break
+          }
         }
-
-        if (count > maxImagesFound || (count > 0 && isImageNamed && count >= maxImagesFound)) {
-          maxImagesFound = count
-          bestImageCol = h
-        }
-      })
+      }
 
       if (!bestImageCol) {
-        bestImageCol = headers.find((h, i) => {
-          const nh = normHeaders[i]
-          return nh.includes('image') || nh.includes('img') || nh.includes('picture') || nh.includes('photo')
-        }) || headers[headers.length - 1] || ''
+        headers.forEach((h, colIdx) => {
+          let count = 0
+          for (let r = 1; r < Math.min(rows.length, 6); r++) {
+            const imgs = extractImageUrlsFromCell(rows[r][colIdx])
+            if (imgs.length > 0) count += imgs.length
+          }
+          if (count > 0 && !bestImageCol) {
+            bestImageCol = h
+          }
+        })
       }
 
       setTitleCol(autoTitle)
       setPriceCol(autoPrice)
       setCategoryCol(autoCategory)
       setSkuCol(autoSku)
-      setImageCol(bestImageCol)
+      setImageCol(bestImageCol || headers[0] || '')
 
       toast.success(`Loaded ${rows.length - 1} products from ${selectedFile.name}`)
     } catch (err) {
@@ -261,7 +270,7 @@ export default function BulkImportProductsPage() {
       const idxSKU = headers.indexOf(skuCol)
       const idxSelectedImg = headers.indexOf(imageCol)
 
-      // Collect all potential image columns as fallback
+      // Collect all potential image columns as secondary
       const allImageCols: number[] = []
       headers.forEach((h, idx) => {
         const nh = h.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -295,22 +304,20 @@ export default function BulkImportProductsPage() {
         const stock = 20
         const description = title
 
-        // 1. Primary: extract from selected image column
+        // 1. Primary: extract from selected image column FIRST
         const imageList: string[] = []
         if (idxSelectedImg !== -1 && row[idxSelectedImg]) {
           imageList.push(...extractImageUrlsFromCell(row[idxSelectedImg]))
         }
 
         // 2. Secondary: extract from all other detected image columns
-        if (imageList.length === 0) {
-          for (const colIdx of allImageCols) {
-            if (row[colIdx]) {
-              imageList.push(...extractImageUrlsFromCell(row[colIdx]))
-            }
+        for (const colIdx of allImageCols) {
+          if (colIdx !== idxSelectedImg && row[colIdx]) {
+            imageList.push(...extractImageUrlsFromCell(row[colIdx]))
           }
         }
 
-        // 3. Fallback: scan ALL cells in the row
+        // 3. Fallback: scan ALL cells in the row if none found
         if (imageList.length === 0) {
           for (const cell of row) {
             imageList.push(...extractImageUrlsFromCell(cell))
@@ -393,6 +400,8 @@ export default function BulkImportProductsPage() {
     const cat = idxCategory !== -1 && row[idxCategory] ? row[idxCategory] : "Men's Fashion > Suits & Blazers"
 
     let imgs = idxImg !== -1 && row[idxImg] ? extractImageUrlsFromCell(row[idxImg]) : []
+    const rawVal = idxImg !== -1 && row[idxImg] ? String(row[idxImg]).trim() : ''
+
     if (imgs.length === 0) {
       for (const cell of row) {
         imgs = extractImageUrlsFromCell(cell)
@@ -406,6 +415,7 @@ export default function BulkImportProductsPage() {
       price,
       category: cat,
       image: finalImg,
+      rawUrl: imgs.length > 0 ? imgs[0] : rawVal || 'No URL found in this column',
       hasRealImage: imgs.length > 0,
     }
   })
@@ -511,17 +521,23 @@ export default function BulkImportProductsPage() {
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div className="space-y-1">
-                        <label className="font-bold text-[11px] text-muted-foreground">Image URL Column</label>
+                        <label className="font-bold text-[11px] text-muted-foreground flex items-center justify-between">
+                          <span>Image URL Column</span>
+                          <span className="text-[9px] text-brand-500 font-bold">Pick your image col</span>
+                        </label>
                         <select
                           value={imageCol}
                           onChange={(e) => setImageCol(e.target.value)}
-                          className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2 font-bold text-brand-500"
+                          className="w-full h-8 text-xs rounded-lg border border-brand-500/40 bg-background px-2 font-bold text-brand-500 shadow-xs"
                         >
-                          {rawHeaders.map((h) => (
-                            <option key={h} value={h}>
-                              {h}
-                            </option>
-                          ))}
+                          {rawHeaders.map((h, i) => {
+                            const sample = rawRows[1]?.[i] ? ` (${rawRows[1][i].slice(0, 25)}...)` : ''
+                            return (
+                              <option key={h} value={h}>
+                                {h}{sample}
+                              </option>
+                            )
+                          })}
                         </select>
                       </div>
 
@@ -532,11 +548,14 @@ export default function BulkImportProductsPage() {
                           onChange={(e) => setTitleCol(e.target.value)}
                           className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
                         >
-                          {rawHeaders.map((h) => (
-                            <option key={h} value={h}>
-                              {h}
-                            </option>
-                          ))}
+                          {rawHeaders.map((h, i) => {
+                            const sample = rawRows[1]?.[i] ? ` (${rawRows[1][i].slice(0, 20)}...)` : ''
+                            return (
+                              <option key={h} value={h}>
+                                {h}{sample}
+                              </option>
+                            )
+                          })}
                         </select>
                       </div>
 
@@ -547,11 +566,14 @@ export default function BulkImportProductsPage() {
                           onChange={(e) => setPriceCol(e.target.value)}
                           className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
                         >
-                          {rawHeaders.map((h) => (
-                            <option key={h} value={h}>
-                              {h}
-                            </option>
-                          ))}
+                          {rawHeaders.map((h, i) => {
+                            const sample = rawRows[1]?.[i] ? ` (${rawRows[1][i].slice(0, 15)}...)` : ''
+                            return (
+                              <option key={h} value={h}>
+                                {h}{sample}
+                              </option>
+                            )
+                          })}
                         </select>
                       </div>
 
@@ -562,11 +584,14 @@ export default function BulkImportProductsPage() {
                           onChange={(e) => setCategoryCol(e.target.value)}
                           className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
                         >
-                          {rawHeaders.map((h) => (
-                            <option key={h} value={h}>
-                              {h}
-                            </option>
-                          ))}
+                          {rawHeaders.map((h, i) => {
+                            const sample = rawRows[1]?.[i] ? ` (${rawRows[1][i].slice(0, 20)}...)` : ''
+                            return (
+                              <option key={h} value={h}>
+                                {h}{sample}
+                              </option>
+                            )
+                          })}
                         </select>
                       </div>
                     </div>
@@ -605,6 +630,12 @@ export default function BulkImportProductsPage() {
                             <div className="flex justify-between items-center text-[11px]">
                               <span className="text-muted-foreground truncate max-w-[100px]">{p.category}</span>
                               <strong className="font-mono text-brand-500 font-extrabold">{formatTZS(p.price)}</strong>
+                            </div>
+                            <div
+                              className="p-1 bg-muted/50 rounded text-[9px] font-mono text-muted-foreground break-all line-clamp-2"
+                              title={p.rawUrl}
+                            >
+                              {p.rawUrl}
                             </div>
                           </div>
                         </div>
