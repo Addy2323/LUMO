@@ -2,12 +2,25 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, Upload, AlertCircle, Sparkles, Image as ImageIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  Upload,
+  AlertCircle,
+  Sparkles,
+  Image as ImageIcon,
+  Eye,
+  Check,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { SafeProductImage } from '@/components/ui/product-image'
 import { useSupplierStore } from '@/lib/stores/supplier-store'
 import { resolveImage } from '@/lib/mock/products'
+import { formatTZS } from '@/lib/format'
 import { toast } from 'sonner'
 
 export default function BulkImportProductsPage() {
@@ -15,6 +28,15 @@ export default function BulkImportProductsPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [importedCount, setImportedCount] = useState<number | null>(null)
+
+  // Preview & Mapping State
+  const [rawHeaders, setRawHeaders] = useState<string[]>([])
+  const [rawRows, setRawRows] = useState<string[][]>([])
+  const [imageCol, setImageCol] = useState<string>('')
+  const [titleCol, setTitleCol] = useState<string>('')
+  const [priceCol, setPriceCol] = useState<string>('')
+  const [categoryCol, setCategoryCol] = useState<string>('')
+  const [skuCol, setSkuCol] = useState<string>('')
 
   function handleDownloadTemplate() {
     const csvContent =
@@ -68,11 +90,11 @@ export default function BulkImportProductsPage() {
           return Object.values(parsed).flatMap((item) => extractImageUrlsFromCell(item))
         }
       } catch {
-        // Continue to regex
+        // Continue
       }
     }
 
-    // Split by semicolons, commas, newlines, pipes if multiple URLs
+    // Split by delimiters
     const parts = str.split(/[\r\n;,|]+|\s{2,}/).map((s) => s.trim()).filter(Boolean)
     const found: string[] = []
 
@@ -99,6 +121,8 @@ export default function BulkImportProductsPage() {
         (part.includes('alicdn') ||
           part.includes('alibaba') ||
           part.includes('aliexpress') ||
+          part.includes('taobao') ||
+          part.includes('1688') ||
           part.includes('cloudinary') ||
           part.includes('unsplash') ||
           part.includes('cloudfront') ||
@@ -117,77 +141,141 @@ export default function BulkImportProductsPage() {
       }
     }
 
-    return found
+    return Array.from(new Set(found))
+  }
+
+  async function handleFileSelect(selectedFile: File) {
+    setFile(selectedFile)
+    try {
+      let rows: string[][] = []
+
+      try {
+        const XLSX = (await import('xlsx')).default
+        const buffer = await selectedFile.arrayBuffer()
+        const workbook = XLSX.read(buffer, { type: 'array', raw: false })
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' })
+        rows = jsonData.map((row) => row.map((cell: any) => String(cell ?? '').trim()))
+      } catch (err) {
+        const text = await selectedFile.text()
+        const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0)
+        rows = lines.map((line) => parseCSVLine(line))
+      }
+
+      if (rows.length <= 1) {
+        toast.error('File contains only header or is empty')
+        return
+      }
+
+      const headers = rows[0]
+      setRawHeaders(headers)
+      setRawRows(rows)
+
+      const normHeaders = headers.map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''))
+
+      // Auto-detect best columns
+      const autoTitle = headers.find((h, i) => {
+        const nh = normHeaders[i]
+        return nh.includes('title') || nh.includes('name') || nh.includes('product') || nh.includes('item')
+      }) || headers[0] || ''
+
+      const autoPrice = headers.find((h, i) => {
+        const nh = normHeaders[i]
+        return nh.includes('price') || nh.includes('cost') || nh.includes('amount') || nh.includes('tzs') || nh.includes('usd')
+      }) || ''
+
+      const autoCategory = headers.find((h, i) => {
+        const nh = normHeaders[i]
+        return nh.includes('category') || nh.includes('cat') || nh.includes('group')
+      }) || ''
+
+      const autoSku = headers.find((h, i) => {
+        const nh = normHeaders[i]
+        return nh.includes('sku') || nh.includes('code') || nh.includes('model')
+      }) || ''
+
+      // Detect Image Column: find column with most image URLs in first 5 rows
+      let bestImageCol = ''
+      let maxImagesFound = 0
+
+      headers.forEach((h, colIdx) => {
+        const nh = normHeaders[colIdx]
+        const isImageNamed =
+          nh.includes('image') ||
+          nh.includes('img') ||
+          nh.includes('pic') ||
+          nh.includes('photo') ||
+          nh.includes('thumbnail') ||
+          nh.includes('gallery') ||
+          nh.includes('url') ||
+          nh.includes('src')
+
+        let count = 0
+        for (let r = 1; r < Math.min(rows.length, 6); r++) {
+          const imgs = extractImageUrlsFromCell(rows[r][colIdx])
+          if (imgs.length > 0) count += imgs.length
+        }
+
+        if (count > maxImagesFound || (count > 0 && isImageNamed && count >= maxImagesFound)) {
+          maxImagesFound = count
+          bestImageCol = h
+        }
+      })
+
+      if (!bestImageCol) {
+        bestImageCol = headers.find((h, i) => {
+          const nh = normHeaders[i]
+          return nh.includes('image') || nh.includes('img') || nh.includes('picture') || nh.includes('photo')
+        }) || headers[headers.length - 1] || ''
+      }
+
+      setTitleCol(autoTitle)
+      setPriceCol(autoPrice)
+      setCategoryCol(autoCategory)
+      setSkuCol(autoSku)
+      setImageCol(bestImageCol)
+
+      toast.success(`Loaded ${rows.length - 1} products from ${selectedFile.name}`)
+    } catch (err) {
+      console.error('File load error:', err)
+      toast.error('Failed to read file')
+    }
   }
 
   async function handleProcessCSV(e: React.FormEvent) {
     e.preventDefault()
-    if (!file) {
-      toast.error('Please select a CSV or Excel spreadsheet file to upload')
+    if (!rawRows || rawRows.length <= 1) {
+      toast.error('Please select a valid CSV or Excel file')
       return
     }
 
     setIsUploading(true)
 
     try {
-      let rows: string[][] = []
+      const headers = rawHeaders
+      const rows = rawRows
 
-      try {
-        // Universal Excel & CSV binary parsing via SheetJS
-        const XLSX = (await import('xlsx')).default
-        const buffer = await file.arrayBuffer()
-        const workbook = XLSX.read(buffer, { type: 'array', raw: false })
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-        const jsonData: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' })
+      const idxTitle = headers.indexOf(titleCol)
+      const idxPrice = headers.indexOf(priceCol)
+      const idxCategory = headers.indexOf(categoryCol)
+      const idxSKU = headers.indexOf(skuCol)
+      const idxSelectedImg = headers.indexOf(imageCol)
 
-        rows = jsonData.map((row) => row.map((cell: any) => String(cell ?? '').trim()))
-      } catch (sheetErr) {
-        console.warn('SheetJS array read fallback to text:', sheetErr)
-        const text = await file.text()
-        if (!text) {
-          toast.error('CSV file is empty')
-          setIsUploading(false)
-          return
-        }
-        const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0)
-        rows = lines.map((line) => parseCSVLine(line))
-      }
-
-      if (rows.length <= 1) {
-        toast.error('File contains header row only or is empty')
-        setIsUploading(false)
-        return
-      }
-
-      const headers = rows[0].map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''))
-
-      // Find column indexes with resilient keyword matching
-      const idxTitle = headers.findIndex((h) => h.includes('title') || h.includes('name') || h.includes('product') || h.includes('item') || h.includes('subject'))
-      const idxBrand = headers.findIndex((h) => h.includes('brand') || h.includes('company') || h.includes('supplier') || h.includes('manufacturer'))
-      const idxCategory = headers.findIndex((h) => h.includes('category') || h.includes('cat') || h.includes('group') || h.includes('type'))
-      const idxSKU = headers.findIndex((h) => h.includes('sku') || h.includes('code') || h.includes('model') || h.includes('number'))
-      const idxOption = headers.findIndex((h) => h.includes('option') || h.includes('variant') || h.includes('size') || h.includes('color') || h.includes('style'))
-      const idxPrice = headers.findIndex((h) => h.includes('price') || h.includes('cost') || h.includes('amount') || h.includes('rate') || h.includes('tzs') || h.includes('usd'))
-      const idxStock = headers.findIndex((h) => h.includes('stock') || h.includes('qty') || h.includes('quantity') || h.includes('inventory'))
-      const idxDesc = headers.findIndex((h) => h.includes('desc') || h.includes('detail') || h.includes('info') || h.includes('specification'))
-
-      // Detect all image columns
-      const imageColumnIndexes: number[] = []
+      // Collect all potential image columns as fallback
+      const allImageCols: number[] = []
       headers.forEach((h, idx) => {
+        const nh = h.toLowerCase().replace(/[^a-z0-9]/g, '')
         if (
-          h.includes('image') ||
-          h.includes('img') ||
-          h.includes('picture') ||
-          h.includes('photo') ||
-          h.includes('pic') ||
-          h.includes('thumbnail') ||
-          h.includes('gallery') ||
-          h.includes('cover') ||
-          h.includes('src') ||
-          h.includes('link') ||
-          h.includes('url')
+          idx === idxSelectedImg ||
+          nh.includes('image') ||
+          nh.includes('img') ||
+          nh.includes('picture') ||
+          nh.includes('photo') ||
+          nh.includes('gallery') ||
+          nh.includes('pic') ||
+          nh.includes('url')
         ) {
-          imageColumnIndexes.push(idx)
+          allImageCols.push(idx)
         }
       })
 
@@ -195,28 +283,34 @@ export default function BulkImportProductsPage() {
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i]
-        if (row.length < 2) continue
+        if (row.length < 1) continue
 
-        const title = idxTitle !== -1 && row[idxTitle] ? row[idxTitle] : `Product ${i}`
-        if (!title || !title.trim()) continue
+        const title = idxTitle !== -1 && row[idxTitle] ? row[idxTitle].trim() : `Product ${i}`
+        if (!title) continue
 
-        const brand = idxBrand !== -1 && row[idxBrand] ? row[idxBrand] : 'Unbranded'
-        const category = idxCategory !== -1 && row[idxCategory] ? row[idxCategory] : "Men's Fashion > Suits & Blazers"
-        const sku = idxSKU !== -1 && row[idxSKU] ? row[idxSKU] : `SKU-${Date.now()}-${i}`
-        const optionName = idxOption !== -1 && row[idxOption] ? row[idxOption] : 'Standard'
-        const priceTZS = idxPrice !== -1 ? Number(String(row[idxPrice]).replace(/[^0-9.]/g, '')) || 50000 : 50000
-        const stock = idxStock !== -1 ? Number(String(row[idxStock]).replace(/[^0-9]/g, '')) || 20 : 20
-        const description = idxDesc !== -1 && row[idxDesc] ? row[idxDesc] : title
+        const category = idxCategory !== -1 && row[idxCategory] ? row[idxCategory].trim() : "Men's Fashion > Suits & Blazers"
+        const brand = 'Unbranded'
+        const sku = idxSKU !== -1 && row[idxSKU] ? row[idxSKU].trim() : `SKU-${Date.now()}-${i}`
+        const priceTZS = idxPrice !== -1 && row[idxPrice] ? Number(String(row[idxPrice]).replace(/[^0-9.]/g, '')) || 50000 : 50000
+        const stock = 20
+        const description = title
 
-        // 1. Extract from identified image columns
+        // 1. Primary: extract from selected image column
         const imageList: string[] = []
-        for (const colIdx of imageColumnIndexes) {
-          if (row[colIdx]) {
-            imageList.push(...extractImageUrlsFromCell(row[colIdx]))
+        if (idxSelectedImg !== -1 && row[idxSelectedImg]) {
+          imageList.push(...extractImageUrlsFromCell(row[idxSelectedImg]))
+        }
+
+        // 2. Secondary: extract from all other detected image columns
+        if (imageList.length === 0) {
+          for (const colIdx of allImageCols) {
+            if (row[colIdx]) {
+              imageList.push(...extractImageUrlsFromCell(row[colIdx]))
+            }
           }
         }
 
-        // 2. If no image found in dedicated columns, scan ALL cells in the row
+        // 3. Fallback: scan ALL cells in the row
         if (imageList.length === 0) {
           for (const cell of row) {
             imageList.push(...extractImageUrlsFromCell(cell))
@@ -241,19 +335,19 @@ export default function BulkImportProductsPage() {
             {
               id: `v_csv_${Date.now()}_${i}`,
               sku,
-              name: optionName,
+              name: 'Standard',
               priceTZS,
               costPriceTZS: Math.round(priceTZS * 0.7),
               stock,
               reorderPoint: 5,
-              attributes: { Option: optionName },
+              attributes: { Option: 'Standard' },
             },
           ],
         })
       }
 
       if (parsedProducts.length === 0) {
-        toast.error('Could not parse any valid product rows from file')
+        toast.error('Could not parse any valid product rows')
         setIsUploading(false)
         return
       }
@@ -261,7 +355,7 @@ export default function BulkImportProductsPage() {
       // 1. Save to local Zustand store
       importProducts(parsedProducts)
 
-      // 2. Persist directly into PostgreSQL Database via API
+      // 2. Persist to PostgreSQL database via API
       fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -270,7 +364,7 @@ export default function BulkImportProductsPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            toast.success(`Saved ${parsedProducts.length} product(s) to PostgreSQL database! Status set to PENDING_REVIEW.`)
+            toast.success(`Saved ${parsedProducts.length} product(s) to PostgreSQL database!`)
           }
         })
         .catch((err) => {
@@ -282,10 +376,39 @@ export default function BulkImportProductsPage() {
       toast.success(`Successfully imported ${parsedProducts.length} product(s) into database catalog!`)
     } catch (err) {
       console.error('File Parsing Error:', err)
-      toast.error('Failed to parse file. Please check format.')
+      toast.error('Failed to parse file')
       setIsUploading(false)
     }
   }
+
+  // Generate live preview items for first 4 rows
+  const previewProducts = rawRows.slice(1, 5).map((row, i) => {
+    const idxTitle = rawHeaders.indexOf(titleCol)
+    const idxPrice = rawHeaders.indexOf(priceCol)
+    const idxCategory = rawHeaders.indexOf(categoryCol)
+    const idxImg = rawHeaders.indexOf(imageCol)
+
+    const title = idxTitle !== -1 && row[idxTitle] ? row[idxTitle] : `Product ${i + 1}`
+    const price = idxPrice !== -1 && row[idxPrice] ? Number(String(row[idxPrice]).replace(/[^0-9.]/g, '')) || 50000 : 50000
+    const cat = idxCategory !== -1 && row[idxCategory] ? row[idxCategory] : "Men's Fashion > Suits & Blazers"
+
+    let imgs = idxImg !== -1 && row[idxImg] ? extractImageUrlsFromCell(row[idxImg]) : []
+    if (imgs.length === 0) {
+      for (const cell of row) {
+        imgs = extractImageUrlsFromCell(cell)
+        if (imgs.length > 0) break
+      }
+    }
+    const finalImg = imgs.length > 0 ? imgs[0] : resolveImage(title, cat)
+
+    return {
+      title,
+      price,
+      category: cat,
+      image: finalImg,
+      hasRealImage: imgs.length > 0,
+    }
+  })
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
@@ -372,18 +495,122 @@ export default function BulkImportProductsPage() {
                   type="file"
                   accept=".csv,.xlsx"
                   className="hidden"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleFileSelect(f)
+                  }}
                 />
               </div>
 
-              {file && (
-                <div className="p-3 rounded-xl bg-card border flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-600" />
-                    <span className="font-bold">{file.name}</span>
-                    <span className="text-muted-foreground text-[11px]">({(file.size / 1024).toFixed(1)} KB)</span>
+              {file && rawHeaders.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  {/* Column Mapper Dropdowns */}
+                  <div className="p-4 rounded-xl bg-muted/30 border space-y-3">
+                    <h4 className="font-extrabold text-xs text-foreground flex items-center gap-1.5">
+                      <Sparkles className="size-4 text-brand-500" /> Confirm Column Mapping
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-bold text-[11px] text-muted-foreground">Image URL Column</label>
+                        <select
+                          value={imageCol}
+                          onChange={(e) => setImageCol(e.target.value)}
+                          className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2 font-bold text-brand-500"
+                        >
+                          {rawHeaders.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-[11px] text-muted-foreground">Product Title Column</label>
+                        <select
+                          value={titleCol}
+                          onChange={(e) => setTitleCol(e.target.value)}
+                          className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
+                        >
+                          {rawHeaders.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-[11px] text-muted-foreground">Price Column</label>
+                        <select
+                          value={priceCol}
+                          onChange={(e) => setPriceCol(e.target.value)}
+                          className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
+                        >
+                          {rawHeaders.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-[11px] text-muted-foreground">Category Column</label>
+                        <select
+                          value={categoryCol}
+                          onChange={(e) => setCategoryCol(e.target.value)}
+                          className="w-full h-8 text-xs rounded-lg border border-border bg-background px-2"
+                        >
+                          {rawHeaders.map((h) => (
+                            <option key={h} value={h}>
+                              {h}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 font-bold">Ready to Import</Badge>
+
+                  {/* Live Visual Preview Grid */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-extrabold text-foreground flex items-center gap-1.5">
+                        <Eye className="size-4 text-emerald-600" /> Live Data &amp; Image Preview ({rawRows.length - 1} products)
+                      </span>
+                      <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 font-bold">
+                        Ready to Process
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                      {previewProducts.map((p, idx) => (
+                        <div key={idx} className="p-3 bg-card rounded-xl border border-border space-y-2 text-xs">
+                          <div className="relative aspect-square w-full rounded-lg overflow-hidden border bg-muted/30">
+                            <SafeProductImage
+                              src={p.image}
+                              alt={p.title}
+                              title={p.title}
+                              category={p.category}
+                              className="size-full object-cover"
+                            />
+                            {p.hasRealImage && (
+                              <Badge className="absolute top-1.5 right-1.5 bg-emerald-600 text-white text-[9px] font-bold py-0.5 px-1">
+                                Image Linked ✓
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <h5 className="font-bold text-foreground line-clamp-1">{p.title}</h5>
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-muted-foreground truncate max-w-[100px]">{p.category}</span>
+                              <strong className="font-mono text-brand-500 font-extrabold">{formatTZS(p.price)}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -396,7 +623,7 @@ export default function BulkImportProductsPage() {
             </Button>
             <Button
               type="submit"
-              disabled={isUploading}
+              disabled={isUploading || !file}
               className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-md"
             >
               {isUploading ? (
@@ -404,7 +631,7 @@ export default function BulkImportProductsPage() {
               ) : (
                 <>
                   <Upload className="size-4 mr-1" />
-                  Process &amp; Import Products
+                  Process &amp; Import {rawRows.length > 1 ? `${rawRows.length - 1} ` : ''}Products
                 </>
               )}
             </Button>
