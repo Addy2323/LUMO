@@ -10,24 +10,26 @@ export async function GET(req: NextRequest) {
     await ensurePromotionsTable()
 
     const { searchParams } = new URL(req.url)
-    const placementParam = searchParams.get('placement') || 'ENTRY_POPUP'
+    const placementParam = searchParams.get('placement') || 'ALL'
     const audienceParam = searchParams.get('audience') || 'ALL_VISITORS'
 
     const now = new Date()
+    // 2-minute clock tolerance so freshly created promotions display immediately
+    const startThreshold = new Date(now.getTime() + 2 * 60 * 1000)
 
-    // Valid placement
-    const placement = Object.values(PromotionPlacement).includes(placementParam as PromotionPlacement)
-      ? (placementParam as PromotionPlacement)
-      : PromotionPlacement.ENTRY_POPUP
+    const whereClause: any = {
+      status: { in: [PromotionStatus.ACTIVE, PromotionStatus.SCHEDULED] },
+      startAt: { lte: startThreshold },
+      endAt: { gt: now },
+    }
+
+    if (placementParam !== 'ALL' && Object.values(PromotionPlacement).includes(placementParam as PromotionPlacement)) {
+      whereClause.placement = { in: [placementParam as PromotionPlacement, PromotionPlacement.ENTRY_POPUP, PromotionPlacement.HOMEPAGE_BANNER] }
+    }
 
     // Find active and scheduled promotions
     const candidates = await prisma.promotion.findMany({
-      where: {
-        placement,
-        status: { in: [PromotionStatus.ACTIVE, PromotionStatus.SCHEDULED] },
-        startAt: { lte: now },
-        endAt: { gt: now },
-      },
+      where: whereClause,
       orderBy: [
         { priority: 'desc' },
         { publishedAt: 'desc' },

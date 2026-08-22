@@ -120,7 +120,7 @@ export function PromotionPopup() {
     async function loadActivePromotion() {
       try {
         const audience = user ? 'LOGGED_IN' : 'GUEST'
-        const res = await fetch(`/api/promotions/active?placement=ENTRY_POPUP&audience=${audience}`)
+        const res = await fetch(`/api/promotions/active?placement=ALL&audience=${audience}`)
         if (!res.ok) return
 
         const data = await res.json()
