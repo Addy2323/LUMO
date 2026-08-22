@@ -34,6 +34,7 @@ import { StatusBadge } from '@/components/status-badge'
 import { formatTZS, formatDate } from '@/lib/format'
 import { useSessionStore } from '@/lib/stores/session-store'
 import { OrderProductThumbnail } from '@/components/account/order-product-thumbnail'
+import { MongikeMobileMoneyModal } from '@/components/checkout/mongike-mobile-money-modal'
 import { toast } from 'sonner'
 
 export function CustomerDashboard() {
@@ -47,21 +48,6 @@ export function CustomerDashboard() {
   const [selectedQuote, setSelectedQuote] = useState<any>(null)
   const [selectedPayOrder, setSelectedPayOrder] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Payment Form State
-  const [payNetwork, setPayNetwork] = useState('M-Pesa')
-  const [payPhone, setPayPhone] = useState(user?.phone || '+255658056448')
-  const [cardHolder, setCardHolder] = useState(user?.fullName || '')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvv, setCardCvv] = useState('')
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-
-  // Payment Animated Loader State
-  const [paymentStep, setPaymentStep] = useState<'IDLE' | 'SENDING_USSD' | 'AWAITING_PIN' | 'SUCCESS'>('IDLE')
-  const [countdown, setCountdown] = useState(3)
-
-  const isBankCard = ['CRDB Bank', 'NMB Bank'].includes(payNetwork)
 
   useEffect(() => {
     fetchCustomerData()
@@ -105,57 +91,6 @@ export function CustomerDashboard() {
     }
   }
 
-  // Handle Card & Phone Formatters
-  function formatCardNumber(val: string) {
-    const raw = val.replace(/\D/g, '').slice(0, 16)
-    return raw.replace(/(\d{4})/g, '$1 ').trim()
-  }
-
-  function formatExpiry(val: string) {
-    const raw = val.replace(/\D/g, '').slice(0, 4)
-    if (raw.length >= 3) {
-      return `${raw.slice(0, 2)}/${raw.slice(2)}`
-    }
-    return raw
-  }
-
-  // Input Validation Logic
-  function validateForm() {
-    const errors: Record<string, string> = {}
-
-    if (isBankCard) {
-      if (!cardHolder.trim()) {
-        errors.cardHolder = 'Cardholder name is required'
-      }
-      const rawCard = cardNumber.replace(/\s/g, '')
-      if (rawCard.length < 16) {
-        errors.cardNumber = 'Valid 16-digit card number required'
-      }
-      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry)) {
-        errors.cardExpiry = 'Valid expiry (MM/YY) required'
-      } else {
-        const [m, y] = cardExpiry.split('/')
-        const expMonth = parseInt(m, 10)
-        const expYear = 2000 + parseInt(y, 10)
-        const now = new Date()
-        if (expYear < now.getFullYear() || (expYear === now.getFullYear() && expMonth < now.getMonth() + 1)) {
-          errors.cardExpiry = 'Card has expired'
-        }
-      }
-      if (!/^\d{3,4}$/.test(cardCvv)) {
-        errors.cardCvv = '3-digit CVV code required'
-      }
-    } else {
-      const rawPhone = payPhone.replace(/\D/g, '')
-      if (rawPhone.length < 9) {
-        errors.payPhone = 'Valid phone number required (+2557XXXXXXXX)'
-      }
-    }
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
   // Handle Quotation Approval
   async function handleQuotationResponse(action: 'APPROVE' | 'REJECT') {
     if (!selectedQuote) return
@@ -182,77 +117,6 @@ export function CustomerDashboard() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  // Handle Order Payment with Validation & Interactive Animated Loader
-  async function handleOrderPayment() {
-    if (!selectedPayOrder) return
-    if (!validateForm()) {
-      toast.error('Please fix highlighted payment fields')
-      return
-    }
-
-    setIsSubmitting(true)
-    setPaymentStep('SENDING_USSD')
-
-    // Step 1: Simulated Gateway Request
-    setTimeout(async () => {
-      setPaymentStep('AWAITING_PIN')
-      setCountdown(3)
-
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      // Step 2: Trigger backend payment API call
-      try {
-        const res = await fetch(`/api/orders/${selectedPayOrder.id}/pay`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            paymentMethod: isBankCard ? 'Bank Card' : 'LUMO Mobile Money',
-            network: payNetwork,
-            phoneNumber: payPhone,
-            cardNumber: cardNumber.replace(/\s/g, ''),
-            cardExpiry,
-            cardCvv,
-            cardHolder,
-          }),
-        })
-        const data = await res.json()
-
-        if (res.ok && data.success) {
-          setTimeout(() => {
-            setPaymentStep('SUCCESS')
-            toast.success(`Payment of ${formatTZS(selectedPayOrder.totalAmountTZS)} confirmed via ${payNetwork}!`)
-
-            setTimeout(() => {
-              setSelectedPayOrder(null)
-              setPaymentStep('IDLE')
-              setIsSubmitting(false)
-              fetchCustomerData()
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(new Event('lumo_orders_updated'))
-              }
-            }, 1800)
-          }, 1500)
-        } else {
-          toast.error(data.error || 'Payment failed')
-          setPaymentStep('IDLE')
-          setIsSubmitting(false)
-        }
-      } catch (e) {
-        toast.error('Network error processing payment')
-        setPaymentStep('IDLE')
-        setIsSubmitting(false)
-      }
-    }, 1200)
   }
 
   // Filter metrics strictly from real data
@@ -386,11 +250,7 @@ export function CustomerDashboard() {
                   </div>
                   <Button
                     size="xs"
-                    onClick={() => {
-                      setSelectedPayOrder(p)
-                      setPaymentStep('IDLE')
-                      setValidationErrors({})
-                    }}
+                    onClick={() => setSelectedPayOrder(p)}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-8 gap-1.5 shadow-xs"
                   >
                     <CreditCard className="size-3.5" /> Pay via Mobile Money / Card
@@ -666,246 +526,24 @@ export function CustomerDashboard() {
         </Dialog>
       )}
 
-      {/* 6. LUMO Mobile Money & Bank Card Payment Modal */}
+      {/* 6. Real Mongike Mobile Money Instant USSD Push Payment Modal */}
       {selectedPayOrder && (
-        <Dialog open={!!selectedPayOrder} onOpenChange={() => {
-          if (!isSubmitting) {
+        <MongikeMobileMoneyModal
+          isOpen={!!selectedPayOrder}
+          onClose={() => setSelectedPayOrder(null)}
+          orderId={selectedPayOrder.id}
+          orderNumber={selectedPayOrder.orderNumber || selectedPayOrder.id}
+          amountTZS={Number(selectedPayOrder.totalAmountTZS || 0)}
+          defaultPhone={user?.phone || selectedPayOrder.shippingAddress?.phone || '+255658056448'}
+          onSuccess={() => {
             setSelectedPayOrder(null)
-            setPaymentStep('IDLE')
-          }
-        }}>
-          <DialogContent className="max-w-md bg-white p-6 rounded-2xl border border-slate-200 shadow-2xl">
-            <DialogHeader className="space-y-1">
-              <div className="flex items-center justify-between">
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-bold gap-1">
-                  <ShieldCheck className="size-3" /> LUMO Trade Protection Direct Deposit
-                </Badge>
-              </div>
-              <DialogTitle className="text-lg font-black text-slate-900">
-                Pay Order #{selectedPayOrder.orderNumber || selectedPayOrder.id}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                Your payment will be locked safely in LUMO Payment Protection until quality inspection is approved.
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* STEP 1: Form Input Stage */}
-            {paymentStep === 'IDLE' && (
-              <div className="space-y-4 my-2 text-xs">
-                <div className="bg-emerald-50/60 border border-emerald-200 p-3.5 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-emerald-800 font-bold uppercase block">Total Amount Due</span>
-                    <strong className="text-xl font-black font-mono text-emerald-700">
-                      {formatTZS(Number(selectedPayOrder.totalAmountTZS || 0))}
-                    </strong>
-                  </div>
-                  <Badge className="bg-emerald-600 text-white font-bold text-[10px]">LUMO Secured</Badge>
-                </div>
-
-                {/* Network Options Selector */}
-                <div className="space-y-2">
-                  <label className="font-bold text-slate-700 block">Select Payment Method / Bank</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['M-Pesa', 'Mix by Yas', 'Airtel Money', 'CRDB Bank', 'NMB Bank'].map((net) => (
-                      <button
-                        key={net}
-                        type="button"
-                        onClick={() => {
-                          setPayNetwork(net)
-                          setValidationErrors({})
-                        }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold text-left flex items-center justify-between transition ${
-                          payNetwork === net
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-xs'
-                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span>{net}</span>
-                        {payNetwork === net && <Check className="size-4 text-emerald-600" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dynamic Conditional Inputs based on Method Selection */}
-                {isBankCard ? (
-                  /* BANK CARD FIELDS (CRDB Bank / NMB Bank) */
-                  <div className="space-y-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-extrabold text-slate-800 uppercase flex items-center gap-1.5">
-                        <CreditCard className="size-4 text-emerald-600" /> {payNetwork} Debit / Credit Card
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400 font-bold">Visa / Mastercard</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-bold text-slate-700 text-[11px]">Cardholder Name</label>
-                      <div className="relative">
-                        <UserIcon className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                        <Input
-                          type="text"
-                          value={cardHolder}
-                          onChange={(e) => setCardHolder(e.target.value)}
-                          placeholder="Name as printed on card"
-                          className={`pl-9 text-xs h-9 bg-white border-slate-200 ${validationErrors.cardHolder ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                        />
-                      </div>
-                      {validationErrors.cardHolder && <p className="text-[10px] text-rose-600 font-bold">{validationErrors.cardHolder}</p>}
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-bold text-slate-700 text-[11px]">Card Number</label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                        <Input
-                          type="text"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                          placeholder="4111 2222 3333 4444"
-                          maxLength={19}
-                          className={`pl-9 text-xs h-9 bg-white border-slate-200 font-mono ${validationErrors.cardNumber ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                        />
-                      </div>
-                      {validationErrors.cardNumber && <p className="text-[10px] text-rose-600 font-bold">{validationErrors.cardNumber}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <label className="font-bold text-slate-700 text-[11px]">Expiry Date</label>
-                        <div className="relative">
-                          <Calendar className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                          <Input
-                            type="text"
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                            placeholder="MM/YY"
-                            maxLength={5}
-                            className={`pl-9 text-xs h-9 bg-white border-slate-200 font-mono ${validationErrors.cardExpiry ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                          />
-                        </div>
-                        {validationErrors.cardExpiry && <p className="text-[10px] text-rose-600 font-bold">{validationErrors.cardExpiry}</p>}
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="font-bold text-slate-700 text-[11px]">CVV / CVC</label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                          <Input
-                            type="password"
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                            placeholder="123"
-                            maxLength={4}
-                            className={`pl-9 text-xs h-9 bg-white border-slate-200 font-mono ${validationErrors.cardCvv ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                          />
-                        </div>
-                        {validationErrors.cardCvv && <p className="text-[10px] text-rose-600 font-bold">{validationErrors.cardCvv}</p>}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* MOBILE MONEY FIELD (M-Pesa / Tigo Pesa / Airtel Money) */
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-slate-700 block">Mobile Wallet Phone Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                      <Input
-                        type="text"
-                        value={payPhone}
-                        onChange={(e) => setPayPhone(e.target.value)}
-                        placeholder="+255 7XX XXX XXX"
-                        className={`pl-9 text-xs h-10 bg-slate-50 border-slate-200 font-mono ${validationErrors.payPhone ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                      />
-                    </div>
-                    {validationErrors.payPhone && <p className="text-[10px] text-rose-600 font-bold">{validationErrors.payPhone}</p>}
-                  </div>
-                )}
-
-                {/* Clean side-by-side action buttons */}
-                <div className="flex items-center gap-2 pt-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedPayOrder(null)}
-                    className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold h-10"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleOrderPayment}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-10 gap-1.5 shadow-xs"
-                  >
-                    <CreditCard className="size-4" /> Pay {formatTZS(Number(selectedPayOrder.totalAmountTZS || 0))}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: USSD / Gateway Transmission Animation */}
-            {paymentStep === 'SENDING_USSD' && (
-              <div className="py-8 text-center space-y-4">
-                <div className="size-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-200 animate-pulse">
-                  {isBankCard ? <CreditCard className="size-7 animate-bounce" /> : <Smartphone className="size-7 animate-bounce" />}
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-black text-slate-900 text-sm">
-                    {isBankCard ? `Connecting to ${payNetwork} Card Gateway` : `Initiating ${payNetwork} USSD Push`}
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    {isBankCard ? 'Verifying 3D-Secure card authentication...' : `Connecting to LUMO Payment Gateway for phone ${payPhone}...`}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center gap-2 text-xs font-bold text-emerald-600">
-                  <Loader2 className="size-4 animate-spin" /> Transmitting payment request
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Awaiting Authorization Animation */}
-            {paymentStep === 'AWAITING_PIN' && (
-              <div className="py-8 text-center space-y-4">
-                <div className="relative size-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto border-2 border-emerald-500 shadow-md">
-                  <Lock className="size-8 text-emerald-700 animate-pulse" />
-                  <span className="absolute -top-1 -right-1 size-5 bg-emerald-600 text-white text-[10px] font-mono font-bold rounded-full flex items-center justify-center">
-                    {countdown}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-black text-slate-900 text-sm">
-                    {isBankCard ? '3D-Secure OTP Verification' : 'Action Required on Mobile Device'}
-                  </h4>
-                  <p className="text-xs text-slate-600 max-w-xs mx-auto">
-                    {isBankCard
-                      ? `Authorizing ${payNetwork} card transaction...`
-                      : `Please enter your ${payNetwork} PIN on your mobile phone to approve the payment protection payment.`}
-                  </p>
-                </div>
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] font-mono text-emerald-900 font-bold inline-block">
-                  Amount: {formatTZS(Number(selectedPayOrder.totalAmountTZS || 0))} · Reference: #{selectedPayOrder.orderNumber}
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Success Animation */}
-            {paymentStep === 'SUCCESS' && (
-              <div className="py-8 text-center space-y-4">
-                <div className="size-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg">
-                  <Check className="size-9 stroke-[3]" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-black text-slate-900 text-base">Payment Successful!</h4>
-                  <p className="text-xs text-slate-600">
-                    Funds locked safely in LUMO Payment Protection via {payNetwork}. Order #{selectedPayOrder.orderNumber} is now active.
-                  </p>
-                </div>
-                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-mono text-xs py-1 px-3">
-                  Verified by Lumo Trade Assurance
-                </Badge>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+            fetchCustomerData()
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('lumo_orders_updated'))
+            }
+            toast.success(`Payment for Order #${selectedPayOrder.orderNumber || selectedPayOrder.id} confirmed!`)
+          }}
+        />
       )}
     </div>
   )
