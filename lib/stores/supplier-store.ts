@@ -317,9 +317,10 @@ export const useSupplierStore = create<SupplierState>()(
             const cleanImages = (p.images || []).map((u: any) => {
               let str = typeof u === 'string' ? u : (u?.url || u?.src || '')
               if (!str) return ''
-              str = str.trim().replace(/^['"]|['"]$/g, '')
+              str = str.trim().replace(/^['"\(<\[]+|['"\)>\]]+$/g, '')
               if (str.startsWith('//')) return `https:${str}`
-              if (!str.startsWith('http://') && !str.startsWith('https://') && !str.startsWith('data:') && !str.startsWith('/')) {
+              if (str.startsWith('http://')) return str.replace('http://', 'https://')
+              if (!str.startsWith('https://') && !str.startsWith('data:') && !str.startsWith('/')) {
                 if (str.includes('.') || str.includes('/')) return `https://${str}`
               }
               return str
@@ -327,7 +328,7 @@ export const useSupplierStore = create<SupplierState>()(
 
             return {
               ...p,
-              images: cleanImages,
+              images: cleanImages.length > 0 ? cleanImages : [resolveImage(p.title || '', p.category || '')],
             }
           })
           return {

@@ -56,10 +56,16 @@ export function parseNumericPrice(val?: string | number): number | null {
 
 export function extractImageUrl(input?: string): string | null {
   if (!input) return null
-  const match = input.match(/(https?:\/\/[^\s,;"']+|\/[^\s,;"']+)/i)
+  const str = String(input).trim()
+  const match = str.match(/((?:https?:)?\/\/[^\s,;"'<>\[\]\(\)]+|\/[^\s,;"'<>\[\]\(\)]+)/i)
   if (match) {
-    const url = match[0].trim()
-    if (!url.includes('example.com') && !url.includes('placeholder')) {
+    let url = match[0].trim().replace(/^['"\(<\[]+|['"\)>\]]+$/g, '')
+    if (url.startsWith('//')) {
+      url = `https:${url}`
+    } else if (url.startsWith('http://')) {
+      url = url.replace('http://', 'https://')
+    }
+    if (url.length > 8 && !url.includes('example.com') && !url.includes('placeholder')) {
       return url
     }
   }

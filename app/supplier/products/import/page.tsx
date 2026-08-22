@@ -52,6 +52,74 @@ export default function BulkImportProductsPage() {
     return result
   }
 
+  function extractImageUrlsFromCell(val: any): string[] {
+    if (!val) return []
+    const str = String(val).trim()
+    if (!str) return []
+
+    // Try parsing as JSON array if formatted as ["url1", "url2"]
+    if ((str.startsWith('[') && str.endsWith(']')) || (str.startsWith('{') && str.endsWith('}'))) {
+      try {
+        const parsed = JSON.parse(str)
+        if (Array.isArray(parsed)) {
+          return parsed.flatMap((item) => extractImageUrlsFromCell(item))
+        }
+        if (typeof parsed === 'object') {
+          return Object.values(parsed).flatMap((item) => extractImageUrlsFromCell(item))
+        }
+      } catch {
+        // Continue to regex
+      }
+    }
+
+    // Split by semicolons, commas, newlines, pipes if multiple URLs
+    const parts = str.split(/[\r\n;,|]+|\s{2,}/).map((s) => s.trim()).filter(Boolean)
+    const found: string[] = []
+
+    for (let part of parts) {
+      part = part.replace(/^['"\(<\[]+|['"\)>\]]+$/g, '').trim()
+      if (!part) continue
+
+      if (part.startsWith('//')) {
+        part = `https:${part}`
+      } else if (part.startsWith('http://')) {
+        part = part.replace('http://', 'https://')
+      } else if (part.includes('drive.google.com/file/d/')) {
+        const match = part.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+        if (match?.[1]) {
+          part = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`
+        }
+      } else if (part.includes('dropbox.com')) {
+        part = part.replace('dl=0', 'raw=1').replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+      } else if (
+        !part.startsWith('https://') &&
+        !part.startsWith('data:') &&
+        !part.startsWith('/') &&
+        (part.includes('.') || part.includes('/')) &&
+        (part.includes('alicdn') ||
+          part.includes('alibaba') ||
+          part.includes('aliexpress') ||
+          part.includes('cloudinary') ||
+          part.includes('unsplash') ||
+          part.includes('cloudfront') ||
+          part.match(/\.(jpg|jpeg|png|webp|avif|gif)$/i))
+      ) {
+        part = `https://${part}`
+      }
+
+      if (
+        part.length > 8 &&
+        !part.includes('example.com') &&
+        !part.includes('placeholder') &&
+        (part.startsWith('https://') || part.startsWith('/') || part.startsWith('data:image/'))
+      ) {
+        found.push(part)
+      }
+    }
+
+    return found
+  }
+
   async function handleProcessCSV(e: React.FormEvent) {
     e.preventDefault()
     if (!file) {
@@ -64,20 +132,17 @@ export default function BulkImportProductsPage() {
     try {
       let rows: string[][] = []
 
-      const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')
-
-      if (isExcel) {
-        // Use SheetJS to parse Excel binary files
+      try {
+        // Universal Excel & CSV binary parsing via SheetJS
         const XLSX = (await import('xlsx')).default
         const buffer = await file.arrayBuffer()
-        const workbook = XLSX.read(buffer, { type: 'array' })
+        const workbook = XLSX.read(buffer, { type: 'array', raw: false })
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
         const jsonData: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' })
 
-        // Convert all cells to strings
         rows = jsonData.map((row) => row.map((cell: any) => String(cell ?? '').trim()))
-      } else {
-        // CSV: read as text
+      } catch (sheetErr) {
+        console.warn('SheetJS array read fallback to text:', sheetErr)
         const text = await file.text()
         if (!text) {
           toast.error('CSV file is empty')
@@ -96,8 +161,6 @@ export default function BulkImportProductsPage() {
 
       const headers = rows[0].map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''))
 
-      console.log('[IMPORT DEBUG] Detected headers:', headers)
-
       // Find column indexes with resilient keyword matching
       const idxTitle = headers.findIndex((h) => h.includes('title') || h.includes('name') || h.includes('product') || h.includes('item') || h.includes('subject'))
       const idxBrand = headers.findIndex((h) => h.includes('brand') || h.includes('company') || h.includes('supplier') || h.includes('manufacturer'))
@@ -108,22 +171,25 @@ export default function BulkImportProductsPage() {
       const idxStock = headers.findIndex((h) => h.includes('stock') || h.includes('qty') || h.includes('quantity') || h.includes('inventory'))
       const idxDesc = headers.findIndex((h) => h.includes('desc') || h.includes('detail') || h.includes('info') || h.includes('specification'))
 
-      // Image column detection - find ALL columns that could contain image URLs
-      const idxMainImg = headers.findIndex((h) => h.includes('mainimage') || h.includes('image1') || h === 'image' || h.includes('img') || h.includes('picture') || h.includes('photo') || h.includes('thumbnail') || h.includes('pic'))
-      const idxImg2 = headers.findIndex((h) => h.includes('imageurl2') || h.includes('image2') || h.includes('picture2') || h.includes('photo2') || h.includes('pic2'))
-      const idxImg3 = headers.findIndex((h) => h.includes('imageurl3') || h.includes('image3') || h.includes('picture3') || h.includes('photo3') || h.includes('pic3'))
-      const idxMultiImgs = headers.findIndex((h) => h.includes('imageurls') || h.includes('images') || h.includes('pictures') || h.includes('photos') || h.includes('gallery') || h.includes('pics'))
-
-      // Also find any column header containing 'url', 'link', or 'src' that is NOT already matched
-      const usedIdxs = new Set([idxTitle, idxBrand, idxCategory, idxSKU, idxOption, idxPrice, idxStock, idxDesc, idxMainImg, idxImg2, idxImg3, idxMultiImgs].filter(i => i !== -1))
-      const extraImageIdxs: number[] = []
+      // Detect all image columns
+      const imageColumnIndexes: number[] = []
       headers.forEach((h, idx) => {
-        if (!usedIdxs.has(idx) && (h.includes('url') || h.includes('link') || h.includes('src') || h.includes('href'))) {
-          extraImageIdxs.push(idx)
+        if (
+          h.includes('image') ||
+          h.includes('img') ||
+          h.includes('picture') ||
+          h.includes('photo') ||
+          h.includes('pic') ||
+          h.includes('thumbnail') ||
+          h.includes('gallery') ||
+          h.includes('cover') ||
+          h.includes('src') ||
+          h.includes('link') ||
+          h.includes('url')
+        ) {
+          imageColumnIndexes.push(idx)
         }
       })
-
-      console.log('[IMPORT DEBUG] Column indexes:', { idxTitle, idxBrand, idxCategory, idxPrice, idxMainImg, idxImg2, idxImg3, idxMultiImgs, extraImageIdxs })
 
       const parsedProducts: any[] = []
 
@@ -131,74 +197,35 @@ export default function BulkImportProductsPage() {
         const row = rows[i]
         if (row.length < 2) continue
 
-        const title = idxTitle !== -1 ? row[idxTitle] : `Product ${i}`
+        const title = idxTitle !== -1 && row[idxTitle] ? row[idxTitle] : `Product ${i}`
         if (!title || !title.trim()) continue
 
-        const brand = idxBrand !== -1 ? row[idxBrand] : 'Generic Brand'
-        const category = idxCategory !== -1 ? row[idxCategory] : 'Commercial Appliances'
-        const sku = idxSKU !== -1 ? row[idxSKU] : `SKU-${Date.now()}-${i}`
-        const optionName = idxOption !== -1 ? row[idxOption] : 'Standard'
+        const brand = idxBrand !== -1 && row[idxBrand] ? row[idxBrand] : 'Unbranded'
+        const category = idxCategory !== -1 && row[idxCategory] ? row[idxCategory] : "Men's Fashion > Suits & Blazers"
+        const sku = idxSKU !== -1 && row[idxSKU] ? row[idxSKU] : `SKU-${Date.now()}-${i}`
+        const optionName = idxOption !== -1 && row[idxOption] ? row[idxOption] : 'Standard'
         const priceTZS = idxPrice !== -1 ? Number(String(row[idxPrice]).replace(/[^0-9.]/g, '')) || 50000 : 50000
         const stock = idxStock !== -1 ? Number(String(row[idxStock]).replace(/[^0-9]/g, '')) || 20 : 20
-        const description = idxDesc !== -1 ? row[idxDesc] : title
+        const description = idxDesc !== -1 && row[idxDesc] ? row[idxDesc] : title
 
-        // Extract image URLs
+        // 1. Extract from identified image columns
         const imageList: string[] = []
-
-        function cleanUrl(u: string): string {
-          if (!u) return ''
-          let trimmed = String(u).trim().replace(/^['"]|['"]$/g, '')
-          if (!trimmed) return ''
-          if (trimmed.startsWith('//')) return `https:${trimmed}`
-          if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('data:') && !trimmed.startsWith('/')) {
-            if (trimmed.includes('alicdn') || trimmed.includes('alibaba') || trimmed.includes('/') || trimmed.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
-              return `https://${trimmed}`
-            }
-          }
-          return trimmed
-        }
-
-        function isImageUrl(url: string): boolean {
-          if (!url || url.length < 10) return false
-          return url.startsWith('http://') || url.startsWith('https://') || url.includes('alicdn') || url.includes('alibaba') || !!url.match(/\.(jpg|jpeg|png|webp|gif)/i)
-        }
-
-        // 1. Named image columns
-        if (idxMainImg !== -1 && row[idxMainImg]) imageList.push(cleanUrl(row[idxMainImg]))
-        if (idxImg2 !== -1 && row[idxImg2]) imageList.push(cleanUrl(row[idxImg2]))
-        if (idxImg3 !== -1 && row[idxImg3]) imageList.push(cleanUrl(row[idxImg3]))
-
-        if (idxMultiImgs !== -1 && row[idxMultiImgs]) {
-          const splitImgs = String(row[idxMultiImgs])
-            .split(/[;|\n,]/)
-            .map((s) => cleanUrl(s))
-            .filter((s) => s.length > 5)
-          imageList.push(...splitImgs)
-        }
-
-        // 2. Extra URL/link/src columns
-        for (const idx of extraImageIdxs) {
-          if (row[idx]) {
-            const cleaned = cleanUrl(row[idx])
-            if (isImageUrl(cleaned)) imageList.push(cleaned)
+        for (const colIdx of imageColumnIndexes) {
+          if (row[colIdx]) {
+            imageList.push(...extractImageUrlsFromCell(row[colIdx]))
           }
         }
 
-        // 3. Scan ALL cells as last resort
+        // 2. If no image found in dedicated columns, scan ALL cells in the row
         if (imageList.length === 0) {
           for (const cell of row) {
-            const cleaned = cleanUrl(cell)
-            if (isImageUrl(cleaned)) {
-              imageList.push(cleaned)
-            }
+            imageList.push(...extractImageUrlsFromCell(cell))
           }
         }
 
-        const uniqueImages = Array.from(new Set(imageList.filter((url) => url.length > 5)))
+        const uniqueImages = Array.from(new Set(imageList))
         const fallbackImage = resolveImage(title, category)
         const finalImages = uniqueImages.length > 0 ? uniqueImages : [fallbackImage]
-
-        console.log(`[IMPORT DEBUG] Product "${title}": ${uniqueImages.length} images found:`, uniqueImages.length > 0 ? uniqueImages[0] : 'FALLBACK')
 
         parsedProducts.push({
           title,

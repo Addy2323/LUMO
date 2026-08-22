@@ -71,19 +71,18 @@ export default function CatalogImportWizardPage() {
 
   // Step 1 -> Step 2: Parse file
   async function handleFileSubmit() {
-    const lines = rawCsvText.trim().split('\n').filter(Boolean)
-    if (lines.length === 0) return
+    if (!rawCsvText.trim()) return
 
-    const parsedHeaders = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''))
-    const parsedRows: Record<string, string>[] = []
+    const parsed = Papa.parse<Record<string, string>>(rawCsvText.trim(), {
+      header: true,
+      skipEmptyLines: 'greedy',
+    })
 
-    for (let i = 1; i < lines.length; i++) {
-      const vals = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''))
-      const rowObj: Record<string, string> = {}
-      parsedHeaders.forEach((h, idx) => {
-        rowObj[h] = vals[idx] || ''
-      })
-      parsedRows.push(rowObj)
+    const parsedHeaders = parsed.meta.fields || []
+    const parsedRows = parsed.data || []
+
+    if (parsedHeaders.length === 0 || parsedRows.length === 0) {
+      return
     }
 
     setHeaders(parsedHeaders)

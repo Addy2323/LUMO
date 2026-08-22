@@ -26,6 +26,37 @@ function extractStringUrl(input: any): string {
   return ''
 }
 
+export function normalizeImageUrl(input: any): string {
+  let clean = extractStringUrl(input)
+  if (!clean) return ''
+  clean = clean.trim().replace(/^['"\(<\[]+|['"\)>\]]+$/g, '')
+
+  if (clean.startsWith('//')) {
+    return `https:${clean}`
+  }
+  if (clean.startsWith('http://')) {
+    return clean.replace('http://', 'https://')
+  }
+  if (clean.includes('drive.google.com/file/d/')) {
+    const match = clean.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+    if (match?.[1]) {
+      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`
+    }
+  }
+  if (clean.includes('dropbox.com')) {
+    return clean.replace('dl=0', 'raw=1').replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+  }
+  if (
+    !clean.startsWith('https://') &&
+    !clean.startsWith('data:') &&
+    !clean.startsWith('/') &&
+    (clean.includes('.') || clean.includes('/'))
+  ) {
+    return `https://${clean}`
+  }
+  return clean
+}
+
 /**
  * Resilient Product Image component that automatically recovers from
  * 404s, CORS restrictions, example.com links, or broken image URLs.
@@ -39,21 +70,7 @@ export function SafeProductImage({
   className,
   ...props
 }: SafeProductImageProps) {
-  let cleanUrl = extractStringUrl(src)
-  if (cleanUrl) {
-    cleanUrl = cleanUrl.trim().replace(/^['"]|['"]$/g, '')
-    if (cleanUrl.startsWith('//')) {
-      cleanUrl = `https:${cleanUrl}`
-    } else if (
-      !cleanUrl.startsWith('http://') &&
-      !cleanUrl.startsWith('https://') &&
-      !cleanUrl.startsWith('data:') &&
-      !cleanUrl.startsWith('/') &&
-      (cleanUrl.includes('alicdn') || cleanUrl.includes('alibaba') || cleanUrl.includes('.') || cleanUrl.includes('/'))
-    ) {
-      cleanUrl = `https://${cleanUrl}`
-    }
-  }
+  const cleanUrl = normalizeImageUrl(src)
   
   const defaultFallback = React.useMemo(() => {
     return fallbackSrc || resolveImage(title || alt, category)

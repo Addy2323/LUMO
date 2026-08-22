@@ -327,29 +327,52 @@ export function resolveImage(title: string, category: string): string {
   const t = (title || '').toLowerCase()
   const c = (category || '').toLowerCase()
 
-  if (t.includes('solar') || c.includes('solar') || t.includes('clean energy')) {
+  // Suits, Tuxedos, Blazers
+  if (t.includes('suit') || t.includes('tuxedo') || t.includes('blazer') || c.includes('suit') || c.includes('blazer')) {
+    return 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=500&q=80'
+  }
+  // Outerwear, Jackets, Coats
+  if (t.includes('jacket') || t.includes('coat') || t.includes('parka') || c.includes('jacket') || c.includes('coat')) {
+    return 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=500&q=80'
+  }
+  // Dresses, Gowns, Women's fashion
+  if (t.includes('dress') || t.includes('gown') || t.includes('skirt') || c.includes('dress') || c.includes('skirt') || c.includes('womens-clothing')) {
+    return 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=500&q=80'
+  }
+  // Shoes & Footwear
+  if (t.includes('shoe') || t.includes('heel') || t.includes('boot') || t.includes('sneaker') || t.includes('oxford') || t.includes('loafers') || c.includes('shoe') || c.includes('footwear')) {
+    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=80'
+  }
+  // Watches & Accessories
+  if (t.includes('watch') || t.includes('chronograph') || c.includes('watch') || c.includes('jewelry')) {
+    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80'
+  }
+  // Bags & Backpacks
+  if (t.includes('bag') || t.includes('backpack') || t.includes('tote') || t.includes('handbag') || c.includes('bag')) {
+    return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=500&q=80'
+  }
+  // Furniture & Chairs
+  if (t.includes('chair') || t.includes('desk') || t.includes('sofa') || t.includes('table') || c.includes('furniture')) {
+    return 'https://images.unsplash.com/photo-1580481077195-c99026cb6b38?auto=format&fit=crop&w=500&q=80'
+  }
+  // Solar & Energy
+  if (t.includes('solar') || c.includes('solar') || t.includes('inverter') || t.includes('clean energy')) {
     return '/images/products/solar-kit.png'
   }
-  if (t.includes('shirt') || t.includes('polo') || c.includes('fashion') || t.includes('apparel')) {
-    return '/images/products/kitenge-shirt.png'
-  }
-  if (t.includes('speaker') || t.includes('sound') || t.includes('audio') || t.includes('boom')) {
+  // Audio & Speakers
+  if (t.includes('speaker') || t.includes('sound') || t.includes('audio') || t.includes('headphone') || t.includes('earbud')) {
     return '/images/products/bluetooth-speaker.png'
   }
+  // Phones & Electronics
   if (t.includes('phone') || t.includes('case') || c.includes('phone')) {
     return '/images/products/smartphone.png'
   }
   if (t.includes('monitor') || t.includes('laptop') || c.includes('electronics') || t.includes('display')) {
     return '/categories/electronics.png'
   }
-  if (c.includes('jacket') || c.includes('coat') || c.includes('clothing') || c.includes('men') || t.includes('jacket') || t.includes('coat')) {
-    return 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=500&q=80'
-  }
-  if (c.includes('shoe') || c.includes('heel') || c.includes('pump') || c.includes('footwear') || c.includes('sneaker') || t.includes('shoe') || t.includes('heel')) {
-    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=80'
-  }
-  if (c.includes('gaming') || c.includes('monitor') || t.includes('monitor')) {
-    return 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=500&q=80'
+  // Shirts & Tops
+  if (t.includes('shirt') || t.includes('polo') || t.includes('t-shirt') || t.includes('tee')) {
+    return '/images/products/kitenge-shirt.png'
   }
 
   return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80'
@@ -363,16 +386,16 @@ export function sanitizeProductImage(url: string | undefined, title: string, cat
   let trimmed = url.trim().replace(/^['"]|['"]$/g, '')
   if (trimmed.startsWith('//')) {
     trimmed = `https:${trimmed}`
+  } else if (trimmed.startsWith('http://')) {
+    trimmed = trimmed.replace('http://', 'https://')
   } else if (
-    !trimmed.startsWith('http://') &&
     !trimmed.startsWith('https://') &&
     !trimmed.startsWith('data:') &&
     !trimmed.startsWith('/') &&
-    (trimmed.includes('alicdn') || trimmed.includes('alibaba') || trimmed.includes('.') || trimmed.includes('/'))
+    (trimmed.includes('.') || trimmed.includes('/'))
   ) {
     trimmed = `https://${trimmed}`
   }
-
   return trimmed
 }
 
