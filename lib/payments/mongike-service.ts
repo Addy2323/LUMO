@@ -15,20 +15,20 @@ export type InitiatePaymentInput = z.infer<typeof initiatePaymentInputSchema>
  * Zod schema for Mongike API Initiation Response
  */
 export const mongikeInitiationResponseSchema = z.object({
-  status: z.string().optional(),
+  status: z.union([z.string(), z.boolean()]).optional(),
   success: z.boolean().optional(),
   message: z.string().optional(),
-  code: z.string().optional(),
+  code: z.union([z.string(), z.number()]).transform((val) => String(val)).optional(),
   error: z.string().optional(),
-  id: z.string().optional(),
-  payment_id: z.string().optional(),
+  id: z.union([z.string(), z.number()]).transform((val) => String(val)).optional(),
+  payment_id: z.union([z.string(), z.number()]).transform((val) => String(val)).optional(),
   gateway_reference: z.string().optional(),
   reference: z.string().optional(),
   expires_at: z.string().optional(),
   data: z
     .object({
-      id: z.string().optional(),
-      payment_id: z.string().optional(),
+      id: z.union([z.string(), z.number()]).transform((val) => String(val)).optional(),
+      payment_id: z.union([z.string(), z.number()]).transform((val) => String(val)).optional(),
       order_id: z.string().optional(),
       gateway_ref: z.string().optional(),
       gateway_reference: z.string().optional(),
@@ -179,20 +179,28 @@ export async function initiateMongikeMobileMoneyPayment(
       providerPaymentId
 
     let status: MongikeApiResult['status'] = 'PENDING'
-    if (res.ok || res.status === 201 || res.status === 200) {
-      status = 'PENDING'
+    const isOkStatus = res.ok || res.status === 201 || res.status === 200
+    const rawStatusStr = typeof parsed.status === 'string' ? parsed.status.toUpperCase() : ''
+    const isExplicitFailure = parsed.success === false || !!parsed.error || rawStatusStr === 'FAILED' || rawStatusStr === 'ERROR'
+
+    if (isOkStatus && !isExplicitFailure) {
+      if (rawStatusStr === 'SUCCEEDED' || rawStatusStr === 'PAID') {
+        status = 'SUCCEEDED'
+      } else {
+        status = 'PENDING'
+      }
     } else {
       status = 'FAILED'
     }
 
     return {
-      success: res.ok || res.status === 201,
+      success: isOkStatus && !isExplicitFailure,
       providerPaymentId,
       gatewayReference,
       status,
       expiresAt: parsed.expires_at ? new Date(parsed.expires_at) : new Date(Date.now() + 15 * 60 * 1000),
-      failureCode: parsed.code,
-      failureMessage: parsed.message || parsed.error,
+      failureCode: parsed.code || (status === 'FAILED' ? 'PAYMENT_FAILED' : undefined),
+      failureMessage: parsed.message || parsed.error || (status === 'FAILED' ? 'Payment authorization failed at carrier gateway' : undefined),
       rawResponse: responseJson,
     }
   } catch (error: any) {

@@ -100,11 +100,11 @@ export async function processPaymentSuccess(params: ProcessPaymentSuccessParams)
         eventType: 'ORDER_PAID',
         aggregateId: order.id,
         recipientId: order.buyerId,
-        recipientPhone: order.buyer.phone || attempt.buyerPhone,
+        recipientPhone: order.buyer?.phone || attempt.buyerPhone,
         templateKey: 'ORDER_PAID_CUSTOMER',
         templateVersion: 1,
         payloadJson: {
-          customerName: order.buyer.name || 'Valued Customer',
+          customerName: order.buyer?.name || 'Valued Customer',
           orderNumber: order.orderNumber,
           amount: formattedAmount,
           trackingUrl,
@@ -125,7 +125,7 @@ export async function processPaymentSuccess(params: ProcessPaymentSuccessParams)
         templateVersion: 1,
         payloadJson: {
           orderNumber: order.orderNumber,
-          customerName: order.buyer.name || 'Customer',
+          customerName: order.buyer?.name || 'Customer',
           amount: formattedAmount,
           adminOrderUrl: adminUrl,
         },
@@ -173,7 +173,7 @@ export async function processPaymentFailure(params: ProcessPaymentFailureParams)
       status: 'FAILED',
       failureCode: failureCode || 'PAYMENT_FAILED',
       failureMessage: failureMessage || 'Mobile money payment failed or was cancelled by user',
-      providerResponse: rawResponse ? JSON.stringify(rawResponse) : undefined,
+      providerResponse: rawResponse || undefined,
     },
   })
 }

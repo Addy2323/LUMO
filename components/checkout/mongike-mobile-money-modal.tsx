@@ -130,7 +130,7 @@ export function MongikeMobileMoneyModal({
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to initiate mobile money payment.')
+        throw new Error(data.error || data.failureMessage || 'Failed to initiate mobile money payment.')
       }
 
       setAttemptId(data.paymentAttemptId)
@@ -138,6 +138,9 @@ export function MongikeMobileMoneyModal({
       if (data.status === 'SUCCEEDED') {
         setPaymentState('PAID')
         if (onSuccess) onSuccess()
+      } else if (data.status === 'FAILED') {
+        setPaymentState('FAILED')
+        setErrorMessage(data.error || data.failureMessage || 'Payment authorization was declined.')
       } else {
         setPaymentState('AWAITING_PHONE_CONFIRMATION')
         setSecondsRemaining(900)

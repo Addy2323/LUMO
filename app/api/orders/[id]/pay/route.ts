@@ -29,8 +29,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { paymentMethod, phoneNumber, network, cardNumber, cardExpiry, cardHolder } = result.data
 
-    const order = await prisma.order.findUnique({
-      where: { id: id },
+    const normalizedId = id.trim()
+    const strippedNumber = normalizedId.replace(/^#/, '')
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: normalizedId },
+          { orderNumber: normalizedId },
+          { orderNumber: strippedNumber },
+        ],
+      },
     })
 
     if (!order) {
@@ -44,7 +53,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Execute state update inside transaction
     const [updatedOrder, paymentRecord] = await prisma.$transaction([
       prisma.order.update({
-        where: { id: id },
+        where: { id: order.id },
         data: {
           status: OrderStatus.PAID,
           paymentMethod: providerName,

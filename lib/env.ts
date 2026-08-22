@@ -34,6 +34,9 @@ export const env = {
   AZAMPAY_CLIENT_SECRET: process.env.AZAMPAY_CLIENT_SECRET || '',
   AZAMPAY_ACCOUNT_NUMBER: process.env.AZAMPAY_ACCOUNT_NUMBER || '',
   AZAMPAY_WEBHOOK_SECRET: process.env.AZAMPAY_WEBHOOK_SECRET || '',
+  MONGIKE_API_KEY: process.env.MONGIKE_API_KEY || '',
+  MONGIKE_BASE_URL: process.env.MONGIKE_BASE_URL || 'https://mongike.com/api/v1',
+  MONGIKE_FEE_PAYER: process.env.MONGIKE_FEE_PAYER || 'MERCHANT',
   NODE_ENV: process.env.NODE_ENV || 'development',
 }
 

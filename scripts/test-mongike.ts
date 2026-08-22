@@ -33,7 +33,7 @@ function runTests() {
 
   console.log('[PASS] Sensitive Log Redactor')
 
-  // Test 3: Zod Schema Validation
+  // Test 3: Zod Schema Validation (including boolean status, numeric code & numeric id)
   const input = initiatePaymentInputSchema.parse({
     orderId: 'ORD-001',
     buyerPhone: '0711788830',
@@ -41,14 +41,28 @@ function runTests() {
   })
   console.assert(input.orderId === 'ORD-001', 'Zod schema parsed orderId')
 
-  const res = mongikeInitiationResponseSchema.parse({
+  const res1 = mongikeInitiationResponseSchema.parse({
     success: true,
     id: 'MNG-12345',
     status: 'PENDING',
   })
-  console.assert(res.id === 'MNG-12345', 'Zod schema parsed Mongike response')
+  console.assert(res1.id === 'MNG-12345', 'Zod schema parsed Mongike response with string status')
 
-  console.log('[PASS] Zod Input & Response Schema Validation')
+  const res2 = mongikeInitiationResponseSchema.parse({
+    success: true,
+    id: 998822,
+    status: true,
+    code: 200,
+    data: {
+      id: 123456,
+      amount: 383000,
+    },
+  })
+  console.assert(res2.id === '998822', 'Zod schema parsed numeric id transformed to string')
+  console.assert(res2.status === true, 'Zod schema parsed boolean status')
+  console.assert(res2.code === '200', 'Zod schema parsed numeric code transformed to string')
+
+  console.log('[PASS] Zod Input & Flexible Response Schema Validation')
 
   console.log('====================================')
   console.log('ALL MONGIKE INTEGRATION TESTS PASSED!')

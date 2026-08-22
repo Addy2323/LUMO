@@ -38,8 +38,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Load order from database (trusted server-side values)
-    const order = await db.order.findUnique({
-      where: { id: orderId },
+    const normalizedOrderId = orderId.trim()
+    const strippedOrderNumber = normalizedOrderId.replace(/^#/, '')
+    const order = await db.order.findFirst({
+      where: {
+        OR: [
+          { id: normalizedOrderId },
+          { orderNumber: normalizedOrderId },
+          { orderNumber: strippedOrderNumber },
+        ],
+      },
       include: { buyer: true },
     })
 
@@ -83,6 +91,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         paymentAttemptId: existingActiveAttempt.id,
         orderId: order.id,
+        orderNumber: order.orderNumber,
         status: 'PENDING',
         expiresAt: existingActiveAttempt.expiresAt,
         message: 'A payment authorization request is already active on your phone. Please authorize it.',
@@ -113,8 +122,8 @@ export async function POST(req: NextRequest) {
       amountTZS,
       buyerPhone: normalizedPhone,
       feePayer,
-      buyerName: user.name || order.buyer.name,
-      buyerEmail: user.email || order.buyer.email,
+      buyerName: user.name || order.buyer?.name || 'Lumo Customer',
+      buyerEmail: user.email || order.buyer?.email || 'customer@lumo.co.tz',
       customerId: user.id,
     })
 
@@ -128,14 +137,29 @@ export async function POST(req: NextRequest) {
         expiresAt: apiResult.expiresAt || paymentAttempt.expiresAt,
         failureCode: apiResult.failureCode,
         failureMessage: apiResult.failureMessage,
-        providerResponse: JSON.stringify(redactSensitiveData(apiResult.rawResponse)),
+        providerResponse: redactSensitiveData(apiResult.rawResponse),
       },
     })
 
     // 12. Return safe response to browser
+    if (!apiResult.success && apiResult.status === 'FAILED') {
+      return NextResponse.json(
+        {
+          error: apiResult.failureMessage || 'Payment authorization failed at carrier gateway. Please try again.',
+          failureCode: apiResult.failureCode,
+          paymentAttemptId: updatedAttempt.id,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          status: 'FAILED',
+        },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json({
       paymentAttemptId: updatedAttempt.id,
       orderId: order.id,
+      orderNumber: order.orderNumber,
       status: updatedAttempt.status,
       expiresAt: updatedAttempt.expiresAt,
       message: 'Mobile money payment request initiated. Please enter your PIN on your phone to complete authorization.',

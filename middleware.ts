@@ -27,8 +27,9 @@ export async function middleware(req: NextRequest) {
     const origin = req.headers.get('origin')
     const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host')
 
-    // Exempt public webhooks (e.g. AzamPay Webhook)
-    if (pathname !== '/api/payments/azampay/webhook' && origin && rawHost) {
+    // Exempt public payment webhooks (e.g. AzamPay Webhook, Mongike Webhook)
+    const isPaymentWebhook = pathname.startsWith('/api/payments/') && pathname.endsWith('/webhook')
+    if (!isPaymentWebhook && origin && rawHost) {
       const originHost = origin.replace(/^https?:\/\//, '').replace(/:\d+$/, '').replace(/^www\./, '').toLowerCase()
       const hostName = rawHost.split(',')[0].trim().replace(/:\d+$/, '').replace(/^www\./, '').toLowerCase()
 
