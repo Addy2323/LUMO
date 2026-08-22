@@ -32,11 +32,11 @@ export function normalizeImageUrl(input: any): string {
   clean = clean.trim().replace(/^['"\(<\[]+|['"\)>\]]+$/g, '')
 
   if (clean.startsWith('//')) {
-    return `https:${clean}`
+    clean = `https:${clean}`
+  } else if (clean.startsWith('http://')) {
+    clean = clean.replace('http://', 'https://')
   }
-  if (clean.startsWith('http://')) {
-    return clean.replace('http://', 'https://')
-  }
+
   if (clean.includes('drive.google.com/file/d/')) {
     const match = clean.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
     if (match?.[1]) {
@@ -46,14 +46,28 @@ export function normalizeImageUrl(input: any): string {
   if (clean.includes('dropbox.com')) {
     return clean.replace('dl=0', 'raw=1').replace('www.dropbox.com', 'dl.dropboxusercontent.com')
   }
+
   if (
     !clean.startsWith('https://') &&
     !clean.startsWith('data:') &&
     !clean.startsWith('/') &&
     (clean.includes('.') || clean.includes('/'))
   ) {
-    return `https://${clean}`
+    clean = `https://${clean}`
   }
+
+  // If the image is hosted on Alibaba / AliExpress / Taobao / 1688 CDN, route through server-side proxy
+  if (
+    clean.startsWith('https://') &&
+    (clean.includes('alicdn.com') ||
+      clean.includes('alibaba.com') ||
+      clean.includes('aliexpress.com') ||
+      clean.includes('1688.com') ||
+      clean.includes('taobao.com'))
+  ) {
+    return `/api/image-proxy?url=${encodeURIComponent(clean)}`
+  }
+
   return clean
 }
 
@@ -79,10 +93,10 @@ export function SafeProductImage({
   // Track the raw URL to avoid resetting stage unless cleanUrl changes
   const prevUrlRef = React.useRef(cleanUrl)
   
-  // 0 = trying cleanUrl, 1 = trying defaultFallback (local asset), 2 = failed all (show JSX badge)
+  // 0 = trying cleanUrl, 1 = trying proxy (if external), 2 = trying defaultFallback, 3 = failed all
   const [stage, setStage] = useState<number>(() => {
     if (!cleanUrl || cleanUrl.includes('example.com') || cleanUrl.includes('placeholder') || cleanUrl.includes('phone-case-armour')) {
-      return 1
+      return 2
     }
     return 0
   })
@@ -98,7 +112,7 @@ export function SafeProductImage({
       prevUrlRef.current = cleanUrl
       if (!cleanUrl || cleanUrl.includes('example.com') || cleanUrl.includes('placeholder') || cleanUrl.includes('phone-case-armour')) {
         setImgSrc(defaultFallback)
-        setStage(1)
+        setStage(2)
       } else {
         setImgSrc(cleanUrl)
         setStage(0)
@@ -108,16 +122,25 @@ export function SafeProductImage({
 
   function handleError() {
     if (stage === 0) {
-      // Primary URL failed, switch to fallback photo (stage 1)
-      setStage(1)
-      setImgSrc(defaultFallback)
+      // If direct URL failed and was not already proxied, try via image proxy
+      if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+        setStage(1)
+        setImgSrc(`/api/image-proxy?url=${encodeURIComponent(cleanUrl)}`)
+      } else {
+        setStage(2)
+        setImgSrc(defaultFallback)
+      }
     } else if (stage === 1) {
-      // Fallback photo failed, switch to React JSX badge (stage 2)
+      // Proxy failed, try reliable Unsplash fallback photo (stage 2)
       setStage(2)
+      setImgSrc(defaultFallback)
+    } else if (stage === 2) {
+      // Fallback photo failed, switch to React JSX badge (stage 3)
+      setStage(3)
     }
   }
 
-  if (stage === 2) {
+  if (stage === 3) {
     const name = (title || alt || 'Product').trim()
     const words = name.split(/\s+/).filter(Boolean)
     const initials = words.length >= 2 

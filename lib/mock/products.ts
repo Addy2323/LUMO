@@ -352,27 +352,31 @@ export function resolveImage(title: string, category: string): string {
     return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=500&q=80'
   }
   // Furniture & Chairs
-  if (t.includes('chair') || t.includes('desk') || t.includes('sofa') || t.includes('table') || c.includes('furniture')) {
+  if (t.includes('chair') || t.includes('desk') || t.includes('sofa') || t.includes('table') || c.includes('furniture') || t.includes('swivel') || t.includes('rocker')) {
     return 'https://images.unsplash.com/photo-1580481077195-c99026cb6b38?auto=format&fit=crop&w=500&q=80'
   }
   // Solar & Energy
   if (t.includes('solar') || c.includes('solar') || t.includes('inverter') || t.includes('clean energy')) {
-    return '/images/products/solar-kit.png'
+    return 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=500&q=80'
   }
   // Audio & Speakers
   if (t.includes('speaker') || t.includes('sound') || t.includes('audio') || t.includes('headphone') || t.includes('earbud')) {
-    return '/images/products/bluetooth-speaker.png'
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'
   }
   // Phones & Electronics
   if (t.includes('phone') || t.includes('case') || c.includes('phone')) {
-    return '/images/products/smartphone.png'
+    return 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=500&q=80'
   }
   if (t.includes('monitor') || t.includes('laptop') || c.includes('electronics') || t.includes('display')) {
-    return '/categories/electronics.png'
+    return 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=500&q=80'
+  }
+  // Kitchen & Home
+  if (t.includes('fryer') || t.includes('blender') || t.includes('cooker') || c.includes('kitchen') || c.includes('appliance')) {
+    return 'https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=500&q=80'
   }
   // Shirts & Tops
   if (t.includes('shirt') || t.includes('polo') || t.includes('t-shirt') || t.includes('tee')) {
-    return '/images/products/kitenge-shirt.png'
+    return 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=500&q=80'
   }
 
   return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80'
