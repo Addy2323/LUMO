@@ -9,6 +9,7 @@ import {
   PromotionAudience,
   DisplayFrequency,
 } from '@/lib/promotions/types'
+import { ensurePromotionsTable } from '@/lib/promotions/db-init'
 
 const UpdatePromotionSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').optional(),
@@ -48,6 +49,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensurePromotionsTable()
+
     const auth = await authorizeApiRequest(req, { allowedRoles: [Role.ADMIN] })
     if (!auth.authorized && process.env.NODE_ENV === 'production') {
       return auth.response || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -103,6 +106,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensurePromotionsTable()
+
     const auth = await authorizeApiRequest(req, { allowedRoles: [Role.ADMIN] })
     if (!auth.authorized && process.env.NODE_ENV === 'production') {
       return auth.response || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

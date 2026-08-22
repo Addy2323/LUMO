@@ -208,11 +208,12 @@ export function PromotionForm({ initialData, isEdit = false }: PromotionFormProp
         )
         router.push('/admin/promotions')
       } else {
-        toast.error(data.error || 'Failed to save promotion')
+        const errorText = data.message ? `${data.error || 'Error'}: ${data.message}` : data.error || 'Failed to save promotion'
+        toast.error(errorText)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      toast.error('An unexpected error occurred')
+      toast.error(err?.message || 'An unexpected network error occurred')
     } finally {
       setIsSubmitting(false)
     }

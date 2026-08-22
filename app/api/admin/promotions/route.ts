@@ -9,6 +9,7 @@ import {
   PromotionAudience,
   DisplayFrequency,
 } from '@/lib/promotions/types'
+import { ensurePromotionsTable } from '@/lib/promotions/db-init'
 
 const CreatePromotionSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -40,11 +41,13 @@ const CreatePromotionSchema = z.object({
 function validateSafeUrl(url?: string | null): boolean {
   if (!url) return true
   const trimmed = url.trim()
-  return trimmed.startsWith('/') || trimmed.startsWith('https://')
+  return trimmed.startsWith('/') || trimmed.startsWith('https://') || trimmed.startsWith('http://')
 }
 
 export async function GET(req: NextRequest) {
   try {
+    await ensurePromotionsTable()
+
     const auth = await authorizeApiRequest(req, { allowedRoles: [Role.ADMIN] })
     if (!auth.authorized && process.env.NODE_ENV === 'production') {
       return auth.response || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -117,14 +120,16 @@ export async function GET(req: NextRequest) {
         overallCtr: `${overallCtr}%`,
       },
     })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[ADMIN PROMOTIONS GET ERROR]', err)
-    return NextResponse.json({ error: 'Failed to fetch promotions' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch promotions', message: err?.message }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    await ensurePromotionsTable()
+
     const auth = await authorizeApiRequest(req, { allowedRoles: [Role.ADMIN] })
     if (!auth.authorized && process.env.NODE_ENV === 'production') {
       return auth.response || NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -167,7 +172,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Campaign end time must be later than start time.' }, { status: 400 })
     }
 
-    const userId = auth.user?.id || null
+    // Verify if user exists in DB to prevent foreign key errors
+    const rawUserId = auth.user?.id || null
+    let validUserId: string | null = null
+    if (rawUserId) {
+      const userRecord = await prisma.user.findUnique({
+        where: { id: rawUserId },
+        select: { id: true },
+      }).catch(() => null)
+      if (userRecord) validUserId = userRecord.id
+    }
+
     const isPublishingNow = data.status === PromotionStatus.ACTIVE
 
     const promotion = await prisma.promotion.create({
@@ -196,8 +211,8 @@ export async function POST(req: NextRequest) {
         timezone: data.timezone,
         dismissible: data.dismissible,
         openInNewTab: data.openInNewTab,
-        createdById: userId,
-        publishedById: isPublishingNow ? userId : null,
+        createdById: validUserId,
+        publishedById: isPublishingNow ? validUserId : null,
         publishedAt: isPublishingNow ? new Date() : null,
       },
     })
@@ -205,7 +220,7 @@ export async function POST(req: NextRequest) {
     // Log in AuditLog
     await prisma.auditLog.create({
       data: {
-        userId,
+        userId: validUserId,
         userRole: 'ADMIN',
         action: 'CREATE_PROMOTION',
         targetResource: `Promotion:${promotion.id}`,
@@ -214,8 +229,12 @@ export async function POST(req: NextRequest) {
     }).catch(() => {})
 
     return NextResponse.json({ success: true, promotion })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[ADMIN CREATE PROMOTION ERROR]', err)
-    return NextResponse.json({ error: 'Failed to create promotion' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to create promotion', message: err?.message || 'Database error' },
+      { status: 500 }
+    )
   }
 }
+

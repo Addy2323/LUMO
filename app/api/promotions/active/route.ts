@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { PromotionStatus, PromotionPlacement, PromotionAudience } from '@/lib/promotions/types'
+import { ensurePromotionsTable } from '@/lib/promotions/db-init'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
+    await ensurePromotionsTable()
+
     const { searchParams } = new URL(req.url)
     const placementParam = searchParams.get('placement') || 'ENTRY_POPUP'
     const audienceParam = searchParams.get('audience') || 'ALL_VISITORS'
